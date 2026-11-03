@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.4.0 · 2026-11-03
+
+- 3D viewer: glTF and GLB, OBJ with MTL, STL, PLY, FBX, 3MF, DAE and USDZ open in the viewer; OFF and XYZ open through the engine. Orbit, fit, lit, wireframe, normals and matcap modes, a neutral built-in environment, grid and axes, a two-click measure, animation playback, a scene panel, triangle and vertex counts, a PNG screenshot, and conversion to GLB, OBJ, STL, PLY or OFF.
+- Documents and data: text and code with highlighting, find and line numbers; Markdown rendered or as source; CSV and TSV grids that sort; JSON as a tree; SQLite tables, read-only; PDF pages with thumbnails and zoom; fonts with a waterfall, a glyph grid, variable axes and Install; a hex view for any file.
+- Archives: browse ZIP, TAR (gz, bz2, xz, zst) and, where the system has libarchive, 7z, RAR and ISO; preview a member; extract all or a selection. Extraction refuses parent and absolute paths, never follows or creates links that leave the folder, never overwrites, and stops on archives that expand past a safe ratio.
+- Checksums: MD5, SHA-1, SHA-256, SHA-512, SHA3-256, BLAKE3, XXH64 and CRC32 for many files, a compare field for a published value, a sums file to save, and verification of SHA256SUMS, .md5, .sfv and BSD style files.
+- Duplicates: identical files (size, then a quick hash of each end, then BLAKE3) or similar pictures, with thumbnails, quick selection rules, and Move to trash after a confirm.
+- Disk usage: a squarified treemap and a size list that you click into, with breadcrumbs.
+- Clean up: empty folders and broken pictures or media files, moved to the trash after a confirm. New from template, from a templates folder you can edit. Who has this file open.
+- Engine: three new tools (model, files, utilities) with 14 MCP tools between them, 31 in all; nothing is ever deleted permanently, only moved to the system trash. The frozen engine collects the new libraries' runtime imports.
+- Fixes: a second crop or resize of the same picture now saves as "name edited (2)" instead of failing; a new archive gets its format's extension; the browser hides XMP sidecars beside their files; toasts no longer move when a longer message arrives.
+
 ## 0.3.0 · 2026-11-02
 
 - Browser: a folder tree that follows the open folder, multi-select (Shift and Mod), star ratings (0 to 5) and colour labels (6 to 9) written to XMP sidecars and shown on each tile, video thumbnails.

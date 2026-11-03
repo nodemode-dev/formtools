@@ -4,7 +4,7 @@
 
 The form* family's media and file utility belt: one desktop app for macOS, Windows and Linux that opens, previews and converts what the Form apps make, views almost any file, batch-processes images, and carries the desktop utilities people reach for every day.
 
-**Stage: alpha.** v0.3.0 runs: Home, a folder browser with a folder tree, thumbnails, multi-select, star ratings and colour labels; the image viewer with crop, resize, save as, a pixel inspector and compare; Batch convert, Resize and Rename with presets, naming tokens and undo; a video and audio player with subtitles, A-B loop, frame steps, snapshots and lossless clips; media information; formvis project previews. The tools marked "planned" on Home arrive in later phases.
+**Stage: alpha.** v0.4.0 runs: Home, a folder browser with a folder tree, thumbnails, multi-select, star ratings and colour labels; the image viewer with crop, resize, save as, a pixel inspector and compare; Batch convert, Resize and Rename with presets, naming tokens and undo; a video and audio player with subtitles, A-B loop, frame steps, snapshots and lossless clips; a 3D viewer with measure, animation and conversion; text, code, Markdown, CSV, JSON, SQLite, PDF, font, hex and archive viewers with safe extraction; checksums with verify; duplicates, disk usage, clean up, file templates and a file lock finder; formvis project previews. The desktop utilities marked "planned" on Home arrive in a later phase.
 
 ## Quick start
 

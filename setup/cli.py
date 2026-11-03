@@ -36,9 +36,9 @@ def read_version():
         pass
     try:
         with open(os.path.join(ROOT, "frontend", "package.json"), encoding="utf-8") as f:
-            return json.load(f).get("version") or "0.2.0"
+            return json.load(f).get("version") or "0.4.0"
     except (OSError, ValueError):
-        return "0.2.0"
+        return "0.4.0"
 
 
 def get(route, **query):

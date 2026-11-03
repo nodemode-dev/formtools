@@ -15,6 +15,20 @@ Context for the frontend code, kept here instead of in comments.
 - Open in its app calls the OS default app through the shell's `open_with_default`. The FormPortal `open_file` hand-off is Phase 10 work.
 - Drag and drop: the desktop app uses Tauri's webview drag-drop event (paths), so the shell no longer turns the drop handler off. In a browser tab dropped files have no paths, and a toast says so.
 
+## v0.4.0 · 2026-11-03 · Phases 5, 6 and 7
+
+- The 3D viewer (`ui/model/`) and the document viewers (`ui/docview/`) are separate modules with their own logs. The viewer imports both with a dynamic `import()` the first time a model or document opens, so neither three.js nor highlight.js, markdown-it or pdf.js is in the main chunk (258.9 kB, from 256.7 kB in v0.3.0). Both mount into `.ft-ext` inside the stage, above the image panes, and the viewer bar keeps back, previous, next, information, open in and show in folder for them.
+- Routing (`kindOf` in `viewer.ts`): type `model` goes to the 3D viewer; types `text`, `pdf`, `font`, `archive`, `other` and the data extensions (Markdown, CSV, JSON, SQLite) go to the document viewer, which shows any other file as hex. Folders stay out.
+- Keys: the module's `key(e)` runs first and before the modifier check, because the document viewer owns Mod+F. Keys typed into a field never reach the viewer's own map. For models and documents the viewer keeps only navigation, Escape, I, F11, Space, ratings and labels.
+- Focus: hiding a focused control (switching document panels) drops focus to the body, which silently stopped the viewer's keys. A `focusout` with no next target now returns focus to the stage, and `showExt` focuses the stage when nothing inside the viewer has focus.
+- The document viewer's classes use a `dv-` prefix rather than `ft-`; it is self-contained in `docview.css`, so the prefix was kept rather than renamed by hand across a dozen files.
+- Document switching: the previous panel stays on screen, dimmed by `.dv-stage.is-loading` behind `delayedIndicator`, until the next panel is ready, and stale panels close after the new one shows. Opening a second file of the kind already on screen re-opens it (it used to keep the first file). Kinds may expose `shown()`, run in the same task that unhides them; the PDF panel fits its pages there, because a hidden panel measures zero width, and it starts at page 1.
+- Utilities (`ui/utilities/`): one page with six views built once and switched with `hidden`. Results are patched by key; Duplicates renders the 400 groups that waste the most and says so. Disk usage lays cells out with a squarified treemap (`treemap.ts`) and moves them with CSS variables and `transform`, so a resize relayouts without rebuilding. Run buttons stack "Stop" in the same grid cell as their label, and the trash buttons have a minimum width, so a label change moves nothing. Closeness is disabled, not hidden, for identical-content scans.
+- Trash always takes two clicks: the first turns the button into "Move N to the trash?" for four seconds.
+- Toasts: a new message takes a fresh node in a fixed-width band. Reusing the visible node let a longer message move it (0.003 under throttling).
+- The browser hides `name.ext.xmp` when `name.ext` is in the same folder.
+- pdf.js reads its cmaps, standard fonts and wasm decoders from `/pdfjs/`; `vite.config.ts` maps that path to `node_modules/pdfjs-dist` in development and copies the three folders into `dist/pdfjs/` on build, so nothing is vendored into the repository.
+
 ## v0.3.0 · 2026-11-02 · Phase 2 finish, Phases 3 and 4
 
 - Browser: multi-select (Mod-click toggles, Shift-click and Shift-arrows extend from the anchor, Mod+A all). `selection()` is the picked set, or the focused item. A reload with `keepSelection` restores the focus ring without touching the picked set, because the batch tools reload the folder after a run.
