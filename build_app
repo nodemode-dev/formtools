@@ -113,17 +113,17 @@ bundle="$ROOT/src-tauri/target/release/bundle"
 version="$(node -p 'require("./src-tauri/tauri.conf.json").version')"
 
 if [ "$os" = macos ]; then
-  app="$bundle/macos/formtools.app"
+  app="$bundle/macos/FormTools.app"
   [ -d "$app" ] || die "the build finished but $app is missing"
   codesign --verify --deep --strict "$app" 2>/dev/null || say "codesign could not verify the app; it is ad-hoc signed, so macOS may ask once before it opens"
   step "packing the disk image"
   mkdir -p "$bundle/dmg"
-  dmg="$bundle/dmg/formtools_${version}_$(uname -m).dmg"
+  dmg="$bundle/dmg/FormTools_${version}_$(uname -m).dmg"
   stage="$(mktemp -d)"
-  ditto "$app" "$stage/formtools.app"
+  ditto "$app" "$stage/FormTools.app"
   ln -s /Applications "$stage/Applications"
   rm -f "$dmg"
-  hdiutil create -quiet -volname formtools -srcfolder "$stage" -ov -format UDZO "$dmg"
+  hdiutil create -quiet -volname FormTools -srcfolder "$stage" -ov -format UDZO "$dmg"
   rm -rf "$stage"
   say "app: $app"
   say "disk image: $dmg"
@@ -132,13 +132,13 @@ if [ "$os" = macos ]; then
     dest=/Applications
     [ -w "$dest" ] || { dest="$HOME/Applications"; mkdir -p "$dest"; }
     if pgrep -x formtools >/dev/null 2>&1; then
-      osascript -e 'tell application "formtools" to quit' >/dev/null 2>&1 || true
+      osascript -e 'tell application "FormTools" to quit' >/dev/null 2>&1 || true
       sleep 2
     fi
-    rm -rf "$dest/formtools.app"
-    ditto "$app" "$dest/formtools.app"
-    xattr -dr com.apple.quarantine "$dest/formtools.app" 2>/dev/null || true
-    target_app="$dest/formtools.app"
+    rm -rf "$dest/FormTools.app"
+    ditto "$app" "$dest/FormTools.app"
+    xattr -dr com.apple.quarantine "$dest/FormTools.app" 2>/dev/null || true
+    target_app="$dest/FormTools.app"
     say "installed: $target_app"
   fi
   if [ "$open_app" = 1 ]; then open "${target_app:-$app}"; fi
