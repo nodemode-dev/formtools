@@ -1,6 +1,6 @@
 # formtools
 
-![version](https://img.shields.io/badge/version-v0.5.0-f97316) ![licence](https://img.shields.io/badge/licence-Apache--2.0-blue) ![stage](https://img.shields.io/badge/stage-alpha-lightgrey)
+![version](https://img.shields.io/badge/version-v0.6.0-f97316) ![licence](https://img.shields.io/badge/licence-Apache--2.0-blue) ![stage](https://img.shields.io/badge/stage-alpha-lightgrey)
 
 The form* family's media and file utility belt: one desktop app for macOS, Windows and Linux that opens, previews and converts what the Form apps make, views almost any file, batch-processes images, and carries the desktop utilities people reach for every day.
 

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.6.0 · 2026-11-03
+
+- Desktop builds: `./build_app` (macOS and Linux) and `build_app.bat` (Windows) build the app start to finish in the family's pattern, passing formcompiler's `--config` through. Linux makes deb, rpm and an AppImage; the AppImage now bundles with the frozen engine's own libraries.
+- The family: formtools is registered in formcompiler and listed in formskills, formMCP and FormPortal.
+- All metadata: every file's tags through ExifTool, grouped by source, filterable and copyable, in the viewer's information panel; ExifTool is fetched on request when the computer does not have it, and agents read it through `exif_read`.
+- Preferences follows formvis: rail with scroll spy and the connector wire, foldable cards, sliders with number boxes, interface font size, following the system theme, keyboard shortcuts, privacy and data, engine status and reset.
+- Home: the whole main area takes dropped files and suggests the tools for them; everything fits without scrolling; the left panel resizes and collapses to a minirail, and the tool groups fold like formvis's toolbar.
+- Disk usage: a heatmap of every file coloured by type, a type and extension breakdown, allocated against apparent size, and the largest files.
+
 ## 0.5.0 · 2026-11-03
 
 - Desktop utilities, each with its own global shortcut set in Preferences: a colour picker with a loupe and twelve formats (HEX, RGB, HSL, HSV, HWB, CMYK, CIE Lab and LCh, OKLab, OKLCH, decimal, float) and a history; a screen ruler (bounds, spacing by colour tolerance, horizontal, vertical); a text extractor recognised on this computer (Vision on macOS, Windows OCR, Tesseract on Linux); zoom and draw with shapes, arrows, text, boards and copy as PNG; a break timer; Awake; Always on top for another app's window; a hosts file editor with checks and a backup; environment variables per scope. Utilities that cannot work on a system or session are hidden there.
