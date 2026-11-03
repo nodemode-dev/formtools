@@ -10,6 +10,7 @@ import { MediaBar } from './media-bar';
 import { SaveDialog } from './save-dialog';
 import type { Jobs } from './jobs';
 import type { ModelViewer } from './model';
+import { MetaPanel } from './meta/panel';
 import type { DocViewer } from './docview';
 
 export interface ViewerDeps {
@@ -114,6 +115,7 @@ export class Viewer {
   private readonly pixel = new PixelInspector();
   private readonly tagBox: HTMLElement;
   private mediaInfo: MediaInfo | null = null;
+  private readonly meta: MetaPanel;
   private model: ModelViewer | null = null;
   private doc: DocViewer | null = null;
   private modelLoad: Promise<ModelViewer> | null = null;
@@ -121,6 +123,7 @@ export class Viewer {
   quick = false;
 
   constructor(private readonly deps: ViewerDeps) {
+    this.meta = new MetaPanel({ jobs: deps.jobs });
     this.root = el<HTMLElement>(`
       <section class="ft-viewer ft-page" aria-label="Viewer" data-page="view" hidden>
         <div class="ft-vbar">
@@ -182,6 +185,7 @@ export class Viewer {
     this.message = q(this.root, '.ft-vmsg');
     this.zoomLabel = q(this.root, '.ft-zoom');
     this.info = q(this.root, '.ft-info');
+    this.info.append(this.meta.root);
     this.infoRows = q(this.root, '.ft-info-rows');
     this.hist = q(this.root, '.ft-hist');
     this.tagBox = q(this.root, '.ft-tagbox');
@@ -650,6 +654,7 @@ export class Viewer {
 
   private syncInfo(e: Entry, pane: Pane | null): void {
     if (this.info.hidden) return;
+    this.meta.show(e);
     const seq = ++this.infoSeq;
     const base: Array<[string, string]> = [['Name', e.name], ['Folder', e.path.slice(0, Math.max(0, e.path.length - e.name.length - 1))], ['Size', `${e.size.toLocaleString()} bytes`], ['Modified', new Date(e.mtime * 1000).toLocaleString()]];
     setHidden(this.hist, e.type === 'video' || e.type === 'audio');
@@ -777,6 +782,7 @@ export class Viewer {
     this.pixel.hide();
     this.model?.close();
     this.doc?.close();
+    this.meta.clear();
     this.deps.close(this.current?.path ?? null);
   }
 

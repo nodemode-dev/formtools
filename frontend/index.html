@@ -66,6 +66,8 @@
   var theme = DEFAULT_THEME, accent = DEFAULT_ACCENT, intensity = 1;
   try {
     var raw = /[?&]no-skin(?:[=&]|$)/.test(location.search) ? null : localStorage.getItem(KEY);
+    /* A choice saved before the Studio Dark redesign is set aside once; from generation 2, the theme and any accent chosen
+       on purpose are kept, the old lavender default becoming orange (generation 3); themes.ts agrees. */
     if (raw) { var s = JSON.parse(raw); try { var uc = JSON.parse(localStorage.getItem('formtools_user_skin') || 'null'); if (uc && uc.id === s.theme && uc.p && uc.p.length > 9) { PROFILES[uc.id] = uc.p; if (uc.light) LIGHT[uc.id] = 1; } } catch (e2) { /* the skin shows after the bundle loads */ } if (s.appearance === 3 || s.appearance === 2) { if (s.theme && PROFILES[s.theme]) theme = s.theme; if (s.accentColor && !(s.appearance === 2 && s.accentColor === '#aba0d3')) accent = s.accentColor; if (s.appearance === 3 && typeof s.intensity === 'number') intensity = Math.min(1.5, Math.max(0, s.intensity)); } }
   } catch (e) { /* private mode or blocked storage: defaults are correct */ }
   var p = PROFILES[theme], root = document.documentElement, i;
@@ -94,6 +96,7 @@
   <link rel="stylesheet" href="/src/styles/home.css">
   <link rel="stylesheet" href="/src/styles/browser.css">
   <link rel="stylesheet" href="/src/styles/viewer.css">
+  <link rel="stylesheet" href="/src/styles/meta.css">
   <link rel="stylesheet" href="/src/styles/tools.css">
   <link rel="stylesheet" href="/src/styles/utilities.css">
   <link rel="stylesheet" href="/src/styles/desk.css">

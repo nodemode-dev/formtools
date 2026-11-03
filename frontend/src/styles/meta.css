@@ -1,0 +1,60 @@
+.ft-meta { display: flex; flex: none; flex-direction: column; min-width: 0; padding-top: var(--space-3); border-top: 1px solid var(--line-1); font-size: 12px; }
+.ft-meta [hidden] { display: none !important; }
+
+.ft-meta-bar { position: sticky; top: calc(var(--space-4) * -1); z-index: var(--z-raised); display: flex; flex-direction: column; gap: var(--space-2); margin-top: calc(var(--space-3) * -1); padding: var(--space-3) 0 var(--space-2); background: var(--surface-0); }
+.ft-meta-head { display: flex; align-items: center; gap: var(--space-2); }
+.ft-meta-toggle { display: flex; flex: 1 1 auto; align-items: center; gap: 6px; min-width: 0; height: 28px; padding: 0 var(--space-1); border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--text-primary); font: inherit; font-size: 13px; font-weight: 600; text-align: left; cursor: pointer; }
+.ft-meta-toggle:hover { background: var(--surface-1); }
+.ft-meta-toggle:focus-visible { outline: 2px solid var(--accent-color); outline-offset: 1px; }
+.ft-meta-chev, .ft-meta-gchev { display: inline-grid; flex: none; place-items: center; color: var(--text-muted); transform: rotate(0deg); transition: transform 120ms ease-out; }
+.ft-meta.is-open .ft-meta-chev, .ft-meta-group.is-open > .ft-meta-ghead .ft-meta-gchev { transform: rotate(90deg); }
+.ft-meta-title { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ft-meta-count { flex: none; min-width: 48px; color: var(--text-muted); font-size: 11px; font-weight: 400; font-variant-numeric: tabular-nums; text-align: right; }
+.ft-meta-copy:disabled { opacity: 0.45; cursor: default; }
+.ft-meta-copy:disabled:hover { background: var(--surface-1); color: var(--text-secondary); }
+
+.ft-meta-filter-box { display: flex; align-items: center; gap: 6px; height: 28px; padding: 0 var(--space-2); border: 1px solid var(--line-1); border-radius: var(--radius-md); background: var(--surface-field); color: var(--text-muted); }
+.ft-meta-filter-box:focus-within { border-color: var(--accent-line); }
+.ft-meta-filter-icon { display: inline-grid; flex: none; place-items: center; }
+.ft-meta-filter { flex: 1 1 auto; min-width: 0; padding: 0; border: 0; outline: 0; background: transparent; color: var(--text-primary); font: inherit; font-size: 12px; }
+.ft-meta-filter::placeholder { color: var(--text-muted); }
+.ft-meta-filter:disabled { opacity: 0.5; }
+
+.ft-meta-body { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+.ft-meta-stage { position: relative; min-height: 128px; }
+.ft-meta-groups { display: flex; flex-direction: column; }
+.ft-meta-stage.is-slow .ft-meta-groups { opacity: 0.45; }
+.ft-meta-groups, .ft-meta-state { transition: opacity 120ms ease-out; }
+
+.ft-meta-pill { position: absolute; top: var(--space-1); right: var(--space-1); padding: 2px 8px; border: 1px solid var(--line-2); border-radius: var(--radius-pill); background: var(--surface-2); color: var(--text-secondary); font-size: 11px; opacity: 0; visibility: hidden; pointer-events: none; }
+.ft-meta-stage.is-slow .ft-meta-pill { opacity: 1; visibility: visible; }
+
+.ft-meta-group { border-bottom: 1px solid var(--line-0); }
+.ft-meta-ghead { display: flex; align-items: center; gap: 6px; width: 100%; height: 28px; padding: 0 var(--space-1); border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--text-secondary); font: inherit; font-size: 12px; font-weight: 600; text-align: left; cursor: pointer; }
+.ft-meta-ghead:hover { background: var(--surface-1); color: var(--text-primary); }
+.ft-meta-ghead:focus-visible { outline: 2px solid var(--accent-color); outline-offset: -2px; }
+.ft-meta-gname { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ft-meta-gcount { flex: none; color: var(--text-muted); font-size: 11px; font-weight: 400; font-variant-numeric: tabular-nums; }
+.ft-meta.is-filtering .ft-meta-ghead { cursor: default; }
+
+.ft-meta-rows { display: flex; flex-direction: column; margin: 0; padding: 0 0 var(--space-2); }
+.ft-meta-row { display: grid; grid-template-columns: minmax(0, 42%) minmax(0, 1fr); gap: var(--space-2); padding: 4px var(--space-1); border-radius: var(--radius-sm); cursor: pointer; }
+.ft-meta-row:hover { background: var(--surface-1); }
+.ft-meta-row:focus-visible { outline: 2px solid var(--accent-color); outline-offset: -2px; }
+.ft-meta-row.is-copied { background: var(--accent-wash); }
+.ft-meta-row dt { margin: 0; color: var(--text-muted); overflow: hidden; overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }
+.ft-meta-row dd { margin: 0; color: var(--text-primary); overflow: hidden; overflow-wrap: anywhere; text-align: right; font-variant-numeric: tabular-nums; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; }
+
+.ft-meta-state { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-2); padding: var(--space-2) var(--space-1); }
+.ft-meta-msg { min-height: 36px; margin: 0; color: var(--text-secondary); line-height: 1.5; overflow-wrap: anywhere; }
+.ft-meta-progress { min-height: 18px; margin: 0; color: var(--text-muted); font-size: 11px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.ft-meta-progress.is-error { color: var(--danger-text); }
+.ft-meta-get { min-width: 132px; height: 28px; padding: 0 var(--space-3); border: 1px solid var(--accent-line); border-radius: var(--radius-md); background: var(--accent-soft); color: var(--text-primary); font: inherit; font-size: 12px; cursor: pointer; }
+.ft-meta-get:hover { background: var(--accent-glow); }
+.ft-meta-get:disabled { opacity: 0.5; cursor: default; }
+.ft-meta-get:focus-visible { outline: 2px solid var(--accent-color); outline-offset: 1px; }
+
+.ft-meta-nomatch { margin: 0; padding: var(--space-2) var(--space-1); color: var(--text-muted); }
+.ft-meta-warn { margin: 0; padding: 0 var(--space-1); color: var(--text-muted); font-size: 11px; overflow-wrap: anywhere; }
+
+.ft-meta-scratch { position: fixed; top: 0; left: 0; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
