@@ -1,0 +1,12 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "menus",
+  "description": "The context menu entry commands (osint_menu_status, osint_menu_install, osint_menu_remove) are allowed for the main window only, from the engine page on 127.0.0.1.",
+  "windows": ["main"],
+  "remote": { "urls": ["http://127.0.0.1:*"] },
+  "permissions": [
+    "allow-osint-menu-status",
+    "allow-osint-menu-install",
+    "allow-osint-menu-remove"
+  ]
+}

@@ -13,6 +13,9 @@ const APP_COMMANDS: &[&str] = &[
     "desk_awake_set",
     "desk_topmost_toggle",
     "desk_shortcuts_set",
+    "osint_menu_status",
+    "osint_menu_install",
+    "osint_menu_remove",
 ];
 
 fn main() {

@@ -16,6 +16,7 @@ const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 
 mod desk;
 mod files;
+mod osint;
 mod packaged;
 mod reveal;
 mod text_edit;
@@ -27,12 +28,23 @@ const MIN_SIZE: (f64, f64) = (980.0, 640.0);
 const SCREEN_FRACTION: f64 = 0.9;
 const DEV_ENGINE: &str = "http://127.0.0.1:8240";
 const OPEN_EVENT: &str = "open-paths";
+const TOOL_EVENT: &str = "open-tool";
 
 struct Backend(Mutex<Option<Child>>);
+
+enum Pending {
+    Paths(Vec<String>),
+    Tool(String, Vec<String>),
+}
 
 #[derive(Default)]
 struct Opens {
     ready: bool,
+    queue: Vec<Pending>,
+}
+
+struct Launch {
+    tool: Option<String>,
     paths: Vec<String>,
 }
 
@@ -97,23 +109,39 @@ fn show_main_window(handle: &tauri::AppHandle) {
     }
 }
 
-fn open_paths(handle: &tauri::AppHandle, paths: Vec<String>) {
-    if paths.is_empty() {
-        return;
+fn emit_pending(handle: &tauri::AppHandle, item: Pending) {
+    match item {
+        Pending::Paths(paths) => {
+            let _ = handle.emit(OPEN_EVENT, paths);
+        }
+        Pending::Tool(tool, paths) => {
+            let _ = handle.emit(TOOL_EVENT, serde_json::json!({ "tool": tool, "paths": paths }));
+        }
     }
+}
+
+fn open_launch(handle: &tauri::AppHandle, launch: Launch) {
+    let item = match launch.tool {
+        Some(tool) => Pending::Tool(tool, launch.paths),
+        None if launch.paths.is_empty() => return,
+        None => Pending::Paths(launch.paths),
+    };
     let send = match handle.state::<OpenQueue>().0.lock() {
         Ok(mut opens) => {
             if opens.ready {
-                Some(paths)
+                Some(item)
             } else {
-                opens.paths.extend(paths);
+                match (opens.queue.last_mut(), item) {
+                    (Some(Pending::Paths(held)), Pending::Paths(more)) => held.extend(more),
+                    (_, item) => opens.queue.push(item),
+                }
                 None
             }
         }
         Err(_) => None,
     };
-    if let Some(paths) = send {
-        let _ = handle.emit(OPEN_EVENT, paths);
+    if let Some(item) = send {
+        emit_pending(handle, item);
         show_main_window(handle);
     }
 }
@@ -122,32 +150,51 @@ fn page_loaded(handle: &tauri::AppHandle) {
     let handle = handle.clone();
     std::thread::spawn(move || {
         std::thread::sleep(Duration::from_millis(800));
-        let paths = match handle.state::<OpenQueue>().0.lock() {
+        let queue = match handle.state::<OpenQueue>().0.lock() {
             Ok(mut opens) => {
                 opens.ready = true;
-                std::mem::take(&mut opens.paths)
+                std::mem::take(&mut opens.queue)
             }
             Err(_) => return,
         };
-        if !paths.is_empty() {
-            let _ = handle.emit(OPEN_EVENT, paths);
+        for item in queue {
+            emit_pending(&handle, item);
         }
     });
 }
 
-fn paths_from_args(args: &[String], cwd: Option<&str>) -> Vec<String> {
-    args.iter()
-        .skip(1)
-        .filter(|arg| !arg.starts_with('-'))
-        .filter_map(|arg| {
-            let path = std::path::PathBuf::from(arg);
-            let full = match cwd {
-                Some(dir) if path.is_relative() => std::path::Path::new(dir).join(path),
+fn launch_from_args(args: &[String], cwd: Option<&str>) -> Launch {
+    let mut tool: Option<String> = None;
+    let mut names: Vec<&String> = Vec::new();
+    let mut literal = false;
+    let mut rest = args.iter().skip(1);
+    while let Some(arg) = rest.next() {
+        if literal {
+            names.push(arg);
+        } else if arg == "--" {
+            literal = true;
+        } else if arg == "--tool" {
+            tool = rest.next().cloned();
+        } else if let Some(value) = arg.strip_prefix("--tool=") {
+            tool = Some(value.to_string());
+        } else if !arg.starts_with('-') {
+            names.push(arg);
+        }
+    }
+    let tool = tool.map(|value| value.trim().to_lowercase()).filter(|value| osint::TOOLS.contains(&value.as_str()));
+    let base = cwd.map(std::path::PathBuf::from).or_else(|| std::env::current_dir().ok());
+    let paths = names
+        .into_iter()
+        .filter_map(|name| {
+            let path = std::path::PathBuf::from(name);
+            let full = match &base {
+                Some(dir) if path.is_relative() => dir.join(path),
                 _ => path,
             };
             full.exists().then(|| full.to_string_lossy().into_owned())
         })
-        .collect()
+        .collect();
+    Launch { tool, paths }
 }
 
 fn forward_lines<R: std::io::Read + Send + 'static>(stream: R, tx: tauri::async_runtime::Sender<String>) {
@@ -253,7 +300,7 @@ fn engine_failed(handle: &tauri::AppHandle) {
 fn single_instance() -> tauri::plugin::TauriPlugin<tauri::Wry> {
     tauri_plugin_single_instance::Builder::<tauri::Wry>::new()
         .callback(|app, args, cwd| {
-            open_paths(app, paths_from_args(&args, Some(&cwd)));
+            open_launch(app, launch_from_args(&args, Some(&cwd)));
             show_main_window(app);
         })
         .build()
@@ -295,7 +342,10 @@ fn main() {
             desk::desk_awake_get,
             desk::desk_awake_set,
             desk::desk_topmost_toggle,
-            desk::desk_shortcuts_set
+            desk::desk_shortcuts_set,
+            osint::osint_menu_status,
+            osint::osint_menu_install,
+            osint::osint_menu_remove
         ])
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_clipboard_manager::init())
@@ -307,7 +357,7 @@ fn main() {
             let handle = app.handle().clone();
             reveal::round_splash(&handle);
             let launch_args: Vec<String> = std::env::args().collect();
-            open_paths(&handle, paths_from_args(&launch_args, None));
+            open_launch(&handle, launch_from_args(&launch_args, None));
 
             if let Some(url) = dev_engine_url() {
                 tauri::async_runtime::spawn(async move {
@@ -357,7 +407,7 @@ fn main() {
                 .filter_map(|url| url.to_file_path().ok())
                 .map(|path| path.to_string_lossy().into_owned())
                 .collect();
-            open_paths(handle, paths);
+            open_launch(handle, Launch { tool: None, paths });
             show_main_window(handle);
         }
         _ => {}
