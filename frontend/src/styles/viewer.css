@@ -1,0 +1,38 @@
+.ft-viewer { position: absolute; inset: 0; display: grid; grid-template-rows: 44px minmax(0, 1fr); background: var(--bg-primary); }
+.ft-viewer.is-full { grid-template-rows: 0 minmax(0, 1fr); }
+.ft-viewer.is-full .ft-vbar { visibility: hidden; }
+.ft-vbar { display: flex; align-items: center; gap: var(--space-1); padding: 0 var(--space-3); border-bottom: 1px solid var(--line-0); background: var(--surface-0); overflow: hidden; }
+.ft-vbar-name { min-width: 0; margin-left: var(--space-2); overflow: hidden; color: var(--text-primary); font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+.ft-vbar-count { flex: none; margin-left: var(--space-2); color: var(--text-muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.ft-vbar-gap { flex: 1 1 auto; }
+.ft-vbar-sep { flex: none; width: 1px; height: 18px; margin: 0 var(--space-1); background: var(--line-1); }
+.ft-zoom { flex: none; width: 48px; color: var(--text-secondary); font-size: 11px; font-variant-numeric: tabular-nums; text-align: center; }
+.ft-viewer.is-media .ft-vbar [data-act="fit"], .ft-viewer.is-media .ft-vbar [data-act="actual"], .ft-viewer.is-media .ft-vbar [data-act="zoom-in"], .ft-viewer.is-media .ft-vbar [data-act="zoom-out"], .ft-viewer.is-media .ft-zoom, .ft-viewer.is-media .ft-vbar [data-act^="rotate"], .ft-viewer.is-media .ft-vbar [data-act^="flip"], .ft-viewer.is-media .ft-vbar [data-act="compare"], .ft-viewer.is-media .ft-vbar [data-act="lock"] { visibility: hidden; }
+
+.ft-vbody { display: grid; grid-template-columns: minmax(0, 1fr) auto; min-height: 0; }
+.ft-stage { position: relative; display: flex; min-width: 0; min-height: 0; overflow: hidden; outline: none; background: var(--canvas-bg); cursor: grab; touch-action: none; }
+.ft-stage.is-black { background: #000; }
+.ft-stage.is-checker { background-color: var(--surface-1); background-image: linear-gradient(45deg, var(--surface-2) 25%, transparent 25%), linear-gradient(-45deg, var(--surface-2) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, var(--surface-2) 75%), linear-gradient(-45deg, transparent 75%, var(--surface-2) 75%); background-size: 16px 16px; background-position: 0 0, 0 8px, 8px -8px, -8px 0; }
+.ft-stage.is-dragging { cursor: grabbing; }
+.ft-pane { position: relative; flex: 1 1 0; min-width: 0; overflow: hidden; }
+.ft-pane[hidden] { display: none; }
+.ft-stage.is-compare .ft-pane + .ft-pane { border-left: 1px solid var(--line-2); }
+.ft-img { position: absolute; left: 50%; top: 50%; max-width: none; max-height: none; transform-origin: center center; transform: translate(-50%, -50%) scale(1); image-orientation: from-image; will-change: transform; user-select: none; -webkit-user-drag: none; }
+.ft-img:not([src]) { visibility: hidden; }
+.ft-stage.is-pixelated .ft-img { image-rendering: pixelated; }
+.ft-img { transition: opacity 140ms ease-out; }
+.ft-stage.is-loading .ft-img { opacity: 0.45; }
+.ft-video { width: 100%; height: 100%; object-fit: contain; background: #000; }
+.ft-video[hidden], .ft-audio-box[hidden], .ft-vmsg[hidden] { display: none; }
+.ft-audio-box { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-5); width: 100%; color: var(--text-muted); }
+.ft-audio { width: min(560px, 80%); }
+.ft-vmsg { position: absolute; inset: auto 0 45% 0; margin: 0; color: var(--text-secondary); font-size: 13px; text-align: center; }
+
+.ft-info { display: flex; flex-direction: column; gap: var(--space-3); width: 300px; min-height: 0; padding: var(--space-4); border-left: 1px solid var(--line-0); background: var(--surface-0); overflow-y: auto; user-select: text; -webkit-user-select: text; }
+.ft-info[hidden] { display: none; }
+.ft-info-title { color: var(--text-primary); font-size: 13px; font-weight: 600; }
+.ft-hist { width: 100%; height: 96px; border: 1px solid var(--line-1); border-radius: var(--radius-md); background: var(--surface-1); }
+.ft-info-rows { display: grid; gap: 6px; margin: 0; }
+.ft-info-row { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: var(--space-2); font-size: 12px; }
+.ft-info-row dt { color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ft-info-row dd { margin: 0; color: var(--text-primary); overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }

@@ -1,0 +1,195 @@
+import './ui/ft-icons';
+import './extensions/tools';
+import { api, type Entry } from './io/api';
+import { host, inDesktop } from './io/host';
+import { el, q, revealApp, setClass, setText } from './ui/dom';
+import { icon } from './ui/icons';
+import { Commands } from './ui/commands';
+import { MenuBar, type MenuDef } from './ui/menu';
+import { NativeMenus, wantsNativeMenus } from './ui/native-menu';
+import { CaptionButtons } from './ui/caption-buttons';
+import { HomeScreen } from './ui/home';
+import { Browser } from './ui/browser';
+import { Viewer } from './ui/viewer';
+import { StatusBar } from './ui/status';
+import { SettingsDialog } from './ui/settings';
+import { Palette } from './ui/palette';
+import { addRecent, loadPrefs } from './ui/prefs';
+import { applyTheme, readChoice, setTheme } from './ui/themes';
+import { toast } from './ui/toast';
+
+type Page = 'home' | 'browse' | 'view';
+
+const SHELL = `
+  <div class="cv-app ft-app">
+    <header class="cv-titlebar ft-titlebar">
+      <span class="cv-tb-doc"></span>
+      <span class="cv-tb-app">formtools</span>
+      <div class="cv-title-tools">
+        <button class="cv-tt-btn" type="button" data-cmd="go-home" title="Home" aria-label="Home">${icon('ftHome', 16)}</button>
+        <button class="cv-tt-btn" type="button" data-cmd="palette" title="Commands" aria-label="Commands">${icon('search', 16)}</button>
+        <button class="cv-tt-btn" type="button" data-cmd="toggle-light" title="Light or dark" aria-label="Light or dark">${icon('theme', 16)}</button>
+        <button class="cv-tt-btn" type="button" data-cmd="settings" title="Preferences" aria-label="Preferences">${icon('settings', 16)}</button>
+      </div>
+    </header>
+    <main class="ft-stage-area"></main>
+  </div>`;
+
+export function startApp(): void {
+  applyTheme();
+  const app = document.getElementById('app')!;
+  const overlay = document.getElementById('overlay-root')!;
+  const shell = el<HTMLElement>(SHELL);
+  app.appendChild(shell);
+  const header = q(shell, '.cv-titlebar');
+  const area = q(shell, '.ft-stage-area');
+  const status = new StatusBar();
+  shell.appendChild(status.root);
+
+  const commands = new Commands();
+  const settings = new SettingsDialog();
+  const palette = new Palette(commands);
+  overlay.append(settings.root, palette.root);
+
+  let page: Page = 'home';
+  let lastViewerPath: string | null = null;
+
+  const setPage = (next: Page): void => {
+    page = next;
+    for (const p of area.querySelectorAll<HTMLElement>('.ft-page')) { const on = p.dataset.page === next; if (p.hidden === on) p.hidden = !on; }
+    home.setActive(next);
+    setClass(document.documentElement, 'is-viewing', next === 'view');
+    if (next !== 'view') setText(q(header, '.cv-tb-doc'), next === 'browse' ? browser.path : '');
+    if (next === 'browse') browser.focus();
+    if (next === 'view') viewer.focus();
+    menus?.refresh();
+  };
+
+  const openPath = async (path: string): Promise<void> => {
+    try {
+      const listing = await api.list(path).catch(() => null);
+      if (listing) { await browser.open(listing.path); setPage('browse'); addRecent(listing.path); return; }
+      const parent = path.replace(/[\\/][^\\/]+$/, '') || path;
+      await browser.open(parent);
+      const list = await api.list(parent);
+      const files = list.entries.filter((e) => e.kind === 'file');
+      const i = files.findIndex((e) => e.path === path);
+      if (i < 0) { toast(`Could not open ${path}.`, 'error'); return; }
+      addRecent(parent);
+      viewer.quick = false;
+      viewer.open(files, i);
+      setPage('view');
+    } catch (e) {
+      toast(e instanceof Error ? e.message : `Could not open ${path}.`, 'error');
+    }
+  };
+
+  const openIn = (entry: Entry): void => {
+    if (!inDesktop()) { toast('Open in its app works in the desktop app.'); return; }
+    void host.openDefault(entry.path);
+  };
+
+  const home = new HomeScreen({ run: (c) => commands.run(c), openPath: (p) => void openPath(p) });
+  const browser = new Browser({
+    openFile: (entries, i) => { viewer.quick = false; viewer.open(entries, i); setPage('view'); },
+    quickLook: (entries, i) => { viewer.quick = true; viewer.open(entries, i); setPage('view'); },
+    status: (t) => status.setHint(t),
+    folderChanged: (p) => { if (page === 'browse') { addRecent(p); setText(q(header, '.cv-tb-doc'), p); } },
+  });
+  const viewer = new Viewer({
+    close: (path) => { lastViewerPath = path; setPage('browse'); if (path) browser.selectPath(path); },
+    status: (t) => status.setHint(t),
+    title: (name) => setText(q(header, '.cv-tb-doc'), name),
+    openIn,
+    reveal: (p) => { if (inDesktop()) void host.reveal(p); else toast('Show in folder works in the desktop app.'); },
+  });
+  area.append(home.root, browser.root, viewer.root);
+
+  const anyOverlay = (): boolean => settings.isOpen || palette.isOpen;
+  const isText = (t: EventTarget | null): boolean => t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement || t instanceof HTMLSelectElement;
+
+  commands.add(
+    { id: 'go-home', label: 'Home', group: 'Go', description: 'Show the Home screen with every tool.', useWhen: 'Use when the person wants the start page.', keys: ['Mod+Shift+H'], run: () => setPage('home'), checked: () => page === 'home' },
+    { id: 'go-browse', label: 'Browser', group: 'Go', description: 'Show the folder browser.', useWhen: 'Use when the person wants to look through a folder.', keys: ['Mod+B'], run: () => setPage('browse'), checked: () => page === 'browse' },
+    { id: 'go-viewer', label: 'Viewer', group: 'Go', description: 'Return to the image last opened.', useWhen: 'Use when the person wants the viewer back.', run: () => setPage('view'), enabled: () => viewer.current !== null, checked: () => page === 'view' },
+    { id: 'open-folder', label: 'Open Folder...', group: 'File', description: 'Pick a folder and browse it.', useWhen: 'Use when the person names a folder to look at.', keys: ['Mod+Shift+O'], run: async () => {
+      if (inDesktop()) { const p = await host.pickFolder(); if (p) void openPath(p); }
+      else { setPage('browse'); browser.focusPath(); }
+    } },
+    { id: 'open-files', label: 'Open...', group: 'File', description: 'Pick a file and view it.', useWhen: 'Use when the person names a file to view.', keys: ['Mod+O'], run: async () => {
+      if (inDesktop()) { const p = await host.pickFiles(); if (p?.length) void openPath(p[0]); }
+      else { setPage('browse'); browser.focusPath(); }
+    } },
+    { id: 'open-path', label: 'Open Path', group: 'File', description: 'Open a file or folder by its full path (argument: path).', useWhen: 'Use when an agent has the exact path.', run: (a) => { const p = typeof a?.path === 'string' ? a.path : ''; if (p) void openPath(p); } },
+    { id: 'reveal', label: 'Show in Folder', group: 'File', description: 'Show the current file in the system file manager.', useWhen: 'Use when the person wants the file in Finder or Explorer.', keys: ['Mod+Shift+R'], enabled: () => inDesktop() && page === 'view' && viewer.current !== null, run: () => { const c = viewer.current; if (c) void host.reveal(c.path); } },
+    { id: 'open-in', label: 'Open in Its App', group: 'File', description: 'Hand the current file to the app that makes it.', useWhen: 'Use when the person wants to edit the file.', keys: ['Mod+E'], enabled: () => page === 'view' && viewer.current !== null, run: () => { const c = viewer.current; if (c) openIn(c); } },
+    { id: 'next', label: 'Next Item', group: 'View', description: 'Show the next file in the folder.', useWhen: 'Use when stepping forward through images.', enabled: () => page === 'view', run: () => viewer.step(1) },
+    { id: 'previous', label: 'Previous Item', group: 'View', description: 'Show the previous file in the folder.', useWhen: 'Use when stepping back through images.', enabled: () => page === 'view', run: () => viewer.step(-1) },
+    { id: 'palette', label: 'Commands...', group: 'View', description: 'Search every command.', useWhen: 'Use when the person does not know where a command lives.', keys: ['Mod+K'], run: () => palette.open() },
+    { id: 'toggle-light', label: 'Light or Dark', group: 'View', description: 'Switch between the dark and light themes.', useWhen: 'Use when the person asks for light or dark mode.', keys: ['Mod+Shift+L'], run: () => setTheme(readChoice().theme === 'light' ? 'studio' : 'light') },
+    { id: 'settings', label: 'Preferences...', group: 'formtools', description: 'Open Preferences.', useWhen: 'Use when the person wants to change a setting.', keys: ['Mod+,'], run: () => settings.open() },
+    { id: 'undo', label: 'Undo', group: 'Edit', description: 'Undo in the focused text field.', useWhen: 'Use in text fields.', keys: ['Mod+Z'], enabled: () => isText(document.activeElement), run: () => document.execCommand('undo') },
+    { id: 'redo', label: 'Redo', group: 'Edit', description: 'Redo in the focused text field.', useWhen: 'Use in text fields.', keys: ['Mod+Shift+Z'], enabled: () => isText(document.activeElement), run: () => document.execCommand('redo') },
+    { id: 'cut', label: 'Cut', group: 'Edit', description: 'Cut the selected text.', useWhen: 'Use in text fields.', keys: ['Mod+X'], enabled: () => isText(document.activeElement), run: () => document.execCommand('cut') },
+    { id: 'copy', label: 'Copy', group: 'Edit', description: 'Copy the selected text, or the current file path in the viewer.', useWhen: 'Use to copy text or a path.', keys: ['Mod+C'], run: () => {
+      if (isText(document.activeElement)) { document.execCommand('copy'); return; }
+      const c = viewer.current;
+      if (page === 'view' && c) void navigator.clipboard.writeText(c.path).then(() => toast('Path copied.')).catch(() => undefined);
+    } },
+    { id: 'paste', label: 'Paste', group: 'Edit', description: 'Paste into the focused text field.', useWhen: 'Use in text fields.', keys: ['Mod+V'], enabled: () => isText(document.activeElement), run: () => document.execCommand('paste') },
+    { id: 'select-all', label: 'Select All', group: 'Edit', description: 'Select all text in the focused field.', useWhen: 'Use in text fields.', keys: ['Mod+A'], enabled: () => isText(document.activeElement), run: () => document.execCommand('selectAll') },
+  );
+
+  const MENUS: MenuDef[] = [
+    { label: 'File', items: ['open-files', 'open-folder', '-', 'open-in', 'reveal'] },
+    { label: 'Edit', items: ['undo', 'redo', '-', 'cut', 'copy', 'paste', 'select-all', '-', 'settings'] },
+    { label: 'View', items: ['go-home', 'go-browse', 'go-viewer', '-', 'previous', 'next', '-', 'palette', 'toggle-light'] },
+  ];
+
+  let menus: NativeMenus | null = null;
+  if (wantsNativeMenus()) {
+    menus = new NativeMenus(commands, MENUS);
+    void menus.build().catch(() => { document.documentElement.classList.remove('has-native-menus'); });
+  }
+  const bar = new MenuBar(commands, MENUS, overlay);
+  header.prepend(bar.root);
+  new CaptionButtons(header, () => true);
+
+  commands.bindKeys(window, (e) => anyOverlay() || (isText(e.target) && !(e.metaKey || e.ctrlKey)) || bar.isOpen);
+  header.addEventListener('click', (e) => {
+    const cmd = (e.target instanceof Element ? e.target.closest<HTMLElement>('[data-cmd]') : null)?.dataset.cmd;
+    if (cmd) commands.run(cmd);
+  });
+
+  const dropTarget = (paths: string[]): void => { if (paths.length) void openPath(paths[0]); };
+  if (inDesktop()) {
+    void import('@tauri-apps/api/webview').then((m) => m.getCurrentWebview().onDragDropEvent((ev) => {
+      if (ev.payload.type === 'drop') dropTarget(ev.payload.paths);
+      setClass(document.documentElement, 'is-dragging-files', ev.payload.type === 'enter' || ev.payload.type === 'over');
+    })).catch(() => undefined);
+    void host.onOpenPaths(dropTarget);
+  } else {
+    window.addEventListener('dragover', (e) => e.preventDefault());
+    window.addEventListener('drop', (e) => { e.preventDefault(); toast('In a browser tab, type a folder path in the browser bar. Dropping files works in the desktop app.'); });
+  }
+
+  const watchEngine = async (): Promise<void> => {
+    try {
+      const h = await api.health();
+      status.setEngine('up', `Engine ${h.version}`);
+      return;
+    } catch {
+      status.setEngine('down', 'Engine not answering');
+    }
+    window.setTimeout(() => void watchEngine(), 2000);
+  };
+
+  const start = loadPrefs().startPage;
+  setPage(start === 'browse' ? 'browse' : 'home');
+  void browser.start();
+  void watchEngine();
+  if (lastViewerPath) browser.selectPath(lastViewerPath);
+
+  const fonts = document.fonts ? Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 2500))]) : Promise.resolve();
+  void fonts.then(() => revealApp());
+}
