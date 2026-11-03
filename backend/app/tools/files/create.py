@@ -144,6 +144,8 @@ def start(paths: list[str], out_raw: str, fmt: str) -> dict:
     if not paths:
         raise ApiError(400, "at least one file or folder is needed")
     out = absolute(out_raw)
+    if not out.name.lower().endswith(f".{fmt}"):
+        out = out.with_name(f"{out.name}.{fmt}")
     if not out.parent.is_dir():
         raise ApiError(400, "the folder for the new archive does not exist")
     wanted = safety.unique(out)
