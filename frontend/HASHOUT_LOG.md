@@ -2,6 +2,25 @@
 
 Context for the frontend code, kept here instead of in comments.
 
+## v0.6.0 · 2026-11-03 · Preferences parity with formvis
+
+Ported from formvis 1.98.7 (`SettingsDialog` in `app-dialogs.ts`, `controls.ts`, `dialogs.ts`, `prefs.ts`, `dialogs.css`), checked against FORMVIS_SETTINGS_MAP.md (written for 1.96.4; the code was the truth where they differ). `themes.ts` already matches formvis 1.98.7 apart from the skin key, so it was left alone.
+
+Porting checklist, as applied to formtools (map section 9):
+- Step 1, tokens and base CSS: `tokens.css`, `scrollbars.css`, `light-mode.css` were already identical copies. Added the `.cv-btn`, `.cv-icon-btn`, `.cv-num` rules from `shell.css` to `dialogs.css`, since formtools' `shell.css` has none.
+- Step 2, `dialogs.css`: the base dialog, field, input, note, toggle, slider and swatch rules plus the whole Preferences block (frame, rail, wire, port, section cards, groups, range styling, cols), kept in formvis's class names (`cv-prefs-*`). Sizes are formvis's: frame `min(840px, 100vw - 280px)` by `min(86vh, 780px)`, rail 232 px (76 px collapsed), 44 px head, 40 px tabs, 30 px controls, 46 percent control column. The `.ft-sec`, `.ft-row`, `.ft-check`, `.ft-note` rules stay for the other pages; inside `.cv-prefs-dlg` they are restyled to match (rows, selects, buttons and the checkboxes become switches), so the mounted Desktop utilities and file manager panels need no change.
+- Step 7, the dialog: built once in the constructor and toggled with `hidden`; rail with `is-active` and `aria-selected`; cards with `is-current` and fold; click-to-scroll with a 700 ms spy mute; rAF scroll spy (last card at the end of the scroll); the connector wire and port (path written only when it changed, port moved with a transform); collapse button remembered in `formtools.prefsRailCollapsed`; head drag with the spot in `formtools.dialogSpots`; Done, x, Escape (stops propagation so app keys stay quiet) and scrim pointerdown; focus goes to the active rail tab and returns to the opener. There is no open animation in formvis, so none was added.
+- Step 6, `prefs.ts`: `Prefs` gained `uiFontSize`, `animations`, `themeAuto`, `themeLight`, `themeDark`, `favouriteThemes` with validating `clean()`. Mirrored: `applyUiFontSize` (tokens plus the generated sheet for literal pixel sizes), `followSystemTheme`, the `nm:ui-settings-changed` event, the `animations-disabled` body class. `applyUiPrefs` runs when the dialog is built (app.ts is not edited) and on every change through `onPrefs`. The storage key stays `formtools.prefs`, every earlier key and value is unchanged.
+- Change path: rows call `change(patch)`, which goes through `updatePrefs` (clean, save, notify listeners); the dialog never writes a pref to storage itself. Controls keep a `data-pref` attribute named for the pref key.
+- Step 8, row builders (`ui/settings/rows.ts`): `sliderRow` (range, number box, `--pct` fill, scrubbable label, double-click reset), `selectRow`, `toggleRow` (switch), `colorRow`, `buttonRow`, plus `grp`, `note`, `cols`. Added `segmentedRow` and `valueRow`, which formvis does not have. All rows are built once and `set()` writes only a changed value.
+- Reset: formvis's confirm dialog does not exist here, so Reset uses the two-click button the app already uses for trash (armed for four seconds, fixed width). It removes `formtools.*`, `formtools_desk_prefs`, `formtools_user_skin`, `formtools_meta_*` and `nodemode_ui_settings`, then reloads. Desk history stores (picks, measures, texts) are kept.
+
+Sections: General, Appearance (28 themes, favourites by right-click, accent, accent intensity, match system appearance with a light and a dark pair, text size, animations), Browser, Viewer, Desktop utilities and Integration (the two mounted panels, same `mount(slot, node, onOpen)`), then the new Keyboard shortcuts (read-only, from the command catalogue; needs `new SettingsDialog(commands)` in `app.ts`, until then it says so), Privacy and data, Engine (status, version, system, tools from `/api/health` and `/api/capabilities`) and About. Viewer gained the existing `smoothZoom` pref as "Animated zoom".
+
+Left out: formvis's layers, brushes, canvas, tools, type, GPU, scratch, generative, plugins and keys sections; i18n (`t`, `onLanguage`, relabel; formtools is English only); `DialogHistory` and `Dialog.remember` (formvis dialogs that keep values); interface scale (`formvis:ui-zoom`, needs the shell's webview zoom); Updates (the updater plugin is loaded but `tauri.conf.json` has an empty pubkey and no endpoints, and no command reaches it); the data folder path (the engine does not report it; the row shows `dataDir` from `/api/capabilities` when the engine adds it, "Not reported by this engine version" until then).
+
+Measured with Playwright under 4x CPU throttling (script kept outside the repo): layout shift 0 on open, on 10 rail clicks, on scrolling, on changes and on reopen. The one shift is the rail collapse button, 0.026 per toggle, flagged by the browser as input-initiated; the rail is a floating panel that changes width, so it was recorded rather than hidden. `vite build` main chunk 269.6 kB (from 258.9 kB).
+
 ## v0.2.0 · 2026-11-02 · shell
 
 - Shared family files copied verbatim from formvis 1.98.7 (Apache-2.0), headers included, because the family keeps them byte-identical: `src/ui/themes.ts` (one change: `USER_SKIN_KEY` is `formtools_user_skin`), `src/ui/icons.ts`, `src/ui/dom.ts`, `src/ui/caption-buttons.ts`, `src/styles/tokens.css`, `fonts.css`, `scrollbars.css`, `light-mode.css`. Update them from formvis, never in place, unless the change is formtools-only.
@@ -14,6 +33,13 @@ Context for the frontend code, kept here instead of in comments.
 - Pages (Home, Browser, Viewer) are built once at start and switched with `hidden`; nothing is rebuilt on navigation.
 - Open in its app calls the OS default app through the shell's `open_with_default`. The FormPortal `open_file` hand-off is Phase 10 work.
 - Drag and drop: the desktop app uses Tauri's webview drag-drop event (paths), so the shell no longer turns the drop handler off. In a browser tab dropped files have no paths, and a toast says so.
+
+## v0.6.0 · 2026-11-03 · Splash and boot parity with formvis
+
+- Compared with formvis 1.98.7: `public/splash.html` differs only in the icon, the words "Starting formtools", the aria label and the hook name `formtoolsSplashDone` (which `reveal.rs` calls); the card, 2.6 s bar, 0.2 s completion and the gradient are the same. `src/ui/dom.ts` (`revealApp`: two frames to `app-ready`, one more to `app_ready`) is byte-identical, so it was left alone. The `index.html` critical style (dark background, `#app` hidden until `body.app-ready`), the three Inter preloads and the theme-boot script match.
+- Closed: the theme-boot script lacked formvis's comment on the saved-choice generations (the family copy of the block); it is back, so the block is the same text in both apps.
+- Kept different: no `favicon.ico` or apple-touch-icon links (formtools ships only `favicon.svg`); no terminal-dock boot script (no terminal); no language table before `startApp` (English only); the reveal waits for fonts and for the shell's desktop-utilities report together, at most 2.5 s and 1.5 s, as decided in v0.5.0. formvis wraps its `revealApp` call in one extra frame; `revealApp` already waits two, so formtools calls it directly.
+- Observed under Xvfb: first content paints and `app_ready` arrive about 3 s after the main window is mapped on a cold start; the splash closed at 4.4 to 4.65 s. Details and the frame captures are in `src-tauri/HASHOUT_LOG.md`.
 
 ## v0.5.0 · 2026-11-03 · Phases 8, 9 and the start of 10
 

@@ -56,7 +56,7 @@ export function startApp(): void {
   shell.appendChild(status.root);
 
   const commands = new Commands();
-  const settings = new SettingsDialog();
+  const settings = new SettingsDialog(commands);
   const palette = new Palette(commands);
   const jobs = new Jobs();
   const saveDialog = new SaveDialog();
