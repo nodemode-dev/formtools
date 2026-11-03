@@ -11,7 +11,7 @@ rust-version = "1.90"
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = ["macos-private-api"] }
+tauri = { version = "2", features = ["macos-private-api", "image-png"] }
 tauri-plugin-shell = "2"
 tauri-plugin-dialog = "2"
 tauri-plugin-updater = "2"
@@ -39,7 +39,9 @@ windows = { version = "0.62", features = [
     "Media_Ocr",
     "Storage_Streams",
     "Win32_Foundation",
+    "Win32_Security",
     "Win32_System_Power",
+    "Win32_System_Registry",
     "Win32_System_WinRT",
     "Win32_UI_WindowsAndMessaging",
 ] }

@@ -29,8 +29,9 @@ let closing = false;
 async function finish(result: DeskResult, clip?: Clip): Promise<void> {
   if (closing) return;
   closing = true;
-  if (clip?.text !== undefined) await desk.copyText(clip.text).catch(() => undefined);
-  else if (clip?.png && desk.available()) await desk.copyImage(clip.png).catch(() => undefined);
+  const failed = (e: unknown): void => { result = { tool: result.tool, kind: 'error', value: `The clipboard refused the copy: ${e instanceof Error ? e.message : String(e)}` }; };
+  if (clip?.text !== undefined) await desk.copyText(clip.text).catch(failed);
+  else if (clip?.png && desk.available()) await desk.copyImage(clip.png).catch(failed);
   if (!desk.available()) {
     console.info('[overlay]', JSON.stringify(result));
     closing = false;
