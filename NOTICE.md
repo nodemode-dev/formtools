@@ -31,6 +31,7 @@ Every dependency gets a row here with its name, version, licence and where it sh
 | OpenEXR | 3.5.2 | BSD-3-Clause | engine |
 | trimesh | 5.2.0 | MIT | engine |
 | fontTools | 4.68.0 | MIT | engine |
+| Brotli (Python bindings with the brotli library) | 1.2.1 | MIT | engine (WOFF2 fonts) |
 | blake3 (Python bindings and the BLAKE3 reference code) | 1.0.11 | CC0-1.0 OR Apache-2.0 | engine |
 | xxhash (Python bindings with the xxHash library) | 4.0.2 | BSD-2-Clause | engine |
 | zstandard (with the bundled zstd library) | 0.25.0 | BSD-3-Clause | engine |
