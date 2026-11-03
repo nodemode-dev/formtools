@@ -25,6 +25,8 @@ Every dependency gets a row here with its name, version, licence and where it sh
 | rawpy with LibRaw | 0.27.1 | MIT; LibRaw used under its CDDL-1.0 option | engine (not on macOS x64, no wheel) |
 | psd-tools | 1.23.0 | MIT | engine |
 | OpenEXR | 3.5.2 | BSD-3-Clause | engine |
+| FFmpeg and ffprobe (LGPL build with libvpx and libopus, configured `--disable-gpl --disable-nonfree --disable-version3`) | 7.1.5 (record 7.1.5-2) | LGPL-2.1-or-later | not shipped in the app: an `ffmpeg` on PATH is used first; otherwise the frozen engine downloads the family's pinned build from `nodemode-dev/formcut-binaries`, checks every file's SHA-256, and keeps it in the per-person folder `formcut-binaries/ffmpeg-7.1.5-2` shared with formcut and formvis; the binaries are run as separate processes. Source: the offer published with formcut-binaries |
+| formvis `ffmpeg_fetch.py` and `ffmpeg_record.py`, ported to `backend/app/tools/media/fetch.py` and `record.py`, Copyright (C) 2026 NodeAgentc, Inc. | 1.98.7 | Apache-2.0 | engine |
 | PyInstaller | 6.22.3 | GPL-2.0 with the bootloader exception | build tool only; the exception covers the frozen engine |
 | TypeScript, Vite, @tauri-apps/cli | 7.0.2, 8.3.5, 2.11.4 | Apache-2.0, MIT, Apache-2.0 OR MIT | build tools only |
 
