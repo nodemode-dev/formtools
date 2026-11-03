@@ -26,6 +26,8 @@ usage: ./formtools [command] [options]
   desktop build [--config F] [--target T]  bundle the desktop app (arguments go to tauri build)
   mcp [--where] [--version] [--url URL]  formtools over MCP's stdio transport, for Claude Desktop and other MCP clients
   cli info PATH | list DIR | version  small command line over the engine
+  agents sync | check  mirror .claude/skills into .agents/skills; check the mirror, the skills and the MCP configs
+  mcpb check | build DIR  validate the Claude Desktop extension manifest; write formtools.mcpb into DIR
   doctor              check the toolchain, installs and ports
   clean [--all]       remove build output (--all also venv and node_modules)
   version             the version and build (also --version)
@@ -53,6 +55,15 @@ case "$cmd" in
     esac ;;
   mcp) exec python3 setup/mcp_stdio.py "$@" ;;
   cli) exec python3 setup/cli.py "$@" ;;
+  agents) exec python3 setup/agents.py "$@" ;;
+  mcpb)
+    sub="${1:-check}"
+    [ $# -gt 0 ] && shift
+    case "$sub" in
+      check) exec python3 setup/mcpb.py --check ;;
+      build) exec python3 setup/mcpb.py --build "$@" ;;
+      *) usage; exit 2 ;;
+    esac ;;
   doctor) exec setup/doctor "$@" ;;
   clean) exec setup/clean "$@" ;;
   version|--version|-V)
