@@ -1,98 +1,135 @@
 import { el, escapeHtml, patchList, q, setHidden, setText } from './dom';
 import { icon } from './icons';
-import { GROUPS, toolsIn } from '../extensions/registry';
 import { loadPrefs, onPrefs } from './prefs';
-import { VERSION } from '../version';
-import { inDesktop } from '../io/host';
+import { HomeNav } from './home/nav';
+import { HomeDrop } from './home/drop';
+import { applyTips, COLUMNS, groupInfos, toolAttrs, type GroupInfo } from './home/model';
 
 export interface HomeDeps {
   run: (cmd: string) => void;
   openPath: (path: string) => void;
+  runWith: (command: string, paths: string[]) => void;
+  keyOf?: (command: string) => string;
 }
+
+const RECENT_LIMIT = 6;
+const FORMATS = ['JPEG', 'PNG', 'WebP', 'AVIF', 'TIFF', 'RAW', 'PSD', 'EXR', 'SVG', 'GIF', 'MP4', 'FVD'];
+const HINT_DEFAULT = 'Point at a tool to see what it does.';
 
 const baseName = (p: string): string => p.replace(/[\\/]+$/, '').split(/[\\/]/).pop() || p;
 const dirName = (p: string): string => { const i = Math.max(p.lastIndexOf('/'), p.lastIndexOf('\\')); return i > 0 ? p.slice(0, i) : p; };
+
+function columnsOf(groups: GroupInfo[]): GroupInfo[][] {
+  const byId = new Map(groups.map((g) => [g.id, g]));
+  const used = new Set<string>();
+  const cols = COLUMNS.map((ids) => ids.map((id) => byId.get(id)).filter((g): g is GroupInfo => !!g)).filter((c) => c.length > 0);
+  for (const c of cols) for (const g of c) used.add(g.id);
+  const rest = groups.filter((g) => !used.has(g.id));
+  if (rest.length) { if (cols.length) cols[cols.length - 1].push(...rest); else cols.push(rest); }
+  return cols;
+}
 
 export class HomeScreen {
   readonly root: HTMLElement;
   private readonly recent: HTMLElement;
   private readonly recentEmpty: HTMLElement;
+  private readonly hint: HTMLElement;
+  private readonly nav: HomeNav;
+  private readonly drop: HomeDrop;
 
-  constructor(deps: HomeDeps) {
-    const groups = GROUPS.map((g) => {
-      const tools = toolsIn(g.id);
-      if (!tools.length) return '';
-      const cards = tools.map((t) => {
-        const off = t.status === 'planned' || (!!t.needs && !inDesktop());
-        const badge = t.status === 'planned' ? (t.phase ?? 'Planned') : off ? 'Desktop app' : '';
-        return `
-        <button class="ft-tool${off ? ' is-planned' : ''}" type="button" ${t.needs ? `data-needs="${escapeHtml(t.needs)}"` : ''} ${t.command && !off ? `data-cmd="${t.command}"` : 'aria-disabled="true"'}>
-          <span class="ft-tool-icon">${icon(t.icon, 20)}</span>
-          <span class="ft-tool-text"><span class="ft-tool-name">${escapeHtml(t.name)}</span><span class="ft-tool-sum">${escapeHtml(t.summary)}</span></span>
-          ${badge ? `<span class="ft-tool-badge">${escapeHtml(badge)}</span>` : ''}
-        </button>`;
-      }).join('');
-      return `<section class="cv-home-section" data-group="${g.id}"><div class="cv-home-section-head"><h2 class="cv-home-section-title">${escapeHtml(g.label)}</h2></div><div class="ft-tools">${cards}</div></section>`;
-    }).join('');
+  constructor(private readonly deps: HomeDeps) {
+    const groups = groupInfos();
+    const columns = columnsOf(groups).map((col) => `<div class="ft-col">${col.map((g) => `
+        <section class="cv-home-section ft-group" data-group="${g.id}">
+          <h2 class="ft-group-title">${icon(g.icon, 14)}<span>${escapeHtml(g.label)}</span></h2>
+          <div class="ft-tools">${g.tiles.map((t) => `
+            <button class="ft-tool${t.off ? ' is-planned' : ''}" type="button" data-tip="${escapeHtml(t.def.name)}: ${escapeHtml(t.def.summary)}"${toolAttrs(t)}>
+              <span class="ft-tool-icon">${icon(t.def.icon, 16)}</span><span class="ft-tool-name">${escapeHtml(t.def.name)}</span>${t.badge ? `<span class="ft-tool-badge">${escapeHtml(t.badge)}</span>` : ''}
+            </button>`).join('')}
+          </div>
+        </section>`).join('')}</div>`).join('');
 
     this.root = el<HTMLElement>(`
       <section class="cv-home ft-page" aria-label="Home" data-page="home">
-        <nav class="cv-home-nav">
-          <div class="cv-home-brand">formtools <span>${VERSION}</span></div>
-          <button class="cv-home-nav-item is-active" type="button" data-cmd="go-home">${icon('ftHome', 16)}<span>Home</span></button>
-          <button class="cv-home-nav-item" type="button" data-cmd="go-browse">${icon('ftBrowse', 16)}<span>Browse</span></button>
-          <div class="cv-home-nav-title">Tools</div>
-          ${GROUPS.filter((g) => toolsIn(g.id).length).map((g) => `<button class="cv-home-nav-item" type="button" data-jump="${g.id}">${icon(toolsIn(g.id)[0].icon, 16)}<span>${escapeHtml(g.label)}</span></button>`).join('')}
-          <div class="cv-home-nav-foot">
-            <button class="cv-home-nav-item" type="button" data-cmd="settings">${icon('settings', 16)}<span>Preferences</span></button>
-          </div>
-        </nav>
         <div class="cv-home-main">
-          <div class="cv-home-head">
-            <div><h1 class="cv-home-title">Open anything the Form apps make</h1><p class="cv-home-sub">View, convert and inspect files, folders and Form projects.</p></div>
-          </div>
+          <header class="cv-home-head">
+            <div class="cv-home-headtext"><h1 class="cv-home-title">Open anything the Form apps make</h1><p class="cv-home-sub">View, convert and inspect files, folders and Form projects.</p></div>
+            <div class="cv-home-actions">
+              <button class="cv-home-action is-primary" type="button" data-cmd="open-files" data-tip="Open files">${icon('fileImage', 16)}<span class="cv-home-label">Open files</span><span class="ft-key"></span></button>
+              <button class="cv-home-action" type="button" data-cmd="open-folder" data-tip="Open a folder">${icon('folderOpen', 16)}<span class="cv-home-label">Open folder</span><span class="ft-key"></span></button>
+              <button class="cv-home-action" type="button" data-cmd="go-browse" data-tip="Browse this computer">${icon('ftBrowse', 16)}<span class="cv-home-label">Browse</span><span class="ft-key"></span></button>
+            </div>
+          </header>
           <div class="cv-home-hero ft-drop">
-            <span class="cv-home-hero-icon">${icon('ftViewer', 28)}</span>
+            <span class="cv-home-hero-icon">${icon('ftViewer', 22)}</span>
             <div class="cv-home-hero-text">
-              <span class="cv-home-hero-title">Drop files or a folder here</span>
-              <span class="cv-home-hero-sub">Images, RAW, HDR, PSD, video, audio and formvis projects open in place. Nothing is uploaded: every file stays on this computer.</span>
-              <div class="cv-home-formats">${['JPEG', 'PNG', 'WebP', 'AVIF', 'TIFF', 'RAW', 'PSD', 'EXR', 'SVG', 'GIF', 'MP4', 'FVD'].map((f) => `<span class="cv-home-format">${f}</span>`).join('')}</div>
+              <span class="cv-home-hero-title">Drop files or a folder anywhere on this screen</span>
+              <span class="cv-home-hero-sub">The tools that fit what you drop are suggested. Nothing is uploaded: every file stays on this computer.</span>
             </div>
-            <div class="cv-home-hero-actions">
-              <button class="cv-home-action is-primary" type="button" data-cmd="open-folder">${icon('folderOpen', 16)}<span class="cv-home-label">Open folder</span></button>
-              <button class="cv-home-action" type="button" data-cmd="open-files">${icon('fileImage', 16)}<span class="cv-home-label">Open files</span></button>
-              <button class="cv-home-action is-ghost" type="button" data-cmd="go-browse">${icon('ftBrowse', 16)}<span class="cv-home-label">Browse this computer</span></button>
-            </div>
+            <div class="cv-home-formats" aria-label="Some formats it opens">${FORMATS.map((f) => `<span class="cv-home-format">${f}</span>`).join('')}</div>
           </div>
-          <section class="cv-home-section">
+          <section class="cv-home-section ft-home-recent" aria-label="Recent">
             <div class="cv-home-section-head"><h2 class="cv-home-section-title">Recent</h2></div>
-            <div class="ft-recent" role="list"></div>
-            <p class="cv-hf-empty ft-recent-empty">Files and folders you open appear here.</p>
+            <div class="ft-recent-box">
+              <div class="ft-recent" role="list"></div>
+              <p class="cv-hf-empty ft-recent-empty">Files and folders you open appear here.</p>
+            </div>
           </section>
-          ${groups}
+          <section class="cv-home-section ft-home-tools" aria-label="Tools">
+            <div class="cv-home-section-head"><h2 class="cv-home-section-title">Tools</h2><p class="ft-home-hint" aria-live="polite">${HINT_DEFAULT}</p></div>
+            <div class="ft-cols">${columns}</div>
+          </section>
         </div>
       </section>`);
+
+    this.nav = new HomeNav(this.root, groups, (c) => deps.run(c));
+    this.root.prepend(this.nav.root);
+    const main = q(this.root, '.cv-home-main');
+    this.drop = new HomeDrop(main, { runWith: (c, p) => deps.runWith(c, p), run: (c) => deps.run(c) });
     this.recent = q(this.root, '.ft-recent');
     this.recentEmpty = q(this.root, '.ft-recent-empty');
+    this.hint = q(this.root, '.ft-home-hint');
+
     this.root.addEventListener('click', (e) => {
       const t = e.target instanceof Element ? e.target : null;
       const cmd = t?.closest<HTMLElement>('[data-cmd]')?.dataset.cmd;
       if (cmd) { deps.run(cmd); return; }
-      const jump = t?.closest<HTMLElement>('[data-jump]')?.dataset.jump;
-      if (jump) { this.root.querySelector(`[data-group="${jump}"]`)?.scrollIntoView({ block: 'start', behavior: 'smooth' }); return; }
       const path = t?.closest<HTMLElement>('[data-path]')?.dataset.path;
       if (path) deps.openPath(path);
     });
+    const tools = q(this.root, '.ft-cols');
+    const show = (e: Event): void => {
+      const tool = e.target instanceof Element ? e.target.closest<HTMLElement>('.ft-tool') : null;
+      setText(this.hint, tool ? tool.title : HINT_DEFAULT);
+    };
+    tools.addEventListener('pointerover', show);
+    tools.addEventListener('focusin', show);
+    tools.addEventListener('pointerleave', () => setText(this.hint, HINT_DEFAULT));
+    tools.addEventListener('focusout', () => setText(this.hint, HINT_DEFAULT));
+    this.root.addEventListener('pointerover', () => this.syncTips(), { once: true });
+    this.root.addEventListener('focusin', () => this.syncTips(), { once: true });
+
     this.syncRecent();
     onPrefs(() => this.syncRecent());
+    queueMicrotask(() => this.syncTips());
+    requestAnimationFrame(() => requestAnimationFrame(() => this.root.classList.add('is-live')));
+  }
+
+  receive(paths: string[]): void { void this.drop.receive(paths); }
+
+  private syncTips(): void {
+    const keyOf = this.deps.keyOf ?? ((): string => '');
+    applyTips(this.root, keyOf);
+    for (const f of this.nav.flyouts.values()) applyTips(f, keyOf);
   }
 
   private syncRecent(): void {
-    const list = loadPrefs().recent.slice(0, 8);
+    const list = loadPrefs().recent.slice(0, RECENT_LIMIT);
     setHidden(this.recentEmpty, list.length > 0);
     const update = (node: HTMLElement, p: string): void => {
       setText(q(node, '.ft-recent-name'), baseName(p));
       setText(q(node, '.ft-recent-dir'), dirName(p));
+      if (node.title !== p) node.title = p;
     };
     patchList(this.recent, list, {
       key: (p) => p,
@@ -106,9 +143,11 @@ export class HomeScreen {
       const on = supported(card.dataset.needs ?? '');
       if (card.hidden === on) card.hidden = !on;
     }
+    this.nav.applySupport(supported);
   }
 
   setActive(page: string): void {
-    for (const b of this.root.querySelectorAll<HTMLElement>('.cv-home-nav-item[data-cmd]')) b.classList.toggle('is-active', b.dataset.cmd === `go-${page}`);
+    this.nav.setActive(page);
+    if (page !== 'home') this.drop.close(false);
   }
 }

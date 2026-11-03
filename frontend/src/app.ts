@@ -101,7 +101,12 @@ export function startApp(): void {
     void host.openDefault(entry.path);
   };
 
-  const home = new HomeScreen({ run: (c) => commands.run(c), openPath: (p) => void openPath(p) });
+  const home = new HomeScreen({
+    run: (c) => commands.run(c),
+    openPath: (p) => void openPath(p),
+    runWith: (c, p) => runWith(c, p),
+    keyOf: (c) => { const cmd = commands.get(c); return cmd ? commands.keyLabel(cmd) : ''; },
+  });
   const browser = new Browser({
     openFile: (entries, i) => { viewer.quick = false; viewer.open(entries, i); setPage('view'); },
     quickLook: (entries, i) => { viewer.quick = true; viewer.open(entries, i); setPage('view'); },
@@ -162,6 +167,27 @@ export function startApp(): void {
   const deskRun = (id: string): void => {
     if (!inDesktop()) { toast('The desktop utilities run in the formtools desktop app.'); return; }
     deskPage.handleShortcut(id);
+  };
+  const runWith = (command: string, paths: string[]): void => {
+    if (!paths.length) return;
+    if (page !== 'tool' && page !== 'util' && page !== 'desk') toolReturn = page;
+    const batch = ({ 'tool-convert': 'convert', 'tool-resize': 'resize', 'tool-rename': 'rename' } as Record<string, ToolId>)[command];
+    if (batch) { tools.show(batch, paths); setPage('tool'); return; }
+    const util = ({ 'util-hash': 'hash', 'util-dupes': 'dupes', 'util-disk': 'disk', 'util-cleanup': 'cleanup' } as Record<string, UtilId>)[command];
+    if (util) { utilities.show(util, paths); setPage('util'); return; }
+    if (command === 'view-info') {
+      void openPath(paths[0]).then(() => {
+        const button = viewer.root.querySelector<HTMLElement>('[data-act="info"]');
+        if (button && !button.classList.contains('is-on')) button.click();
+      });
+      return;
+    }
+    if (command === 'open-in' || command === 'reveal') {
+      if (!inDesktop()) { toast(command === 'reveal' ? 'Show in folder works in the desktop app.' : 'Open in its app works in the desktop app.'); return; }
+      for (const p of command === 'reveal' ? paths.slice(0, 1) : paths) void (command === 'reveal' ? host.reveal(p) : host.openDefault(p));
+      return;
+    }
+    void openPath(paths[0]);
   };
   area.append(home.root, browser.root, viewer.root, tools.root, utilities.root, deskPage.root);
 
@@ -247,7 +273,7 @@ export function startApp(): void {
   const dropTarget = (paths: string[]): void => { if (paths.length) void openPath(paths[0]); };
   if (inDesktop()) {
     void import('@tauri-apps/api/webview').then((m) => m.getCurrentWebview().onDragDropEvent((ev) => {
-      if (ev.payload.type === 'drop') dropTarget(ev.payload.paths);
+      if (ev.payload.type === 'drop') { if (page === 'home') home.receive(ev.payload.paths); else dropTarget(ev.payload.paths); }
       setClass(document.documentElement, 'is-dragging-files', ev.payload.type === 'enter' || ev.payload.type === 'over');
     })).catch(() => undefined);
     void host.onOpenPaths(dropTarget);
