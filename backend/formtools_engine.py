@@ -125,6 +125,10 @@ def main() -> int:
 
         print(f"formtools {__version__}")
         return 0
+    if "--thumbnail" in args:
+        from app.tools.desktop import thumbnail
+
+        return thumbnail.main(args[args.index("--thumbnail") + 1:])
     if "--selfcheck" in args:
         return selfcheck()
     return serve()

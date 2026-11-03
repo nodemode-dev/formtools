@@ -1,0 +1,4 @@
+[Thumbnailer Entry]
+TryExec=/usr/lib/formtools/engine/formtools-engine
+Exec=/usr/lib/formtools/engine/formtools-engine --thumbnail %i %o %s
+MimeType=image/x-exr;image/vnd.adobe.photoshop;image/photoshop;image/x-photoshop;application/photoshop;application/x-photoshop;image/x-adobe-dng;image/x-dcraw;image/x-canon-crw;image/x-canon-cr2;image/x-canon-cr3;image/x-fuji-raf;image/x-kodak-dcr;image/x-kodak-k25;image/x-kodak-kdc;image/x-minolta-mrw;image/x-nikon-nef;image/x-nikon-nrw;image/x-olympus-orf;image/x-panasonic-rw;image/x-panasonic-rw2;image/x-pentax-pef;image/x-sigma-x3f;image/x-sony-srf;image/x-sony-sr2;image/x-sony-arw;image/vnd.radiance;image/avif;image/x-portable-anymap;image/x-portable-bitmap;image/x-portable-graymap;image/x-portable-pixmap;image/x-pcx;image/x-sgi;image/x-tga;image/x-dds;image/qoi;image/x-icns;image/jp2;font/ttf;font/otf;font/collection;font/woff;font/woff2;application/x-font-ttf;application/x-font-otf;application/font-woff;
