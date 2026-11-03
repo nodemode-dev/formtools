@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -e
+source "$(dirname "$0")/lib.sh"
+[ -f "$FORMTOOLS_ROOT/frontend/dist/index.html" ] || "$FORMTOOLS_ROOT/setup/build_frontend"
+ft_venv
+cd "$FORMTOOLS_ROOT/backend"
+export FORMTOOLS_PORT="$(ft_port)"
+ft_say "serving http://127.0.0.1:$FORMTOOLS_PORT"
+exec python -m uvicorn app.main:app --host 127.0.0.1 --port "$FORMTOOLS_PORT"

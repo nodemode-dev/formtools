@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -e
+source "$(dirname "$0")/lib.sh"
+cd "$FORMTOOLS_ROOT"
+pids=()
+setup/boot_backend &
+pids+=($!)
+setup/boot_frontend &
+pids+=($!)
+trap 'kill "${pids[@]}" 2>/dev/null' EXIT INT TERM
+ft_say "frontend http://127.0.0.1:5240 · engine http://127.0.0.1:$(ft_port)"
+wait

@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+set -e
+cd "$(dirname "$0")"
+ft_version() {
+  local v=""
+  v="$(sed -n "s/^export const VERSION = '\(.*\)';$/\1/p" frontend/src/version.ts 2>/dev/null | head -1)"
+  [ -n "$v" ] || v="$(sed -n 's/^ *"version": *"\([^"]*\)".*/\1/p' frontend/package.json 2>/dev/null | head -1)"
+  [ -n "$v" ] || v="0.2.0"
+  printf '%s' "$v"
+}
+usage() {
+  printf 'formtools %s · media and file utility belt\n' "$(ft_version)"
+  cat << 'EOF'
+
+usage: ./formtools [command] [options]
+
+  (none) | boot       boot the engine (8240) and the frontend (5240) together
+  install [--lite]    install the backend and the frontend (--lite is accepted and changes nothing yet)
+  install-desktop     install PyInstaller and check the Rust and Tauri toolchain
+  backend             boot the engine only
+  frontend            boot the frontend only
+  build               production build of the frontend into frontend/dist
+  serve               serve the built frontend from the engine on 127.0.0.1:8240
+  freeze              freeze the engine into the Tauri sidecar or engine folder
+  desktop dev         run the desktop app
+  desktop build [--config F] [--target T]  bundle the desktop app (arguments go to tauri build)
+  mcp [--where] [--version] [--url URL]  formtools over MCP's stdio transport, for Claude Desktop and other MCP clients
+  cli info PATH | list DIR | version  small command line over the engine
+  doctor              check the toolchain, installs and ports
+  clean [--all]       remove build output (--all also venv and node_modules)
+  version             the version and build (also --version)
+  help                this text
+EOF
+}
+cmd="${1:-boot}"
+[ $# -gt 0 ] && shift
+case "$cmd" in
+  boot|dev) exec setup/boot_all "$@" ;;
+  install) exec setup/install_all "$@" ;;
+  install-desktop) exec setup/install_desktop "$@" ;;
+  backend) exec setup/boot_backend "$@" ;;
+  frontend) exec setup/boot_frontend "$@" ;;
+  build) exec setup/build_frontend "$@" ;;
+  serve) exec setup/serve "$@" ;;
+  freeze) exec setup/freeze_backend "$@" ;;
+  desktop)
+    sub="${1:-dev}"
+    [ $# -gt 0 ] && shift
+    case "$sub" in
+      dev) exec setup/desktop_dev "$@" ;;
+      build) exec setup/desktop_build "$@" ;;
+      *) usage; exit 2 ;;
+    esac ;;
+  mcp) exec python3 setup/mcp_stdio.py "$@" ;;
+  cli) exec python3 setup/cli.py "$@" ;;
+  doctor) exec setup/doctor "$@" ;;
+  clean) exec setup/clean "$@" ;;
+  version|--version|-V)
+    printf 'formtools %s' "$(ft_version)"
+    commit="$(git rev-parse --short HEAD 2>/dev/null || true)"
+    [ -n "$commit" ] && printf ' (%s)' "$commit"
+    printf '\n' ;;
+  help|-h|--help) usage ;;
+  *) printf '[formtools] unknown command: %s\n\n' "$cmd"; usage; exit 2 ;;
+esac

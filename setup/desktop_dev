@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -e
+source "$(dirname "$0")/lib.sh"
+ft_rust_env
+triple="$(ft_target_triple)" || ft_die "rustc not found; run ./formtools install-desktop"
+[ -x "$FORMTOOLS_ROOT/src-tauri/binaries/formtools-engine-${triple}$(ft_exe)" ] || [ -x "$FORMTOOLS_ROOT/src-tauri/engine/formtools-engine" ] || "$FORMTOOLS_ROOT/setup/freeze_backend"
+cd "$FORMTOOLS_ROOT/frontend"
+exec npx tauri dev "$@"

@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -e
+source "$(dirname "$0")/lib.sh"
+cd "$FORMTOOLS_ROOT/frontend"
+[ -d node_modules ] || ft_die "frontend dependencies missing, run ./formtools install"
+export FORMTOOLS_PORT="$(ft_port)"
+exec npm run dev

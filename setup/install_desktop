@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -e
+source "$(dirname "$0")/lib.sh"
+ft_rust_env
+ft_venv
+cd "$FORMTOOLS_ROOT/backend"
+if [ "$(ft_os)" = macos ] && [ -f requirements_desktop_macos.txt ]; then
+  python -m pip install -r requirements_desktop_macos.txt
+else
+  [ -f requirements_desktop.txt ] || ft_die "backend/requirements_desktop.txt not found"
+  python -m pip install -r requirements_desktop.txt
+fi
+if ! command -v cargo >/dev/null 2>&1; then
+  ft_say "Rust is not installed. Install it from https://rustup.rs then rerun ./formtools install-desktop"
+  exit 1
+fi
+if [ "$(ft_os)" = linux ] && ! pkg-config --exists webkit2gtk-4.1 2>/dev/null; then
+  ft_say "Tauri needs system libraries. On Debian or Ubuntu run:"
+  ft_say "sudo apt install libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev patchelf"
+  exit 1
+fi
+if [ ! -x "$FORMTOOLS_ROOT/frontend/node_modules/.bin/tauri" ]; then
+  ( cd "$FORMTOOLS_ROOT/frontend" && if [ -f package-lock.json ]; then npm ci; else npm install; fi )
+fi
+ft_say "desktop toolchain ready: rustc $(rustc --version | awk '{print $2}')"

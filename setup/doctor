@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+source "$(dirname "$0")/lib.sh"
+ft_rust_env
+fail=0
+ok() { printf '  ok     %s\n' "$1"; }
+bad() { printf '  FAIL   %s · %s\n' "$1" "$2"; fail=1; }
+warn() { printf '  warn   %s · %s\n' "$1" "$2"; }
+ft_say "doctor · $(ft_os)"
+if command -v node >/dev/null 2>&1 && node -e 'const [m,n]=process.versions.node.split(".").map(Number);process.exit((m===20&&n>=19)||(m===22&&n>=12)||m>=23?0:1)'; then ok "node $(node -v)"; else bad "node" "Node 20.19+ or 22.12+ is required"; fi
+if command -v npm >/dev/null 2>&1; then ok "npm $(npm -v)"; else bad "npm" "install npm"; fi
+if py="$(ft_python)"; then ok "python $("$py" -V 2>&1 | awk '{print $2}')"; else bad "python" "Python 3.12+ is required"; fi
+if [ -f "$FORMTOOLS_ROOT/backend/venv/bin/activate" ] || [ -f "$FORMTOOLS_ROOT/backend/venv/Scripts/activate" ]; then ok "backend venv"; else warn "backend venv" "run ./formtools install"; fi
+if [ -d "$FORMTOOLS_ROOT/frontend/node_modules" ]; then ok "frontend node_modules"; else warn "frontend deps" "run ./formtools install"; fi
+if command -v cargo >/dev/null 2>&1; then ok "cargo $(cargo --version | awk '{print $2}') for desktop builds"; else warn "cargo" "desktop builds need https://rustup.rs"; fi
+for port in 5240 "$(ft_port)"; do
+  if (exec 3<>"/dev/tcp/127.0.0.1/$port") 2>/dev/null; then warn "port $port" "already in use"; else ok "port $port free"; fi
+done
+if [ "$fail" = 0 ]; then ft_say "ready"; else ft_say "fix the FAIL lines above"; fi
+exit "$fail"

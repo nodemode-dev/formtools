@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -e
+source "$(dirname "$0")/lib.sh"
+for arg in "$@"; do
+  case "$arg" in
+    --lite) ;;
+    *) ft_die "unknown option: $arg" ;;
+  esac
+done
+ft_say "installing backend"
+"$FORMTOOLS_ROOT/setup/install_backend"
+ft_say "installing frontend"
+"$FORMTOOLS_ROOT/setup/install_frontend"
+ft_say "done. Boot with ./formtools"

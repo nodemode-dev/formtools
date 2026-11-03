@@ -1,0 +1,5 @@
+[mcp_servers.formtools]
+command = "sh"
+args = ["-c", "exec \"$(git rev-parse --show-toplevel 2>/dev/null || pwd)/formtools\" mcp"]
+startup_timeout_sec = 90
+tool_timeout_sec = 600

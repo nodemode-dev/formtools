@@ -1,0 +1,14 @@
+{
+  "name": "formtools",
+  "description": "Inspect and manage files in formtools, the media and file utility belt: the formtools MCP server and the skill that drives it.",
+  "author": { "name": "nodemode-dev", "email": "mackin@nodemode.ai" },
+  "license": "Apache-2.0",
+  "keywords": ["file utilities", "image info", "viewer", "mcp"],
+  "skills": ["./.claude/skills/formtools-driving"],
+  "mcpServers": {
+    "formtools": {
+      "command": "${CLAUDE_PLUGIN_ROOT}/formtools",
+      "args": ["mcp"]
+    }
+  }
+}

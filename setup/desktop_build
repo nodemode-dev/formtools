@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -e
+source "$(dirname "$0")/lib.sh"
+ft_rust_env
+"$FORMTOOLS_ROOT/setup/build_frontend"
+"$FORMTOOLS_ROOT/setup/freeze_backend"
+cd "$FORMTOOLS_ROOT/frontend"
+npx tauri build "$@"
+ft_say "bundles are in src-tauri/target/release/bundle"

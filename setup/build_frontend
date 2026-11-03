@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -e
+source "$(dirname "$0")/lib.sh"
+cd "$FORMTOOLS_ROOT/frontend"
+if [ ! -d node_modules ]; then
+  if [ -f package-lock.json ]; then npm ci; else npm install; fi
+fi
+npm run build
+ft_say "built frontend/dist"

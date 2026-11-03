@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -e
+source "$(dirname "$0")/lib.sh"
+cd "$FORMTOOLS_ROOT/backend"
+py="$(ft_python)" || ft_die "Python 3.12 or newer is required"
+if [ ! -f venv/bin/activate ] && [ ! -f venv/Scripts/activate ]; then
+  ft_say "creating backend/venv with $py"
+  "$py" -m venv venv
+fi
+ft_venv
+req=requirements.txt
+if [ "$(ft_os)" = macos ] && [ -f requirements_macos.txt ]; then req=requirements_macos.txt; fi
+[ -f "$req" ] || ft_die "backend/$req not found"
+python -m pip install --upgrade pip
+ft_say "pip install -r $req"
+python -m pip install -r "$req"
+ft_say "backend ready"
