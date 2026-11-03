@@ -20,9 +20,15 @@ const TOOLS: ToolDef[] = [
   { id: 'cleanup', name: 'Clean up', group: 'files', icon: 'ftSweep', summary: 'Empty folders and broken pictures or media, sent to the trash.', status: 'ready', command: 'util-cleanup' },
   { id: 'templates', name: 'New from template', group: 'files', icon: 'ftTemplate', summary: 'Starter files and project folders from your own templates folder.', status: 'ready', command: 'util-templates' },
   { id: 'locks', name: 'Who has this open', group: 'files', icon: 'ftLocked', summary: 'The programs holding a file that will not delete or move.', status: 'ready', command: 'util-locks' },
-  { id: 'color-picker', name: 'Colour picker', group: 'desktop', icon: 'ftPicker', summary: 'Pick any pixel on screen in HEX, RGB, HSL, OKLCH and more.', status: 'planned', phase: 'Phase 8' },
-  { id: 'screen-ruler', name: 'Screen ruler', group: 'desktop', icon: 'ftRuler', summary: 'Measure bounds and spacing on screen.', status: 'planned', phase: 'Phase 8' },
-  { id: 'text-extractor', name: 'Text extractor', group: 'desktop', icon: 'ftOcr', summary: 'Copy text from anything on screen, recognised locally.', status: 'planned', phase: 'Phase 8' },
+  { id: 'color-picker', name: 'Colour picker', group: 'desktop', icon: 'ftPicker', summary: 'Pick any pixel on screen in HEX, RGB, HSL, OKLCH and more.', status: 'ready', command: 'desk-picker', needs: 'picker' },
+  { id: 'screen-ruler', name: 'Screen ruler', group: 'desktop', icon: 'ftRuler', summary: 'Measure bounds and spacing on screen.', status: 'ready', command: 'desk-ruler', needs: 'ruler' },
+  { id: 'text-extractor', name: 'Text extractor', group: 'desktop', icon: 'ftOcr', summary: 'Copy text from anything on screen, recognised locally.', status: 'ready', command: 'desk-text', needs: 'text' },
+  { id: 'zoom-draw', name: 'Zoom and draw', group: 'desktop', icon: 'ftZoomDraw', summary: 'Zoom into the screen and draw, type and point on it.', status: 'ready', command: 'desk-zoom', needs: 'zoom' },
+  { id: 'break-timer', name: 'Break timer', group: 'desktop', icon: 'ftTimer', summary: 'A full-screen countdown for breaks and talks.', status: 'ready', command: 'desk-timer', needs: 'timer' },
+  { id: 'awake', name: 'Awake', group: 'desktop', icon: 'ftAwake', summary: 'Keep the computer, and the screen if you like, from sleeping.', status: 'ready', command: 'desk-awake', needs: 'awake' },
+  { id: 'always-on-top', name: 'Always on top', group: 'desktop', icon: 'ftTopmost', summary: 'Pin another app\'s window above the rest.', status: 'ready', command: 'desk-topmost', needs: 'topmost' },
+  { id: 'hosts', name: 'Hosts file', group: 'desktop', icon: 'ftHosts', summary: 'Edit the hosts file with checks and a backup.', status: 'ready', command: 'desk-hosts', needs: 'hosts' },
+  { id: 'env-vars', name: 'Environment variables', group: 'desktop', icon: 'ftEnv', summary: 'See and change environment variables per scope.', status: 'ready', command: 'desk-env', needs: 'env' },
 ];
 
 for (const t of TOOLS) registerTool(t);

@@ -3,6 +3,7 @@ import { icon } from './icons';
 import { GROUPS, toolsIn } from '../extensions/registry';
 import { loadPrefs, onPrefs } from './prefs';
 import { VERSION } from '../version';
+import { inDesktop } from '../io/host';
 
 export interface HomeDeps {
   run: (cmd: string) => void;
@@ -21,12 +22,16 @@ export class HomeScreen {
     const groups = GROUPS.map((g) => {
       const tools = toolsIn(g.id);
       if (!tools.length) return '';
-      const cards = tools.map((t) => `
-        <button class="ft-tool${t.status === 'planned' ? ' is-planned' : ''}" type="button" ${t.command && t.status === 'ready' ? `data-cmd="${t.command}"` : 'aria-disabled="true"'}>
+      const cards = tools.map((t) => {
+        const off = t.status === 'planned' || (!!t.needs && !inDesktop());
+        const badge = t.status === 'planned' ? (t.phase ?? 'Planned') : off ? 'Desktop app' : '';
+        return `
+        <button class="ft-tool${off ? ' is-planned' : ''}" type="button" ${t.needs ? `data-needs="${escapeHtml(t.needs)}"` : ''} ${t.command && !off ? `data-cmd="${t.command}"` : 'aria-disabled="true"'}>
           <span class="ft-tool-icon">${icon(t.icon, 20)}</span>
           <span class="ft-tool-text"><span class="ft-tool-name">${escapeHtml(t.name)}</span><span class="ft-tool-sum">${escapeHtml(t.summary)}</span></span>
-          ${t.status === 'planned' ? `<span class="ft-tool-badge">${escapeHtml(t.phase ?? 'Planned')}</span>` : ''}
-        </button>`).join('');
+          ${badge ? `<span class="ft-tool-badge">${escapeHtml(badge)}</span>` : ''}
+        </button>`;
+      }).join('');
       return `<section class="cv-home-section" data-group="${g.id}"><div class="cv-home-section-head"><h2 class="cv-home-section-title">${escapeHtml(g.label)}</h2></div><div class="ft-tools">${cards}</div></section>`;
     }).join('');
 
@@ -94,6 +99,13 @@ export class HomeScreen {
       create: (p) => { const n = el<HTMLElement>(`<button class="ft-recent-item" role="listitem" type="button" data-path="${escapeHtml(p)}">${icon('folder', 16)}<span class="ft-recent-name"></span><span class="ft-recent-dir"></span></button>`); update(n, p); return n; },
       update,
     });
+  }
+
+  applySupport(supported: (needs: string) => boolean): void {
+    for (const card of this.root.querySelectorAll<HTMLElement>('.ft-tool[data-needs]')) {
+      const on = supported(card.dataset.needs ?? '');
+      if (card.hidden === on) card.hidden = !on;
+    }
   }
 
   setActive(page: string): void {

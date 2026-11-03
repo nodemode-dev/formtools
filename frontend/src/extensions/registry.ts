@@ -9,6 +9,7 @@ export interface ToolDef {
   status: 'ready' | 'planned';
   phase?: string;
   command?: string;
+  needs?: string;
 }
 
 export const GROUPS: Array<{ id: ToolGroup; label: string }> = [

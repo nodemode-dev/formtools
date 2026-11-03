@@ -18,11 +18,15 @@ import { Jobs } from './ui/jobs';
 import { SaveDialog } from './ui/save-dialog';
 import { ToolsPage, type ToolId } from './ui/tools/page';
 import { UtilitiesPage, type UtilId } from './ui/utilities/page';
+import './ui/desk/icons';
+import { DeskPage } from './ui/desk/page';
+import { DeskPrefs } from './ui/desk/prefs';
+import { desk, type DeskCaps } from './io/desk';
 import { addRecent, loadPrefs } from './ui/prefs';
 import { applyTheme, readChoice, setTheme } from './ui/themes';
 import { toast } from './ui/toast';
 
-type Page = 'home' | 'browse' | 'view' | 'tool' | 'util';
+type Page = 'home' | 'browse' | 'view' | 'tool' | 'util' | 'desk';
 
 const SHELL = `
   <div class="cv-app ft-app">
@@ -144,7 +148,19 @@ export function startApp(): void {
     utilities.show(id, inputs);
     setPage('util');
   };
-  area.append(home.root, browser.root, viewer.root, tools.root, utilities.root);
+  const deskPage = new DeskPage({ status: (t) => status.setHint(t), back: () => setPage(toolReturn) });
+  const deskPrefs = new DeskPrefs();
+  settings.mount('desk', deskPrefs.root, () => deskPrefs.refresh());
+  const openDesk = (section: string): void => {
+    if (page !== 'tool' && page !== 'util' && page !== 'desk') toolReturn = page;
+    deskPage.show(section);
+    setPage('desk');
+  };
+  const deskRun = (id: string): void => {
+    if (!inDesktop()) { toast('The desktop utilities run in the formtools desktop app.'); return; }
+    deskPage.handleShortcut(id);
+  };
+  area.append(home.root, browser.root, viewer.root, tools.root, utilities.root, deskPage.root);
 
   const anyOverlay = (): boolean => settings.isOpen || palette.isOpen || saveDialog.isOpen;
   const isText = (t: EventTarget | null): boolean => t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement || t instanceof HTMLSelectElement;
@@ -161,6 +177,17 @@ export function startApp(): void {
     { id: 'util-cleanup', label: 'Clean Up...', group: 'Tools', description: 'Find empty folders and broken pictures or media files.', useWhen: 'Use when the person wants to tidy a folder tree.', run: () => openUtil('cleanup'), checked: () => page === 'util' && utilities.current === 'cleanup' },
     { id: 'util-templates', label: 'New from Template...', group: 'File', description: 'Create a file or folder from a template in the current folder.', useWhen: 'Use when the person wants a new starter file or project folder.', keys: ['Mod+Alt+N'], run: () => openUtil('templates'), checked: () => page === 'util' && utilities.current === 'templates' },
     { id: 'util-locks', label: 'Who Has This Open...', group: 'Tools', description: 'List the programs that hold a file open.', useWhen: 'Use when a file will not delete, move or rename.', run: () => openUtil('locks'), checked: () => page === 'util' && utilities.current === 'locks' },
+    { id: 'desk-picker', label: 'Pick a Colour', group: 'Desktop', description: 'Freeze the screen and pick any pixel; the value is copied in the chosen format.', useWhen: 'Use when the person wants a colour from anywhere on screen.', run: () => deskRun('picker') },
+    { id: 'desk-ruler', label: 'Measure the Screen', group: 'Desktop', description: 'Freeze the screen and measure bounds or the spacing between edges in pixels.', useWhen: 'Use when the person wants a size or a gap on screen.', run: () => deskRun('ruler') },
+    { id: 'desk-text', label: 'Extract Text from the Screen', group: 'Desktop', description: 'Draw a box around any text on screen and copy it, recognised on this computer.', useWhen: 'Use when text on screen cannot be selected.', run: () => deskRun('text') },
+    { id: 'desk-zoom', label: 'Zoom and Draw', group: 'Desktop', description: 'Zoom into the screen and draw, type and point on it.', useWhen: 'Use for presenting or pointing something out.', run: () => deskRun('zoom') },
+    { id: 'desk-draw', label: 'Draw on the Screen', group: 'Desktop', description: 'Draw shapes, arrows and text over the frozen screen; Ctrl+C copies the result.', useWhen: 'Use for annotating a screenshot quickly.', run: () => deskRun('draw') },
+    { id: 'desk-timer', label: 'Break Timer', group: 'Desktop', description: 'A full-screen countdown.', useWhen: 'Use for breaks, talks and workshops.', run: () => deskRun('timer') },
+    { id: 'desk-topmost', label: 'Always on Top', group: 'Desktop', description: 'Pin the frontmost window of another app above the rest, or unpin it.', useWhen: 'Use when a window should stay visible.', run: () => openDesk('topmost') },
+    { id: 'desk-awake', label: 'Awake...', group: 'Desktop', description: 'Keep the computer awake for a while or until turned off.', useWhen: 'Use during long copies, renders or talks.', run: () => openDesk('awake') },
+    { id: 'desk-hosts', label: 'Hosts File...', group: 'Desktop', description: 'Edit the hosts file with checks and a backup before every save.', useWhen: 'Use to point a name at an address on this computer.', run: () => openDesk('hosts') },
+    { id: 'desk-env', label: 'Environment Variables...', group: 'Desktop', description: 'See and change environment variables per scope where the system allows it.', useWhen: 'Use to set PATH or a tool variable for the person.', run: () => openDesk('env') },
+    { id: 'go-desk', label: 'Desktop Utilities', group: 'Go', description: 'Show the desktop utilities page.', useWhen: 'Use when the person wants colour history, Awake or the hosts file.', run: () => openDesk('picker'), checked: () => page === 'desk' },
     { id: 'select-all-files', label: 'Select All Files', group: 'Edit', description: 'Select everything in the browser.', useWhen: 'Use before a batch tool.', enabled: () => page === 'browse', run: () => browser.selectAll() },
     { id: 'go-viewer', label: 'Viewer', group: 'Go', description: 'Return to the image last opened.', useWhen: 'Use when the person wants the viewer back.', run: () => setPage('view'), enabled: () => viewer.current !== null, checked: () => page === 'view' },
     { id: 'open-folder', label: 'Open Folder...', group: 'File', description: 'Pick a folder and browse it.', useWhen: 'Use when the person names a folder to look at.', keys: ['Mod+Shift+O'], run: async () => {
@@ -196,6 +223,7 @@ export function startApp(): void {
     { label: 'Edit', items: ['undo', 'redo', '-', 'cut', 'copy', 'paste', 'select-all', '-', 'settings'] },
     { label: 'View', items: ['go-home', 'go-browse', 'go-viewer', '-', 'previous', 'next', '-', 'palette', 'toggle-light'] },
     { label: 'Tools', items: ['tool-convert', 'tool-resize', 'tool-rename', '-', 'util-dupes', 'util-disk', 'util-hash', 'util-cleanup', 'util-locks', '-', 'select-all-files'] },
+    { label: 'Desktop', items: ['desk-picker', 'desk-ruler', 'desk-text', 'desk-zoom', 'desk-draw', 'desk-timer', '-', 'desk-topmost', 'desk-awake', '-', 'desk-hosts', 'desk-env', '-', 'go-desk'] },
   ];
 
   let menus: NativeMenus | null = null;
@@ -242,6 +270,19 @@ export function startApp(): void {
   void watchEngine();
   if (lastViewerPath) browser.selectPath(lastViewerPath);
 
+  const applyCaps = (caps: DeskCaps | null): void => {
+    home.applySupport((needs) => !caps || caps.utilities[needs as keyof DeskCaps['utilities']]?.ok !== false);
+  };
+  const caps = inDesktop()
+    ? Promise.race([desk.caps().catch(() => null), new Promise<null>((r) => setTimeout(() => r(null), 1500))]).then((c) => { applyCaps(c); return c; })
+    : Promise.resolve(null);
+  if (inDesktop()) {
+    void desk.onShortcut((id) => deskPage.handleShortcut(id));
+    void desk.onResult((r) => deskPage.handleResult(r));
+    deskPrefs.onBindingsChange(() => void deskPrefs.apply());
+    void caps.then(() => deskPrefs.apply());
+  }
+
   const fonts = document.fonts ? Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 2500))]) : Promise.resolve();
-  void fonts.then(() => revealApp());
+  void Promise.all([fonts, caps]).then(() => revealApp());
 }

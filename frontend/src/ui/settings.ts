@@ -10,6 +10,7 @@ const SECTIONS: Array<[string, string, string]> = [
   ['appearance', 'Appearance', 'theme'],
   ['browser', 'Browser', 'ftBrowse'],
   ['viewer', 'Viewer', 'ftViewer'],
+  ['desk', 'Desktop utilities', 'ftDesk'],
   ['integration', 'Integration', 'ftFamily'],
   ['about', 'About', 'info'],
 ];
@@ -55,6 +56,7 @@ export class SettingsDialog {
                 ${range('slideshowSeconds', 'Slideshow interval', 1, 60, 1, ' s')}
                 ${check('confirmTransform', 'Ask before saving a rotate or flip')}
               </section>
+              <div class="ft-sec-slot" data-slot="desk"></div>
               <section class="ft-sec" data-sec="integration"><h3>Integration</h3>
                 <label class="ft-row"><span class="ft-row-label">On macOS, keep the menus in the window (next start)</span><input type="checkbox" class="ft-check ft-menus-in-window"></label>
                 <p class="ft-note">Open in its app hands a file to the Form app that makes it through FormPortal when FormPortal is installed, and to the system's default app otherwise.</p>
@@ -134,7 +136,15 @@ export class SettingsDialog {
 
   get isOpen(): boolean { return !this.root.hidden; }
 
+  private readonly openers: Array<() => void> = [];
+
+  mount(slot: string, node: HTMLElement, onOpen?: () => void): void {
+    this.body.querySelector(`[data-slot="${slot}"]`)?.replaceWith(node);
+    if (onOpen) this.openers.push(onOpen);
+  }
+
   open(section = 'general'): void {
+    for (const fn of this.openers) fn();
     this.sync();
     this.lastFocus = document.activeElement;
     this.root.hidden = false;
