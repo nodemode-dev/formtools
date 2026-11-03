@@ -372,6 +372,9 @@ def describe(path: str) -> dict:
         found = family.describe(location)
     else:
         found = pillow_info(location)
+    from app.tools.image import meta
+
+    meta.attach(found, target)
     stat = os.stat(location)
     found["size"] = stat.st_size
     found["mtime"] = stat.st_mtime

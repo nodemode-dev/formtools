@@ -139,6 +139,55 @@ def list_dir(raw: str, hidden: bool = False) -> dict:
     return {"path": str(path), "parent": None if parent == path else str(parent), "entries": entries}
 
 
+def has_child_dir(path: str, hidden: bool) -> bool:
+    try:
+        with os.scandir(path) as scan:
+            for entry in scan:
+                try:
+                    if not entry.is_dir():
+                        continue
+                    if not hidden and is_hidden(entry, entry.stat(follow_symlinks=False)):
+                        continue
+                except OSError:
+                    continue
+                return True
+    except OSError:
+        return False
+    return False
+
+
+def list_folders(raw: str, hidden: bool = False) -> dict:
+    path = absolute(raw)
+    if not path.exists():
+        raise ApiError(404, "that folder does not exist")
+    if not path.is_dir():
+        raise ApiError(400, "that path is not a folder")
+    dirs = []
+    try:
+        with os.scandir(path) as scan:
+            for entry in scan:
+                try:
+                    if not entry.is_dir():
+                        continue
+                    info = entry.stat(follow_symlinks=False)
+                except OSError:
+                    continue
+                if not hidden and is_hidden(entry, info):
+                    continue
+                dirs.append({"name": entry.name, "path": entry.path, "has_children": has_child_dir(entry.path, hidden)})
+    except PermissionError:
+        raise ApiError(400, "formtools is not allowed to read that folder")
+    except OSError as exc:
+        raise ApiError(400, f"that folder cannot be read ({exc.strerror or 'error'})")
+    dirs.sort(key=lambda item: natural_key(item["name"]))
+    return {"path": str(path), "dirs": dirs}
+
+
+@router.get("/fs/dirs")
+def fs_dirs(path: str, hidden: int = 0) -> dict:
+    return list_folders(path, bool(hidden))
+
+
 @router.get("/fs/home")
 def fs_home() -> dict:
     return home_info()
