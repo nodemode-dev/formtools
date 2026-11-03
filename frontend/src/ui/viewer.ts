@@ -9,6 +9,8 @@ import { PixelInspector } from './inspector';
 import { MediaBar } from './media-bar';
 import { SaveDialog } from './save-dialog';
 import type { Jobs } from './jobs';
+import type { ModelViewer } from './model';
+import type { DocViewer } from './docview';
 
 export interface ViewerDeps {
   close: (path: string | null) => void;
@@ -37,7 +39,7 @@ const NATIVE_VIDEO = new Set(['mp4', 'm4v', 'webm', 'mov', 'ogv']);
 const NATIVE_AUDIO = new Set(['mp3', 'm4a', 'aac', 'wav', 'ogg', 'oga', 'opus', 'flac', 'weba']);
 const MIN_ZOOM = 0.02, MAX_ZOOM = 64;
 
-type Kind = 'image' | 'video' | 'audio' | 'none';
+type Kind = 'image' | 'video' | 'audio' | 'model' | 'doc' | 'none';
 
 interface View { zoom: number; x: number; y: number; mode: 'fit' | 'fill' | 'actual' | 'free' }
 
@@ -50,10 +52,15 @@ interface Pane {
   probe: HTMLImageElement | null;
 }
 
+const DOC_EXT = new Set(['md', 'markdown', 'mdown', 'mkd', 'csv', 'tsv', 'tab', 'json', 'jsonl', 'ndjson', 'geojson', 'webmanifest', 'jsonc', 'sqlite', 'sqlite3', 'db', 'db3', 's3db']);
+
 const kindOf = (e: Entry): Kind => {
+  if (e.kind === 'dir') return 'none';
   if (e.type === 'video') return 'video';
   if (e.type === 'audio') return 'audio';
   if (e.type === 'image' || e.type === 'family') return 'image';
+  if (e.type === 'model') return 'model';
+  if (e.type === 'text' || e.type === 'pdf' || e.type === 'font' || e.type === 'archive' || e.type === 'other' || DOC_EXT.has(e.ext)) return 'doc';
   return 'none';
 };
 
@@ -107,6 +114,10 @@ export class Viewer {
   private readonly pixel = new PixelInspector();
   private readonly tagBox: HTMLElement;
   private mediaInfo: MediaInfo | null = null;
+  private model: ModelViewer | null = null;
+  private doc: DocViewer | null = null;
+  private modelLoad: Promise<ModelViewer> | null = null;
+  private docLoad: Promise<DocViewer> | null = null;
   quick = false;
 
   constructor(private readonly deps: ViewerDeps) {
@@ -151,6 +162,7 @@ export class Viewer {
             <video class="ft-video" controls preload="metadata" hidden></video>
             <div class="ft-audio-box" hidden><span class="ft-audio-icon">${icon('ftAudio', 48)}</span><span class="ft-wave-slot"></span><audio class="ft-audio" controls preload="metadata"></audio></div>
             <p class="ft-vmsg" hidden></p>
+            <div class="ft-ext" hidden></div>
           </div>
           <aside class="ft-info" hidden>
             <div class="ft-info-title">Information</div>
@@ -233,8 +245,12 @@ export class Viewer {
     const end = (): void => { this.drag = null; setClass(this.stage, 'is-dragging', false); };
     this.stage.addEventListener('pointerup', end);
     this.stage.addEventListener('pointercancel', end);
-    this.stage.addEventListener('dblclick', () => this.setMode(this.view.mode === 'actual' ? 'fit' : 'actual'));
+    this.stage.addEventListener('dblclick', () => this.kind() === 'image' && this.setMode(this.view.mode === 'actual' ? 'fit' : 'actual'));
     this.stage.addEventListener('keydown', (e) => this.key(e));
+    this.root.addEventListener('focusout', (e) => {
+      if (e.relatedTarget) return;
+      window.setTimeout(() => { if (!this.root.hidden && (document.activeElement === document.body || document.activeElement === null)) this.focus(); }, 0);
+    });
     new ResizeObserver(() => { if (this.view.mode !== 'free') this.setMode(this.view.mode); }).observe(this.stage);
     document.addEventListener('fullscreenchange', () => setClass(this.root, 'is-full', document.fullscreenElement === this.root));
   }
@@ -376,6 +392,10 @@ export class Viewer {
       return;
     }
     this.mbar.detach();
+    if (k === 'model' || k === 'doc') {
+      void this.showExt(e, k, seq);
+      return;
+    }
     if (k === 'none') {
       setText(this.message, `formtools cannot show .${e.ext || 'this'} files yet. Use Open in its app, or Show in folder.`);
       setHidden(this.message, false);
@@ -453,7 +473,59 @@ export class Viewer {
     setHidden(q(this.root, '.ft-audio-box'), k !== 'audio');
     if (k !== 'video' && !this.video.paused) this.video.pause();
     if (k !== 'audio' && !this.audio.paused) this.audio.pause();
-    setClass(this.root, 'is-media', k === 'video' || k === 'audio');
+    setClass(this.root, 'is-media', k === 'video' || k === 'audio' || k === 'model' || k === 'doc');
+    setClass(this.root, 'is-ext', k === 'model' || k === 'doc');
+    const slot = q(this.root, '.ft-ext');
+    setHidden(slot, k !== 'model' && k !== 'doc');
+    if (k !== 'model' && this.model) { this.model.close(); }
+    if (k !== 'doc' && this.doc) { this.doc.close(); }
+  }
+
+  private loadModel(): Promise<ModelViewer> {
+    this.modelLoad ??= import('./model').then((m) => {
+      const v = new m.ModelViewer({ status: (t) => this.deps.status(t), jobs: this.deps.jobs });
+      q(this.root, '.ft-ext').appendChild(v.root);
+      this.model = v;
+      return v;
+    });
+    return this.modelLoad;
+  }
+
+  private loadDoc(): Promise<DocViewer> {
+    this.docLoad ??= import('./docview').then((m) => {
+      const v = new m.DocViewer({
+        status: (t) => this.deps.status(t),
+        jobs: this.deps.jobs,
+        openInViewer: (entries, index) => this.open(entries, index),
+      });
+      q(this.root, '.ft-ext').appendChild(v.root);
+      this.doc = v;
+      return v;
+    });
+    return this.docLoad;
+  }
+
+  private async showExt(e: Entry, k: 'model' | 'doc', seq: number): Promise<void> {
+    setHidden(this.message, true);
+    this.syncInfo(e, null);
+    try {
+      if (k === 'model') {
+        const v = await this.loadModel();
+        if (seq !== this.seq) return;
+        this.doc?.close();
+        await v.open(e);
+      } else {
+        const v = await this.loadDoc();
+        if (seq !== this.seq) return;
+        this.model?.close();
+        await v.open(e);
+      }
+      if (seq === this.seq && !this.root.contains(document.activeElement)) this.focus();
+    } catch {
+      if (seq !== this.seq) return;
+      setText(this.message, `formtools could not open ${e.name}.`);
+      setHidden(this.message, false);
+    }
   }
 
   private fitZoom(mode: 'fit' | 'fill'): number {
@@ -663,9 +735,14 @@ export class Viewer {
   }
 
   private key(e: KeyboardEvent): void {
-    if (e.metaKey || e.ctrlKey) return;
-    if (this.crop.key(e)) { e.preventDefault(); return; }
     const k = this.kind();
+    if (k === 'model' && this.model?.key(e)) { e.preventDefault(); return; }
+    if (k === 'doc' && this.doc?.key(e)) { e.preventDefault(); return; }
+    if (e.metaKey || e.ctrlKey) return;
+    const tgt = e.target;
+    if (tgt instanceof HTMLInputElement || tgt instanceof HTMLTextAreaElement || tgt instanceof HTMLSelectElement || (tgt instanceof HTMLElement && tgt.isContentEditable)) return;
+    if ((k === 'model' || k === 'doc') && !['ArrowRight', 'ArrowLeft', 'PageDown', 'PageUp', 'Escape', 'i', 'F11', ' '].includes(e.key) && !/^[0-5]$/.test(e.key) && !LABEL_KEYS[e.key]) return;
+    if (this.crop.key(e)) { e.preventDefault(); return; }
     if ((k === 'video' || k === 'audio') && !(e.key === ' ' && this.quick) && this.mbar.key(e)) { e.preventDefault(); return; }
     if (/^[0-5]$/.test(e.key)) { e.preventDefault(); void this.tag({ rating: Number(e.key) }); return; }
     if (LABEL_KEYS[e.key]) {
@@ -698,6 +775,8 @@ export class Viewer {
     if (!this.audio.paused) this.audio.pause();
     if (this.crop.active) this.endCrop();
     this.pixel.hide();
+    this.model?.close();
+    this.doc?.close();
     this.deps.close(this.current?.path ?? null);
   }
 

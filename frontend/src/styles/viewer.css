@@ -58,6 +58,9 @@
 .ft-zoom { flex: none; width: 48px; color: var(--text-secondary); font-size: 11px; font-variant-numeric: tabular-nums; text-align: center; }
 .ft-viewer.is-media .ft-vbar [data-act="crop"], .ft-viewer.is-media .ft-vbar [data-act="resize"], .ft-viewer.is-media .ft-vbar [data-act="save-as"], .ft-viewer.is-media .ft-vbar [data-act="pixel"],
 .ft-viewer.is-media .ft-vbar [data-act="fit"], .ft-viewer.is-media .ft-vbar [data-act="actual"], .ft-viewer.is-media .ft-vbar [data-act="zoom-in"], .ft-viewer.is-media .ft-vbar [data-act="zoom-out"], .ft-viewer.is-media .ft-zoom, .ft-viewer.is-media .ft-vbar [data-act^="rotate"], .ft-viewer.is-media .ft-vbar [data-act^="flip"], .ft-viewer.is-media .ft-vbar [data-act="compare"], .ft-viewer.is-media .ft-vbar [data-act="lock"] { visibility: hidden; }
+.ft-viewer.is-ext .ft-vbar [data-act="slides"], .ft-viewer.is-media .ft-vbar-sep { visibility: hidden; }
+.ft-ext { position: absolute; inset: 0; z-index: var(--z-raised); cursor: auto; touch-action: auto; }
+.ft-ext[hidden] { display: none; }
 
 .ft-vbody { display: grid; grid-template-columns: minmax(0, 1fr) auto; min-height: 0; }
 .ft-stage { position: relative; display: flex; min-width: 0; min-height: 0; overflow: hidden; outline: none; background: var(--canvas-bg); cursor: grab; touch-action: none; }
