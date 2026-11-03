@@ -17,11 +17,12 @@ import { Palette } from './ui/palette';
 import { Jobs } from './ui/jobs';
 import { SaveDialog } from './ui/save-dialog';
 import { ToolsPage, type ToolId } from './ui/tools/page';
+import { UtilitiesPage, type UtilId } from './ui/utilities/page';
 import { addRecent, loadPrefs } from './ui/prefs';
 import { applyTheme, readChoice, setTheme } from './ui/themes';
 import { toast } from './ui/toast';
 
-type Page = 'home' | 'browse' | 'view' | 'tool';
+type Page = 'home' | 'browse' | 'view' | 'tool' | 'util';
 
 const SHELL = `
   <div class="cv-app ft-app">
@@ -121,13 +122,29 @@ export function startApp(): void {
   };
   const tools = new ToolsPage(selectionPaths, jobs, () => setPage(toolReturn), () => { if (browser.path) void browser.open(browser.path, true); });
   const openTool = (id: ToolId): void => {
-    if (page !== 'tool') toolReturn = page;
+    if (page !== 'tool' && page !== 'util') toolReturn = page;
     const fromViewer = page === 'view' && viewer.current ? [viewer.current.path] : null;
     const inputs = fromViewer ?? (page === 'browse' ? selectionPaths() : undefined);
     tools.show(id, inputs);
     setPage('tool');
   };
-  area.append(home.root, browser.root, viewer.root, tools.root);
+  const refreshFolder = (): void => { if (browser.path) void browser.open(browser.path, true); };
+  const utilities = new UtilitiesPage({
+    jobs,
+    selection: selectionPaths,
+    folder: () => browser.path,
+    reveal: (p) => { if (inDesktop()) void host.reveal(p); else void navigator.clipboard.writeText(p).then(() => toast('Show in folder works in the desktop app. The path was copied.')).catch(() => toast('Show in folder works in the desktop app.')); },
+    open: (p) => void openPath(p),
+    changed: refreshFolder,
+  }, () => setPage(toolReturn));
+  const openUtil = (id: UtilId): void => {
+    if (page !== 'tool' && page !== 'util') toolReturn = page;
+    const fromViewer = page === 'view' && viewer.current ? [viewer.current.path] : null;
+    const inputs = fromViewer ?? (page === 'browse' ? selectionPaths() : undefined);
+    utilities.show(id, inputs);
+    setPage('util');
+  };
+  area.append(home.root, browser.root, viewer.root, tools.root, utilities.root);
 
   const anyOverlay = (): boolean => settings.isOpen || palette.isOpen || saveDialog.isOpen;
   const isText = (t: EventTarget | null): boolean => t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement || t instanceof HTMLSelectElement;
@@ -138,6 +155,12 @@ export function startApp(): void {
     { id: 'tool-convert', label: 'Batch Convert...', group: 'Tools', description: 'Convert pictures in batches with an ordered list of actions, presets and naming tokens.', useWhen: 'Use when many pictures need the same changes or a new format.', keys: ['Mod+Shift+C'], run: () => openTool('convert'), checked: () => page === 'tool' && tools.current === 'convert' },
     { id: 'tool-resize', label: 'Resize Pictures...', group: 'Tools', description: 'Resize pictures to a size, a box or a percentage.', useWhen: 'Use when pictures need to be smaller or a fixed size.', keys: ['Mod+Shift+E'], run: () => openTool('resize'), checked: () => page === 'tool' && tools.current === 'resize' },
     { id: 'tool-rename', label: 'Rename...', group: 'Tools', description: 'Rename files and folders with rules, counters, dates and a live preview.', useWhen: 'Use when many files need consistent names.', keys: ['Mod+Shift+N'], run: () => openTool('rename'), checked: () => page === 'tool' && tools.current === 'rename' },
+    { id: 'util-dupes', label: 'Find Duplicates...', group: 'Tools', description: 'Find identical files or similar pictures in folders, then move chosen copies to the trash.', useWhen: 'Use when the person wants to free space taken by copies.', keys: ['Mod+Shift+D'], run: () => openUtil('dupes'), checked: () => page === 'util' && utilities.current === 'dupes' },
+    { id: 'util-disk', label: 'Disk Usage...', group: 'Tools', description: 'Measure a folder and show what takes the space as a treemap.', useWhen: 'Use when the person asks what fills a disk or folder.', keys: ['Mod+Shift+U'], run: () => openUtil('disk'), checked: () => page === 'util' && utilities.current === 'disk' },
+    { id: 'util-hash', label: 'Checksums...', group: 'Tools', description: 'Compute SHA-256, BLAKE3 and other checksums for many files, compare with a published value, or verify a sums file.', useWhen: 'Use when the person wants to check that a download or copy is intact.', run: () => openUtil('hash'), checked: () => page === 'util' && utilities.current === 'hash' },
+    { id: 'util-cleanup', label: 'Clean Up...', group: 'Tools', description: 'Find empty folders and broken pictures or media files.', useWhen: 'Use when the person wants to tidy a folder tree.', run: () => openUtil('cleanup'), checked: () => page === 'util' && utilities.current === 'cleanup' },
+    { id: 'util-templates', label: 'New from Template...', group: 'File', description: 'Create a file or folder from a template in the current folder.', useWhen: 'Use when the person wants a new starter file or project folder.', keys: ['Mod+Alt+N'], run: () => openUtil('templates'), checked: () => page === 'util' && utilities.current === 'templates' },
+    { id: 'util-locks', label: 'Who Has This Open...', group: 'Tools', description: 'List the programs that hold a file open.', useWhen: 'Use when a file will not delete, move or rename.', run: () => openUtil('locks'), checked: () => page === 'util' && utilities.current === 'locks' },
     { id: 'select-all-files', label: 'Select All Files', group: 'Edit', description: 'Select everything in the browser.', useWhen: 'Use before a batch tool.', enabled: () => page === 'browse', run: () => browser.selectAll() },
     { id: 'go-viewer', label: 'Viewer', group: 'Go', description: 'Return to the image last opened.', useWhen: 'Use when the person wants the viewer back.', run: () => setPage('view'), enabled: () => viewer.current !== null, checked: () => page === 'view' },
     { id: 'open-folder', label: 'Open Folder...', group: 'File', description: 'Pick a folder and browse it.', useWhen: 'Use when the person names a folder to look at.', keys: ['Mod+Shift+O'], run: async () => {
@@ -169,10 +192,10 @@ export function startApp(): void {
   );
 
   const MENUS: MenuDef[] = [
-    { label: 'File', items: ['open-files', 'open-folder', '-', 'open-in', 'reveal'] },
+    { label: 'File', items: ['open-files', 'open-folder', 'util-templates', '-', 'open-in', 'reveal'] },
     { label: 'Edit', items: ['undo', 'redo', '-', 'cut', 'copy', 'paste', 'select-all', '-', 'settings'] },
     { label: 'View', items: ['go-home', 'go-browse', 'go-viewer', '-', 'previous', 'next', '-', 'palette', 'toggle-light'] },
-    { label: 'Tools', items: ['tool-convert', 'tool-resize', 'tool-rename', '-', 'select-all-files'] },
+    { label: 'Tools', items: ['tool-convert', 'tool-resize', 'tool-rename', '-', 'util-dupes', 'util-disk', 'util-hash', 'util-cleanup', 'util-locks', '-', 'select-all-files'] },
   ];
 
   let menus: NativeMenus | null = null;
