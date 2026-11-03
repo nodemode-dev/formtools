@@ -15,9 +15,13 @@ Every dependency gets a row here with its name, version, licence and where it sh
 | Tauri, tauri-build, tauri-plugin-shell, -dialog, -updater, -single-instance, -opener | 2.12.x (Cargo.lock) | Apache-2.0 OR MIT | desktop shell |
 | objc2, objc2-app-kit, objc2-foundation | 0.6, 0.3 | MIT | desktop shell (macOS) |
 | regex, serde, serde_json | 1.x (Cargo.lock) | MIT OR Apache-2.0 | desktop shell |
-| @tauri-apps/api | 2.11.1 | Apache-2.0 OR MIT | frontend |
+| @tauri-apps/api | 2.12.4 | Apache-2.0 OR MIT | frontend |
 | @fontsource/inter (Inter typeface) | 5.3.0 | OFL-1.1 | frontend |
 | @fontsource/jetbrains-mono (JetBrains Mono typeface) | 5.3.0 | OFL-1.1 | frontend |
+| three (three.js, with its `examples/jsm` loaders and OrbitControls) | 0.187.0 | MIT | frontend (3D viewer chunk, loaded on demand) |
+| highlight.js | 11.12.0 | BSD-3-Clause | frontend (text viewer chunk) |
+| markdown-it (with its bundled dependencies entities, linkify-it, mdurl, punycode.js, uc.micro) | 15.0.3 | MIT | frontend (Markdown chunk) |
+| pdfjs-dist (pdf.js and its worker) | 6.5.438 | Apache-2.0 | frontend (PDF chunk) |
 | FastAPI | 0.141.1 | MIT | engine |
 | uvicorn[standard] | 0.53.0 | BSD-3-Clause | engine |
 | Pillow | 12.3.0 | MIT-CMU | engine |
@@ -25,10 +29,18 @@ Every dependency gets a row here with its name, version, licence and where it sh
 | rawpy with LibRaw | 0.27.1 | MIT; LibRaw used under its CDDL-1.0 option | engine (not on macOS x64, no wheel) |
 | psd-tools | 1.23.0 | MIT | engine |
 | OpenEXR | 3.5.2 | BSD-3-Clause | engine |
+| trimesh | 5.2.0 | MIT | engine |
+| fontTools | 4.68.0 | MIT | engine |
+| blake3 (Python bindings and the BLAKE3 reference code) | 1.0.11 | CC0-1.0 OR Apache-2.0 | engine |
+| xxhash (Python bindings with the xxHash library) | 4.0.2 | BSD-2-Clause | engine |
+| zstandard (with the bundled zstd library) | 0.25.0 | BSD-3-Clause | engine |
+| Send2Trash | 2.1.0 | BSD-3-Clause | engine |
+| psutil | 7.2.2 | BSD-3-Clause | engine |
+| libarchive-c | 5.3 | CC0-1.0 | engine; it loads the system libarchive (BSD-2-Clause) where one exists and is not bundled |
 | FFmpeg and ffprobe (LGPL build with libvpx and libopus, configured `--disable-gpl --disable-nonfree --disable-version3`) | 7.1.5 (record 7.1.5-2) | LGPL-2.1-or-later | not shipped in the app: an `ffmpeg` on PATH is used first; otherwise the frozen engine downloads the family's pinned build from `nodemode-dev/formcut-binaries`, checks every file's SHA-256, and keeps it in the per-person folder `formcut-binaries/ffmpeg-7.1.5-2` shared with formcut and formvis; the binaries are run as separate processes. Source: the offer published with formcut-binaries |
 | formvis `ffmpeg_fetch.py` and `ffmpeg_record.py`, ported to `backend/app/tools/media/fetch.py` and `record.py`, Copyright (C) 2026 NodeAgentc, Inc. | 1.98.7 | Apache-2.0 | engine |
 | PyInstaller | 6.22.3 | GPL-2.0 with the bootloader exception | build tool only; the exception covers the frozen engine |
-| TypeScript, Vite, @tauri-apps/cli | 7.0.2, 8.3.5, 2.11.4 | Apache-2.0, MIT, Apache-2.0 OR MIT | build tools only |
+| TypeScript, Vite, @tauri-apps/cli | 7.0.2, 8.3.5, 2.12.4 | Apache-2.0, MIT, Apache-2.0 OR MIT | build tools only |
 
 ## Trademarks
 
