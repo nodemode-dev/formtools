@@ -15,6 +15,17 @@ The form* family's media and file utility belt: one desktop app for macOS, Windo
 ./formtools mcp            # the MCP server on stdio, for Claude Code, Codex and Cursor
 ```
 
+Build the desktop app from this folder, start to finish (it checks the tools, installs the engine and the interface, freezes the engine and builds the installers; every step's output goes to `build_app.log`):
+
+```bash
+./build_app                # macOS: formtools.app and a disk image, copied to Applications; Linux: deb, rpm and AppImage
+./build_app --install      # Linux: install the built package too
+./build_app --open         # open the app when the build is done
+build_app.bat              # Windows: the MSI and setup.exe
+```
+
+Releases are built by formcompiler (`apps/formtools.json`), which runs the same `build_app` with its own `--config`.
+
 | Port | What | Set by |
 | --- | --- | --- |
 | 5240 | Vite dev server, 127.0.0.1 only | `frontend/vite.config.ts` |
