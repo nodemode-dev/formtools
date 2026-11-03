@@ -7,11 +7,27 @@ Licensed under the Apache License, Version 2.0 (see `LICENSE`).
 
 ## Third-party software
 
-No third-party code ships in this version. The repository holds documentation only (the planning stage). Every dependency added from the first code phase onward gets a row here with its name, version, licence and where it ships, after it clears the licence policy in `docs/encyclopedia/engines/engine-licensing-matrix.md`.
+Every dependency gets a row here with its name, version, licence and where it ships, after it clears the licence policy in `docs/encyclopedia/engines/engine-licensing-matrix.md`. Rust crates resolve exactly through `src-tauri/Cargo.lock`, npm packages through `frontend/package-lock.json`.
 
 | Component | Version | Licence | Ships in |
 | --- | --- | --- | --- |
+| formvis shared UI files (`themes.ts`, `icons.ts`, `dom.ts`, `caption-buttons.ts`, `tokens.css`, `fonts.css`, `scrollbars.css`, `light-mode.css`, the `index.html` theme boot, the splash and boot sequence, `native-menu.ts` pattern), Copyright (C) 2026 NodeAgentc, Inc. | 1.98.7 | Apache-2.0 | frontend, desktop shell |
+| Tauri, tauri-build, tauri-plugin-shell, -dialog, -updater, -single-instance, -opener | 2.12.x (Cargo.lock) | Apache-2.0 OR MIT | desktop shell |
+| objc2, objc2-app-kit, objc2-foundation | 0.6, 0.3 | MIT | desktop shell (macOS) |
+| regex, serde, serde_json | 1.x (Cargo.lock) | MIT OR Apache-2.0 | desktop shell |
+| @tauri-apps/api | 2.11.1 | Apache-2.0 OR MIT | frontend |
+| @fontsource/inter (Inter typeface) | 5.3.0 | OFL-1.1 | frontend |
+| @fontsource/jetbrains-mono (JetBrains Mono typeface) | 5.3.0 | OFL-1.1 | frontend |
+| FastAPI | 0.141.1 | MIT | engine |
+| uvicorn[standard] | 0.53.0 | BSD-3-Clause | engine |
+| Pillow | 12.3.0 | MIT-CMU | engine |
+| NumPy | 2.5.3 | BSD-3-Clause (its wheels bundle further libraries, listed in the wheel's own licence file) | engine |
+| rawpy with LibRaw | 0.27.1 | MIT; LibRaw used under its CDDL-1.0 option | engine (not on macOS x64, no wheel) |
+| psd-tools | 1.23.0 | MIT | engine |
+| OpenEXR | 3.5.2 | BSD-3-Clause | engine |
+| PyInstaller | 6.22.3 | GPL-2.0 with the bootloader exception | build tool only; the exception covers the frozen engine |
+| TypeScript, Vite, @tauri-apps/cli | 7.0.2, 8.3.5, 2.11.4 | Apache-2.0, MIT, Apache-2.0 OR MIT | build tools only |
 
 ## Trademarks
 
-Product names in `docs/encyclopedia/` (XnView, XnConvert, PowerToys, Preview, VLC and others) belong to their owners. They appear only to describe what those products do, as research for an independent implementation. formtools is not affiliated with or endorsed by any of them, and no code, text or artwork from them is copied into this repository.
+Product names in `docs/encyclopedia/` and `docs/family-formats/` (XnView, XnConvert, PowerToys, Preview, VLC, OpenRaster and others) belong to their owners. They appear only to describe what those products do, as research for an independent implementation. formtools is not affiliated with or endorsed by any of them, and no code, text or artwork from them is copied into this repository.

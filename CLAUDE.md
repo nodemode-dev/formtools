@@ -4,7 +4,7 @@ The form* family's media and file utility belt: viewers, batch image tools, 3D v
 
 ## Stage
 
-Planning (v0.1.0). The tree holds the research encyclopedia and the repository rules. The plan of record (`DEV_PLAN.md`), `BUILD_NOTES.md` and the root `HASHOUT_LOG.md` ship in the planning sidecar zip. Read them before changing anything. No code is written until the owner approves the plan.
+Alpha (v0.2.0): Phases 1 and 2 of the approved plan. The plan of record (`DEV_PLAN.md`), `BUILD_NOTES.md` and the root `HASHOUT_LOG.md` ship in the planning sidecar zip; read them, then the in-tree logs (`frontend/`, `backend/`, `src-tauri/`, `setup/` `HASHOUT_LOG.md`), before changing anything. For changing the code route through `.claude/skills/formtools-harness`; for using the app through MCP, `.claude/skills/formtools-driving`.
 
 ## Layout notes
 
