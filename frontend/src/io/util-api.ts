@@ -5,8 +5,20 @@ export interface DupeGroup { key: string; size: number; files: DupeFile[] }
 export interface DupesResult { groups: DupeGroup[]; scanned: number; wasted: number }
 export interface DupesQuery { roots: string[]; recursive: boolean; min_size: number; mode: 'exact' | 'similar-images'; threshold: number; include_hidden: boolean }
 
-export interface UsageNode { name: string; path?: string; size: number; files?: number; dirs?: number; other?: boolean; children?: UsageNode[] }
-export interface UsageResult extends UsageNode { errors?: number }
+export type UsageCategory = 'images' | 'raw' | 'video' | 'audio' | 'documents' | 'code' | 'data' | 'archives' | '3d' | 'fonts' | 'apps' | 'system' | 'other';
+export interface UsageNode {
+  name: string; path?: string; size: number; files?: number; dirs?: number; other?: boolean; children?: UsageNode[];
+  dir?: boolean; allocated?: number; types?: Partial<Record<UsageCategory, number>>; ext?: string; category?: UsageCategory;
+}
+export interface UsageTypeRow { category: UsageCategory; bytes: number; allocated: number; files: number }
+export interface UsageExtRow { ext: string; category: UsageCategory; bytes: number; allocated: number; files: number }
+export interface UsageLargest { path: string; size: number; allocated: number; mtime: number; ext: string; category: UsageCategory }
+export interface UsageStats {
+  by_type: UsageTypeRow[]; by_ext: UsageExtRow[]; largest: UsageLargest[];
+  files: number; folders: number; errors: number; apparent: number; allocated: number; average_file: number;
+  newest: number | null; oldest: number | null; hardlinks_counted_once: number; allocation: 'blocks' | 'rounded-4096';
+}
+export interface UsageResult extends UsageNode { errors?: number; stats?: UsageStats }
 
 export interface HashItem { path: string; size: number; hashes: Record<string, string> }
 export interface VerifyItem { path: string; expected: string; actual: string | null; ok: boolean; missing: boolean }

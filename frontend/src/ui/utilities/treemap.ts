@@ -1,4 +1,66 @@
+import type { UsageNode } from '../../io/util-api';
+
 export interface Rect { x: number; y: number; w: number; h: number }
+
+export interface Tile {
+  node: UsageNode;
+  depth: number;
+  x: number; y: number; w: number; h: number;
+  leaf: boolean;
+  top: number;
+  s0: number; s1: number; s2: number; s3: number;
+}
+
+export interface NestOptions { pad: number; minSide: number; ridge: number; falloff: number; maxTiles: number; band: number; labelW: number; labelH: number }
+
+export const navigable = (n: UsageNode): boolean => !n.other && !!n.children?.length;
+
+export function nest(root: UsageNode, box: Rect, opts: NestOptions): Tile[] {
+  const tiles: Tile[] = [];
+  if (box.w <= 0 || box.h <= 0 || root.size <= 0) return tiles;
+  const make = (node: UsageNode, depth: number, r: Rect, parent: Tile | null, leaf: boolean, top: number): Tile => {
+    const h = opts.ridge * Math.pow(opts.falloff, depth);
+    const t: Tile = {
+      node, depth, x: r.x, y: r.y, w: r.w, h: r.h, leaf, top,
+      s0: parent ? parent.s0 : 0, s1: parent ? parent.s1 : 0, s2: parent ? parent.s2 : 0, s3: parent ? parent.s3 : 0,
+    };
+    const wf = (4 * h) / r.w;
+    const hf = (4 * h) / r.h;
+    t.s2 += wf * (2 * r.x + r.w);
+    t.s0 -= wf;
+    t.s3 += hf * (2 * r.y + r.h);
+    t.s1 -= hf;
+    tiles.push(t);
+    return t;
+  };
+  const rootTile = make(root, 0, box, null, false, 0);
+  rootTile.top = 0;
+  const stack: Tile[] = [rootTile];
+  while (stack.length) {
+    const parent = stack.pop() as Tile;
+    const kids = (parent.node.children ?? []).filter((c) => c.size > 0).sort((a, b) => b.size - a.size);
+    if (!kids.length) { parent.leaf = true; continue; }
+    const band = parent.depth === 1 && parent.w >= opts.labelW && parent.h >= opts.labelH ? opts.band : 0;
+    const inner: Rect = parent.depth === 0
+      ? { x: parent.x, y: parent.y, w: parent.w, h: parent.h }
+      : { x: parent.x + opts.pad, y: parent.y + opts.pad + band, w: parent.w - opts.pad * 2, h: parent.h - opts.pad * 2 - band };
+    if (inner.w <= 0 || inner.h <= 0) { parent.leaf = true; continue; }
+    const rects = squarify(kids.map((c) => c.size), inner);
+    const pending: Tile[] = [];
+    for (let i = 0; i < kids.length; i += 1) {
+      const r = rects[i];
+      if (!r || r.w < 1 || r.h < 1) continue;
+      const kid = kids[i];
+      const dir = navigable(kid);
+      const split = dir && r.w >= opts.minSide * 2 && r.h >= opts.minSide * 2 && tiles.length < opts.maxTiles;
+      const top = parent.depth === 0 ? tiles.length : parent.top;
+      const tile = make(kid, parent.depth + 1, r, parent, !split, top);
+      if (split) pending.push(tile);
+    }
+    for (let i = pending.length - 1; i >= 0; i -= 1) stack.push(pending[i]);
+  }
+  return tiles;
+}
 
 function worst(row: number[], side: number): number {
   let sum = 0, max = 0, min = Infinity;
