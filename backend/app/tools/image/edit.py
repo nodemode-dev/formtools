@@ -126,7 +126,12 @@ def choose_destination(source: Path, out: Output, fmt: str) -> Path:
         return destination
     same = EXTENSIONS.get(ext_of(source.name)) == fmt
     extension = ext_of(source.name) if same else DEFAULT_EXTENSION[fmt]
-    return source.with_name(f"{source.stem} edited.{extension}")
+    candidate = source.with_name(f"{source.stem} edited.{extension}")
+    number = 2
+    while candidate.exists() or candidate.is_symlink():
+        candidate = source.with_name(f"{source.stem} edited ({number}).{extension}")
+        number += 1
+    return candidate
 
 
 def check_destination(source: Path, destination: Path, overwrite: bool, explicit: bool) -> None:
