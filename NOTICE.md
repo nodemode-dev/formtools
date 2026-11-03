@@ -21,6 +21,7 @@ Every dependency gets a row here with its name, version, licence and where it sh
 | xcap | 0.9 | Apache-2.0 | desktop shell (macOS and Windows capture) |
 | windows | 0.62 | MIT OR Apache-2.0 | desktop shell (Windows) |
 | objc2-vision and the objc2 crates it needs | 0.3 | Zlib OR Apache-2.0 OR MIT | desktop shell (macOS text recognition) |
+| ExifTool by Phil Harvey | 13.60 | GPL-1.0-or-later OR Artistic-1.0-Perl | not shipped in the app: an `exiftool` on PATH (or `FORMTOOLS_EXIFTOOL`) is used first; otherwise the engine fetches, on request, the npm packages exiftool-vendored.pl or exiftool-vendored.exe 13.60.0 (MIT packaging by Matthew McEachen), checks the registry's sha512 integrity, and keeps it in the per-person folder `formtools-binaries`; it runs as a separate process |
 | Tesseract OCR | system copy, not shipped | Apache-2.0 | used on Linux when installed, run as a separate process |
 | @tauri-apps/api | 2.12.4 | Apache-2.0 OR MIT | frontend |
 | @tauri-apps/plugin-clipboard-manager | 2.5.0 | MIT OR Apache-2.0 | frontend (desktop utilities) |
