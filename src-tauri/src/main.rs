@@ -258,7 +258,7 @@ fn open_main(handle: &tauri::AppHandle, url: &str) -> bool {
             .unwrap_or(FALLBACK_SIZE)
     };
     let builder = WebviewWindowBuilder::new(handle, "main", WebviewUrl::External(parsed))
-        .title("formtools")
+        .title("FormTools")
         .visible(reveal::BUILD_VISIBLE)
         .background_color(reveal::BACKGROUND)
         .inner_size(width, height)
