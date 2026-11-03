@@ -15,6 +15,14 @@ Context for the frontend code, kept here instead of in comments.
 - Open in its app calls the OS default app through the shell's `open_with_default`. The FormPortal `open_file` hand-off is Phase 10 work.
 - Drag and drop: the desktop app uses Tauri's webview drag-drop event (paths), so the shell no longer turns the drop handler off. In a browser tab dropped files have no paths, and a toast says so.
 
+## v0.5.0 · 2026-11-03 · Phases 8, 9 and the start of 10
+
+- `io/desk.ts` and `desk/color.ts` were written by the lead before the builders started, so the shell, the overlay page and the Desktop page share one set of command names, payloads and event names. The overlay (`overlay.html`, `src/overlay/`) and the Desktop page (`ui/desk/`) have their own logs.
+- Home: desktop cards carry `data-needs`. In a browser tab they render disabled with a "Desktop app" badge from the first paint; in the desktop app `revealApp` waits for `desk.caps()` (at most 1.5 s, alongside the fonts) and `home.applySupport` hides what the shell says cannot work, so no card disappears after the window is visible.
+- Preferences gained slots (`settings.mount(slot, node, onOpen)`): the Desktop utilities panel and the file manager menu panel mount there and refresh when Preferences opens. The menu rows are drawn disabled until the shell answers and the note keeps two lines of height, so the answer moves nothing.
+- `open-tool` from the shell is batched per tool for 400 ms before opening the tool, because the classic Windows menu starts one launch per selected file.
+- The overlay used to swallow a failed clipboard copy and report success. It now sends an error result; the drawing copy itself needed Tauri's `image-png` feature, recorded in `src-tauri/HASHOUT_LOG.md`.
+
 ## v0.4.0 · 2026-11-03 · Phases 5, 6 and 7
 
 - The 3D viewer (`ui/model/`) and the document viewers (`ui/docview/`) are separate modules with their own logs. The viewer imports both with a dynamic `import()` the first time a model or document opens, so neither three.js nor highlight.js, markdown-it or pdf.js is in the main chunk (258.9 kB, from 256.7 kB in v0.3.0). Both mount into `.ft-ext` inside the stage, above the image panes, and the viewer bar keeps back, previous, next, information, open in and show in folder for them.

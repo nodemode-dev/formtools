@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.0 · 2026-11-03
+
+- Desktop utilities, each with its own global shortcut set in Preferences: a colour picker with a loupe and twelve formats (HEX, RGB, HSL, HSV, HWB, CMYK, CIE Lab and LCh, OKLab, OKLCH, decimal, float) and a history; a screen ruler (bounds, spacing by colour tolerance, horizontal, vertical); a text extractor recognised on this computer (Vision on macOS, Windows OCR, Tesseract on Linux); zoom and draw with shapes, arrows, text, boards and copy as PNG; a break timer; Awake; Always on top for another app's window; a hosts file editor with checks and a backup; environment variables per scope. Utilities that cannot work on a system or session are hidden there.
+- OS integration: formtools registers as a viewer (never the default) for pictures, RAW, PSD, EXR, 3D models, fonts, archives and formvis projects; `formtools --tool convert|resize|rename|hash|dupes|disk|view files...` opens a tool with files, from a second launch too; opt-in file manager menu entries for Nautilus, Dolphin and Nemo, macOS Quick Actions and the Windows menu; a Linux thumbnailer for formats the desktop cannot preview.
+- Agents and release: `./formtools agents sync` and `agents check` keep the agent skills mirrored and within the format rules, `./formtools mcpb check` and `mcpb build` make the Claude Desktop extension, and CI runs both checks. The formcompiler entry, the FormPortal row and the formMCP and formskills steps are drafted for the owner.
+- Fonts in WOFF2 open (Brotli).
+
 ## 0.4.0 · 2026-11-03
 
 - 3D viewer: glTF and GLB, OBJ with MTL, STL, PLY, FBX, 3MF, DAE and USDZ open in the viewer; OFF and XYZ open through the engine. Orbit, fit, lit, wireframe, normals and matcap modes, a neutral built-in environment, grid and axes, a two-click measure, animation playback, a scene panel, triangle and vertex counts, a PNG screenshot, and conversion to GLB, OBJ, STL, PLY or OFF.

@@ -19,6 +19,7 @@ formtools runs on this computer as an engine with a window. Its MCP server, name
 | 3D | `model_info`, `model_convert` | counts, bounds and materials; convert to GLB, OBJ, STL, PLY or OFF |
 | Files | `archive_list`, `archive_extract`, `hash_files`, `hash_verify`, `text_read`, `font_info` | archives with safe extraction, eight checksum algorithms and sums files, text with encoding, font names and axes |
 | Utilities | `dupes_scan`, `disk_usage`, `empty_folders`, `templates_list`, `template_create`, `trash_files` | duplicates, folder sizes, empty folders, new files from templates, moving files to the system trash |
+| System | `hosts_read`, `env_read` | read the hosts file entries and the environment variables per scope; changes to either are made in the window, where the person confirms them |
 | Jobs | `job_status` | follow any tool that returned a job id until its state is `done`, `failed` or `cancelled` |
 
 ## The loop
