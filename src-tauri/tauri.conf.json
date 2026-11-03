@@ -1,0 +1,56 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "formtools",
+  "version": "0.2.0",
+  "identifier": "ai.nodemode.formtools",
+  "build": {
+    "frontendDist": "../frontend/dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "splash",
+        "title": "formtools",
+        "url": "splash.html",
+        "width": 360,
+        "height": 200,
+        "resizable": false,
+        "decorations": false,
+        "center": true,
+        "transparent": true,
+        "shadow": false,
+        "visible": false
+      }
+    ],
+    "macOSPrivateApi": true,
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "category": "Utility",
+    "shortDescription": "Viewers, batch image tools and file utilities for the Form family",
+    "longDescription": "formtools is a set of viewers, batch image tools and file utilities for the Form family of apps.",
+    "copyright": "Copyright (C) 2026 NodeAgentc, Inc.",
+    "externalBin": ["binaries/formtools-engine"],
+    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
+    "macOS": {
+      "minimumSystemVersion": "12.0",
+      "hardenedRuntime": true,
+      "entitlements": "entitlements.plist"
+    },
+    "windows": {
+      "digestAlgorithm": "sha256",
+      "timestampUrl": "http://timestamp.digicert.com"
+    },
+    "createUpdaterArtifacts": false
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "",
+      "endpoints": []
+    }
+  }
+}
