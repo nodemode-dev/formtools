@@ -7,7 +7,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.core import config, errors, registry, runtime
 from app.core.guard import HostGuard
-from app.routers import fs, mcp, system
+from app.routers import fs, jobs, mcp, system
 
 log = logging.getLogger("formtools")
 
@@ -31,6 +31,7 @@ def build() -> FastAPI:
     app.include_router(system.router)
     app.include_router(fs.router)
     app.include_router(mcp.router)
+    app.include_router(jobs.router)
     for router in registry.routers():
         app.include_router(router)
     dist = config.dist_dir()
