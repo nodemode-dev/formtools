@@ -1,0 +1,15 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "overlay",
+  "description": "The desk overlay windows (overlay-0, overlay-1, ...) load overlay.html from the engine on 127.0.0.1, so this capability lists that address and grants only what the overlay page needs: events, closing itself, the clipboard and the desk commands.",
+  "windows": ["overlay-*"],
+  "remote": { "urls": ["http://127.0.0.1:*"] },
+  "permissions": [
+    "core:event:default",
+    "core:window:allow-close",
+    "clipboard-manager:allow-write-text",
+    "clipboard-manager:allow-write-image",
+    "allow-desk-close",
+    "allow-desk-ocr"
+  ]
+}

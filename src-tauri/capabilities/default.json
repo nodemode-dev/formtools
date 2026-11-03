@@ -26,6 +26,16 @@
     "allow-pick-folder",
     "allow-pick-files",
     "allow-reveal-in-folder",
-    "allow-open-with-default"
+    "allow-open-with-default",
+    "allow-desk-capabilities",
+    "allow-desk-start",
+    "allow-desk-close",
+    "allow-desk-ocr",
+    "allow-desk-awake-get",
+    "allow-desk-awake-set",
+    "allow-desk-topmost-toggle",
+    "allow-desk-shortcuts-set",
+    "clipboard-manager:allow-write-text",
+    "clipboard-manager:allow-write-image"
   ]
 }

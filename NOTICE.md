@@ -15,6 +15,13 @@ Every dependency gets a row here with its name, version, licence and where it sh
 | Tauri, tauri-build, tauri-plugin-shell, -dialog, -updater, -single-instance, -opener | 2.12.x (Cargo.lock) | Apache-2.0 OR MIT | desktop shell |
 | objc2, objc2-app-kit, objc2-foundation | 0.6, 0.3 | MIT | desktop shell (macOS) |
 | regex, serde, serde_json | 1.x (Cargo.lock) | MIT OR Apache-2.0 | desktop shell |
+| tauri-plugin-global-shortcut, tauri-plugin-clipboard-manager | 2.4.1, 2.5.0 | Apache-2.0 OR MIT | desktop shell (desktop utilities) |
+| image | 0.25 (Cargo.lock) | MIT OR Apache-2.0 | desktop shell |
+| x11rb | 0.14 | MIT OR Apache-2.0 | desktop shell (Linux capture and always on top) |
+| xcap | 0.9 | Apache-2.0 | desktop shell (macOS and Windows capture) |
+| windows | 0.62 | MIT OR Apache-2.0 | desktop shell (Windows) |
+| objc2-vision and the objc2 crates it needs | 0.3 | Zlib OR Apache-2.0 OR MIT | desktop shell (macOS text recognition) |
+| Tesseract OCR | system copy, not shipped | Apache-2.0 | used on Linux when installed, run as a separate process |
 | @tauri-apps/api | 2.12.4 | Apache-2.0 OR MIT | frontend |
 | @tauri-apps/plugin-clipboard-manager | 2.5.0 | MIT OR Apache-2.0 | frontend (desktop utilities) |
 | @fontsource/inter (Inter typeface) | 5.3.0 | OFL-1.1 | frontend |

@@ -5,6 +5,14 @@ const APP_COMMANDS: &[&str] = &[
     "pick_files",
     "reveal_in_folder",
     "open_with_default",
+    "desk_capabilities",
+    "desk_start",
+    "desk_close",
+    "desk_ocr",
+    "desk_awake_get",
+    "desk_awake_set",
+    "desk_topmost_toggle",
+    "desk_shortcuts_set",
 ];
 
 fn main() {

@@ -14,6 +14,7 @@ use std::os::windows::process::CommandExt;
 #[cfg(windows)]
 const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 
+mod desk;
 mod files;
 mod packaged;
 mod reveal;
@@ -268,6 +269,7 @@ fn main() {
         .manage(OpenQueue(Mutex::new(Opens::default())))
         .manage(window_state::Memory::default())
         .manage(Backend(Mutex::new(None)))
+        .manage(desk::Desk::default())
         .on_window_event(|window, event| {
             window_state::track(window, event);
             if window.label() == "main"
@@ -285,8 +287,18 @@ fn main() {
             files::pick_folder,
             files::pick_files,
             files::reveal_in_folder,
-            files::open_with_default
+            files::open_with_default,
+            desk::desk_capabilities,
+            desk::desk_start,
+            desk::desk_close,
+            desk::desk_ocr,
+            desk::desk_awake_get,
+            desk::desk_awake_set,
+            desk::desk_topmost_toggle,
+            desk::desk_shortcuts_set
         ])
+        .plugin(tauri_plugin_global_shortcut::Builder::new().build())
+        .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
@@ -335,6 +347,7 @@ fn main() {
     app.run(|handle, event| match event {
         RunEvent::Exit => {
             window_state::flush(handle);
+            desk::shutdown(handle);
             kill_backend(handle);
         }
         #[cfg(target_os = "macos")]
