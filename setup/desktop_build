@@ -5,5 +5,9 @@ ft_rust_env
 "$FORMTOOLS_ROOT/setup/build_frontend"
 "$FORMTOOLS_ROOT/setup/freeze_backend"
 cd "$FORMTOOLS_ROOT"
+if [ "$(ft_os)" = linux ]; then
+  engine_libs="$(find "$FORMTOOLS_ROOT/src-tauri/engine" -name '*.so*' -type f -printf '%h\n' 2>/dev/null | sort -u | paste -sd: -)"
+  [ -z "$engine_libs" ] || export LD_LIBRARY_PATH="$engine_libs${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+fi
 "$FORMTOOLS_ROOT/frontend/node_modules/.bin/tauri" build "$@"
 ft_say "bundles are in src-tauri/target/release/bundle"
