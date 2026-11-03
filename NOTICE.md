@@ -16,6 +16,7 @@ Every dependency gets a row here with its name, version, licence and where it sh
 | objc2, objc2-app-kit, objc2-foundation | 0.6, 0.3 | MIT | desktop shell (macOS) |
 | regex, serde, serde_json | 1.x (Cargo.lock) | MIT OR Apache-2.0 | desktop shell |
 | @tauri-apps/api | 2.12.4 | Apache-2.0 OR MIT | frontend |
+| @tauri-apps/plugin-clipboard-manager | 2.5.0 | MIT OR Apache-2.0 | frontend (desktop utilities) |
 | @fontsource/inter (Inter typeface) | 5.3.0 | OFL-1.1 | frontend |
 | @fontsource/jetbrains-mono (JetBrains Mono typeface) | 5.3.0 | OFL-1.1 | frontend |
 | three (three.js, with its `examples/jsm` loaders and OrbitControls) | 0.187.0 | MIT | frontend (3D viewer chunk, loaded on demand) |
