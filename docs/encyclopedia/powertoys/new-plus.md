@@ -24,6 +24,8 @@ Copies the template object (recursively for folders) to the target and expands v
 Names only; templates are device-local by default; variables are exact-case.
 
 ## Cross-platform note
+(analysis, not sourced) The macOS and Linux mapping below is the researchers' own analysis, not taken from PowerToys or Microsoft documentation.
+
 macOS Finder has no New+ menu hook besides Quick Actions or an extension; Linux file managers have Templates folders (Nautilus Templates, Dolphin Create New) that map directly.
 
 ## formtools note

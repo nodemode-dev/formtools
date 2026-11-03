@@ -20,6 +20,8 @@ Built with WinUI 3 and embeds the Monaco web editor in a WebView for syntax high
 - Release notes fetched did not mention it for 0.102.
 
 ## Cross-platform note
+(analysis, not sourced) The macOS and Linux mapping below is the researchers' own analysis, not taken from PowerToys or Microsoft documentation.
+
 No registry on macOS or Linux, so the .reg semantics are Windows-only. The transferable idea is a safe preview-then-apply viewer for config formats: plist (macOS defaults) and dconf/gsettings keyfiles (Linux), with tree view, diff and explicit apply.
 
 formtools note: Generalize into a "config file previewer" (plist, dconf, .reg import as read-only) with an explicit apply step; skip registry writing.

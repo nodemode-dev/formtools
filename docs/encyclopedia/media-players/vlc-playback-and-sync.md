@@ -12,7 +12,14 @@ formtools note: Build the codec list from the decoder library at runtime (probe)
 
 ## 2. Hardware decoding
 
-Wiki (old, 2013-era) lists DXVA 2.0 on Windows, VA-API and VDPAU on Linux, VDA on macOS. Settings live in Preferences, Input/Codecs, with a method dropdown since VLC 2.1. Modern equivalents (D3D11VA, VideoToolbox, NVDEC) are not on the fetched pages (unverified).
+Wiki (old, 2013-era) lists DXVA 2.0 on Windows, VA-API and VDPAU on Linux, VDA on macOS. Settings live in Preferences, Input/Codecs, with a method dropdown since VLC 2.1.
+
+Modules in the 3.0.x branch of the official repository (checked 2026-11-03 by reading module descriptions): the preference `avcodec-hw` selects among modules with the "hw decoder" capability, default "any".
+- Windows: "DirectX Video Acceleration (DXVA) 2.0" (priority 100) and "Direct3D11 Video Acceleration" (priority 110, preferred when both load).
+- Linux: "VA-API video decoder" (X11 and a DRM variant) and "VDPAU video decoder".
+- macOS: "VideoToolbox video decoder" is a separate video decoder module (capability priority 800), not under the avcodec-hw setting; the old VDA path is not in the 3.0.x build files.
+- NVDEC/CUVID: no module found in 3.0.x.
+- Android and iOS use their own decoders (MediaCodec, VideoToolbox, OpenMAX IL); not enumerated here.
 
 formtools note: Expose a hwdec dropdown with "auto" default and per-API fallbacks, plus a log line saying which one engaged.
 
@@ -45,8 +52,9 @@ formtools note: Offer both tap-nudge keys and a numeric field with a visible run
 ## 6. Speed, frame step, A-B loop
 
 - Speed: `+` faster, `-` slower, `=` normal, `]` and `[` fine adjustments (wiki Qt4 list).
-- Frame by frame: `e` (next frame) per the same list. No backward step in 3.0 as far as fetched pages show (unverified).
-- A-B loop: present in the Advanced Controls row (View, Advanced Controls) in 3.0; the fetched pages do not document it, so key and behavior are unverified.
+- Frame by frame: `e` (next frame). Checked against the official source: the 3.0.x branch defines only `key-frame-next` (default `e`); there is no backward-step hotkey in 3.0. The development (master, 4.0) branch adds `key-frame-previous` with default Shift+e.
+- A-B loop: in 3.0 it is a toolbar button ("Loop from point A to point B continuously", the A to B Loop item in View, Advanced Controls). The 3.0.x hotkey table has no default key for it (the `key-loop` hotkey, `l`, is the playlist loop mode, not A-B). Click once to set A, again to set B, a third time to clear.
+- Official wiki hotkey page lists only Next frame (E) and no A-B or backward step.
 - Pitch is adjustable in Audio Effects, Advanced.
 
 formtools note: A-B loop and frame step (both directions) should be first-class buttons, not buried.
@@ -60,7 +68,7 @@ formtools note: Snapshot should copy to clipboard and save, with a configurable 
 
 ## 8. Playlist and media library
 
-The wiki guide lists a Playlist chapter and playlist formats are parsed by the playlist demuxer plus Lua playlist scripts (probe/parse functions; ship scripts for Vimeo, Dailymotion and similar sites). Media library (SQL-based library with video/music browsing) is a Qt-side feature; fetched pages do not describe it, so details are unverified. Loop modes via L key, `--random`, `--loop`, `--repeat`, `--play-and-stop`.
+The wiki guide lists a Playlist chapter and playlist formats are parsed by the playlist demuxer plus Lua playlist scripts (probe/parse functions; ship scripts for Vimeo, Dailymotion and similar sites). Media library: checked against the official source tree on 2026-11-03. The 3.0.x branch has no medialibrary directory in the Qt interface, so VLC 3.0 desktop has no browsable media library (only the playlist and its Local/Media Library nodes). The development master branch (4.0) has a Qt medialibrary UI (medialib.cpp, folders model) built on a core `vlc_ml` API with event callbacks, giving a folder-scanned video and music library. Treat the 4.0 library as unreleased. Loop modes via L key, `--random`, `--loop`, `--repeat`, `--play-and-stop`.
 
 formtools note: Keep playlist as simple ordered queue first; library is a later, separate module.
 
@@ -82,3 +90,14 @@ formtools note: Keep playlist as simple ordered queue first; library is a later,
 - https://wiki.videolan.org/Documentation:Command_line/
 - https://wiki.videolan.org/Documentation:Play_HowTo/Building_Lua_Playlist_Scripts/
 - https://www.videolan.org/news.html
+- https://raw.githubusercontent.com/videolan/vlc/3.0.x/src/libvlc-module.c
+- https://raw.githubusercontent.com/videolan/vlc/master/src/libvlc-module.c
+- https://raw.githubusercontent.com/videolan/vlc/3.0.x/modules/gui/qt/components/controller.cpp
+- https://raw.githubusercontent.com/videolan/vlc/3.0.x/modules/gui/qt/input_manager.cpp
+- https://raw.githubusercontent.com/videolan/vlc/3.0.x/modules/codec/avcodec/avcodec.c
+- https://raw.githubusercontent.com/videolan/vlc/3.0.x/modules/codec/avcodec/dxva2.c
+- https://raw.githubusercontent.com/videolan/vlc/3.0.x/modules/codec/avcodec/d3d11va.c
+- https://raw.githubusercontent.com/videolan/vlc/3.0.x/modules/codec/avcodec/vaapi.c
+- https://raw.githubusercontent.com/videolan/vlc/3.0.x/modules/hw/vdpau/avcodec.c
+- https://raw.githubusercontent.com/videolan/vlc/3.0.x/modules/codec/videotoolbox.m
+- https://raw.githubusercontent.com/videolan/vlc/master/modules/gui/qt/medialibrary/medialib.cpp

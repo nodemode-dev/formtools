@@ -25,6 +25,8 @@ Devdocs: developer-file previews share the FileExplorerCommon project built on t
 SQLite 200-row cap; size cap on source; inaccessible subfolders skipped; source settings still preview.
 
 ## Cross-platform note
+(analysis, not sourced) The macOS and Linux mapping below is the researchers' own analysis, not taken from PowerToys or Microsoft documentation.
+
 macOS has Quick Look (qlmanage, Space key) natively; Linux has GNOME Sushi and KDE Dolphin previews. A portable Peek would use per-type renderers (image, PDF via pdfium, Monaco/Tree-sitter for code, SQLite via sqlite lib) in a lightweight window. Getting the Finder or Nautilus selection requires scripting or AT-SPI/AppleScript hooks.
 
 ## formtools note

@@ -6,11 +6,14 @@ The family already has a dedicated PDF app. This file covers only the convert, m
 
 Categories from the site: Create (images to PDF, webpage to PDF, forms, QR), Invoices (e-invoice create and validate), Edit (annotate, fill, watermark, page numbers, crop, resize, metadata), Organize (merge, split, assemble, rearrange, remove, extract, rotate, booklet, bookmark, extract images), Optimize and repair (compress, grayscale, web optimize, OCR, repair, rasterize, flatten, PDF/A), Security (protect, unlock, sign, redact, strip metadata), View and check (compare, search, verify signatures, PDF/A check), Convert to PDF (Office, OpenDocument, images incl. HEIC/WEBP/SVG/TIFF, RTF, EPUB, Markdown, text), Convert from PDF (Word, PowerPoint, Excel, images, SVG, TIFF, text, RTF, EPUB, HTML, Markdown, PDF/A). Desktop apps: PDF24 Creator, PDF Printer, PDF Reader. License terms not checked. (single source)
 
+formtools note: PDF24's category list is a ready checklist of what users expect from a PDF toolbox; pick the five in the recommended set below and leave the rest.
+
 ## Stirling-PDF
 
 - Self-hosted web UI plus REST API and desktop app (Windows, Mac, Linux, works offline). Claims 50+ tools, 40+ languages, no-code automation pipelines. Docs groups: Page Editor, annotate, compare, compress, convert, fill forms, mobile scanner, OCR, page operations, redact, automate, sign, certificate signing, AI assistant.
 - Run with Docker (`docker run -p 8080:8080 stirlingtools/stirling-pdf`).
 - License: root LICENSE is MIT (Stirling PDF Inc.), but several directories (proprietary, saas, engine, desktop frontend, cloud and others) carry separate licenses not read here. The site calls it open-core. Treat reuse of the whole product as non-trivial; reuse of the MIT parts needs per-directory checking.
+- formtools note: use Stirling-PDF as a feature reference and its REST/pipeline idea for automation, not as an embedded dependency, because of the mixed licensing.
 
 ## Open engines
 

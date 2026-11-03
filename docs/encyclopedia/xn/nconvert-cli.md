@@ -1,6 +1,6 @@
 # NConvert (command line)
 
-Version seen on product page: 7.300. Reads 500+ formats (incl. multipage and animated: APNG, TIFF, GIF), writes about 70. Platforms: Windows, macOS, Linux, plus FreeBSD, Solaris, AIX, QNX and others. License: free for private/educational/non-profit use; Business license 100 EUR + VAT (one per company or application) and Site license 300 EUR + VAT; selling it as a developer toolkit or running it as a server application is not allowed under either. The product page lists no flags and points to a wiki (excluded by rules). The list below is from the official forum post of the program's help output (versions 7.121 and 7.80 merged; some flags exist in one only).
+Version seen on product page: 7.300. Reads 500+ formats (incl. multipage and animated: APNG, TIFF, GIF), writes about 70. Platforms: Windows, macOS, Linux, plus FreeBSD, Solaris, AIX, QNX and others. License: free for private/educational/non-profit use; Business license 100 EUR + VAT (one per company or application) and Site license 300 EUR + VAT; selling it as a developer toolkit or running it as a server application is not allowed under either. The product page lists no flags; its "NConvert Wiki" link now opens the vendor forum post "NConvert User Guide" (author post, 2025-10-14), which holds only the examples reproduced in the shipped Usage.txt, and the old wiki itself is gone. The list below was first taken from the official forum post of the program's help output (versions 7.121 and 7.80 merged) and has now been checked flag by flag against the help text inside the vendor's NConvert 7.300 Linux build (read as strings, never executed; the shipped Usage.txt and ReadMe still say 7.240 while the program and WhatsNew say 7.300). Corrections from that check are inline below. Flags that the program parses but the help text does not describe: -high_res, -lower, -extract, -align, -shadow, -framerate, -sharp_yuv, -resize_bw_grey (names only, behaviour unknown).
 
 Invocation shape: `nconvert [options] files...`; wildcards and `-l listfile` for inputs.
 
@@ -33,6 +33,8 @@ Invocation shape: `nconvert [options] files...`; wildcards and `-l listfile` for
 | -ignore_errors | keep going after failures |
 | -no_auto_ext | do not append extension |
 | -D | delete original after conversion |
+| -recurse | recurse into folders; WhatsNew says it was added for Windows in 2021 (example `nconvert -o output/% folder`) and extended in a 2023 build; not in the help text of the Linux build |
+| (default naming) | without -o and without -overwrite, an output that would equal the input file stops with the error "Can't overwrite file ... Use -overwrite to overwrite it" |
 | -keepfiledate | copy source timestamps |
 | -wflag | write flags (os2 BMP, gif87, hp49) |
 | -ascii, -one_strip, -ctype, -corder | ASCII PPM, single-strip TIFF, raw channel type and order |
@@ -60,7 +62,7 @@ Invocation shape: `nconvert [options] files...`; wildcards and `-l listfile` for
 ## Watermark and text
 
 Watermark: -wmfile (must come after the other -wm options), -wmpos x y, -wmflag (nine-position preset), -wmopacity 0 to 100, -wmstretch, -wmsize percent.
-Text: -text, -text_font name size, -text_color, -text_back, -text_flag, -text_pos, -text_rotation, -text_border.
+Text: -text, -text_font name size, -text_color, -text_back, -text_flag, -text_pos, -text_rotation, -text_border. The Linux 7.300 build contains none of these -text names, and the shipped Usage.txt states the add-text feature uses the Win32 API and exists on Windows only, so treat the text flags as Windows-only.
 
 ## Resize, geometry
 
@@ -76,7 +78,8 @@ Text: -text, -text_font name size, -text_color, -text_back, -text_flag, -text_po
 | -crop x y w h; -autocrop tol colour/pos | crop, auto-trim |
 | -canvas w h pos; -canvas longest/shortest n pos | canvas size |
 | -rotate deg, -rotate_flag smooth, -xflip, -yflip, -shear, -slice | rotate/flip/shear |
-| -new bpp w h | blank image |
+| -new w h bpp | blank image (the order is width, height, bits; the earlier "bpp w h" order was wrong) |
+| -clear x y w h | fill a rectangle with the -bgcolor colour (missing from the first list) |
 
 ## Colour and tone
 
@@ -86,11 +89,12 @@ Text: -text, -text_font name size, -text_color, -text_back, -text_flag, -text_po
 
 -blur, -gauss, -average, -maximum, -minimum, -medianb, -medianc, -mosaic, -oil, -lens, -spread, -swirl, -tile, -waves, -sharpen, -soften, -unsharp r amount threshold, -edetail, -efocus, -frestore, -eedge, -edgedetect, -emboss, -embossmore, -noise (reduce or add type), -deinter.
 
-## Typical command shapes (illustrative, composed from the flags above)
+## Typical command shapes (checked against the official usage text, not run)
 
-- Resize and convert: `nconvert -out jpeg -q 85 -resize 1600 0 -ratio -rflag decr -o out/%_web *.png`
-- Strip metadata, keep dates: `nconvert -out jpeg -rmeta -keepfiledate *.jpg`
-Not verified by running; syntax of "0" meaning auto-dimension is conventional but not confirmed here.
+- Resize and convert: `nconvert -out jpeg -q 85 -ratio -resize 1600 0 -rflag decr -o out/%_web *.png`. Every flag is in the 7.300 help text. Changes from the first draft: -ratio moved before -resize because every example in the vendor's Usage.txt puts it first (whether order matters is not documented), and "0" as the auto dimension is now confirmed by the vendor examples (`-ratio -resize 480 0`, `-ratio -resize 0 510`). The `%` stands for the source base name and the extension is appended automatically; whether the `out/` folder is created for you is not documented, so create it first.
+- Strip metadata, keep dates: `nconvert -out jpeg -overwrite -rmeta -keepfiledate *.jpg`. The first draft lacked -overwrite; with jpg in and jpeg out the target name equals the input name and the program stops with a "Can't overwrite" error unless -overwrite or an -o pattern (for example `-o clean/%`) is given.
+- Vendor examples that are confirmed as written: `nconvert -out tiff file1.pic file2.jpg file3.tga`, `nconvert -out jpeg -truecolors *.gif`, `nconvert -out gif -dither -colors 256 *.jpeg`, `nconvert -out png -resize 200% 200% *.jpeg`, `nconvert -out jpeg -n 1 10 1 -o res#.jpg file##.pic`, and `nconvert -out jpeg -o result_%.jpg file.tga` (gives result_file.jpg). On Windows batch files `%` must be written `%%`.
+- Script files: a text file whose lines starting with `###` carry the options for the file names listed below them (the vendor example runs three option sets, for instance `### -out png -rtype lanczos -resize 200% 150%` followed by file names); run it with `nconvert nc.txt`. Avoid repeated spaces in the option lines, the vendor notes they confuse the parser.
 
 ## XnConvert interop
 
@@ -100,12 +104,14 @@ Formtools note: a CLI should mirror this flag vocabulary for the 25 most common 
 
 ## Not verified
 
-Exit codes, glob handling per OS, behaviour of order of operations in one command (NConvert has a fixed internal order, not documented in sources), whether flags beyond 7.121 exist.
+Exit codes, glob handling per OS, behaviour of order of operations in one command (NConvert has a fixed internal order, not documented in sources). Flags beyond 7.121 are now checked: the 7.300 help includes -xyb (XYB colour space for JPEG-li output, WhatsNew 2025) and -clear (WhatsNew 2024), and WhatsNew also records AVIF and JPEG XL output (2022) and "multipage and delete" options (2024). The Windows build may carry flags (text, recurse) that the Linux help lacks; only the Linux build was inspected.
 
 ## Sources
 
 - https://www.xnview.com/en/nconvert/
-- https://forum.xnview.com/viewtopic.php?p=173031 (primary flag list; single source for flags)
+- https://forum.xnview.com/viewtopic.php?p=173031 (first flag list; now corroborated by the vendor build below)
+- https://download.xnview.com/NConvert-linux64.tgz (vendor build 7.300: help text, Usage.txt and WhatsNew.txt read, not executed)
+- https://newsgroup.xnview.com/viewtopic.php?t=49722 (vendor "NConvert User Guide" post, 2025-10-14)
 - https://newsgroup.xnview.com/viewtopic.php?p=127388 (placeholder tokens)
 - https://newsgroup.xnview.com/viewtopic.php?p=127958
 - https://newsgroup.xnview.com/viewtopic.php?p=190508

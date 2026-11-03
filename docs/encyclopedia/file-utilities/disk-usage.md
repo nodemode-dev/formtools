@@ -37,10 +37,12 @@ Research date: 2026-11-03.
 ## dust (bootandy)
 
 - Rust, Apache-2.0, Linux/macOS/Windows. Shows largest subdirectories with bars, depth and count limits, hardlinks counted once, config file. Lists dua, ncdu, pdu and others as alternatives.
+- formtools note: dust's depth limit plus hardlink-once counting is a compact, non-interactive "top folders" summary worth offering as a CLI report.
 
 ## Czkawka Big Files
 
 - One tool of the Czkawka suite (see duplicate-finders.md): finds the largest files in selected locations.
+- formtools note: a largest-files list is a few lines on top of the same scanner as duplicate finding, so share one scan pass between the two modules.
 
 ## Common feature set
 

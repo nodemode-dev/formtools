@@ -23,6 +23,8 @@ Docs describe only the user-facing behavior. The nearest-edge resize rule means 
 - No keyboard-only path; needs a pointer with two buttons for resize.
 
 ## Cross-platform note
+(analysis, not sourced) The macOS and Linux mapping below is the researchers' own analysis, not taken from PowerToys or Microsoft documentation.
+
 macOS has no built-in equivalent (third-party tools do this with an event tap plus Accessibility API; needs Accessibility permission). Linux X11 window managers often ship Alt+drag move and Alt+right-drag resize already; Wayland compositors implement it themselves, so a portable app cannot move foreign windows on Wayland.
 
 ## formtools note

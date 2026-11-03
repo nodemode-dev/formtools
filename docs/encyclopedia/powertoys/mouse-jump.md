@@ -21,6 +21,8 @@ Captures a thumbnail of the virtual desktop layout and maps clicks back to deskt
 Keyboard mode jumps only to monitor centers.
 
 ## Cross-platform note
+(analysis, not sourced) The macOS and Linux mapping below is the researchers' own analysis, not taken from PowerToys or Microsoft documentation.
+
 Pointer warping: CGWarpMouseCursorPosition on macOS, XWarpPointer/XTest on X11; Wayland has no portable absolute pointer warp (libei or compositor-specific protocols). Screen thumbnails require screen-capture permission on macOS and portals on Wayland.
 
 ## formtools note

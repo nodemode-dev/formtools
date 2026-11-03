@@ -24,6 +24,8 @@ A service tracks time or sunrise/sunset and sets the Windows system and app them
 Sunset mode depends on location; CLI cannot start PowerToys; OLED battery benefit is a doc claim.
 
 ## Cross-platform note
+(analysis, not sourced) The macOS and Linux mapping below is the researchers' own analysis, not taken from PowerToys or Microsoft documentation.
+
 macOS has native Auto appearance (sunset to sunrise) but a custom schedule is scriptable via osascript (dark mode setting). GNOME: org.gnome.desktop.interface color-scheme; KDE: plasma-apply-colorscheme or lookandfeeltool; XDG Desktop Portal exposes a color-scheme preference for reading. Sunrise/sunset can be computed offline from coordinates.
 
 ## formtools note

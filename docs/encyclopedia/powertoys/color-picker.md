@@ -77,6 +77,8 @@ Repo devdoc (possibly stale after the 0.102 WinUI 3 rewrite): pick the cursor po
 `ConfigureEnabledUtilityColorPicker`.
 
 ## Cross-platform note
+(analysis, not sourced) The macOS and Linux mapping below is the researchers' own analysis, not taken from PowerToys or Microsoft documentation.
+
 
 (Analysis.) macOS: `NSColorSampler` gives a native magnifying picker that returns an `NSColor` (colour-space aware; convert to sRGB first). Linux X11: grab one pixel with `XGetImage` plus a self-drawn magnifier. Linux Wayland: use the xdg-desktop-portal Screenshot `PickColor` method, which hands back RGB doubles and avoids needing screen capture rights. Format templating, colour maths (HSL, HWB, Oklab, Oklch and so on) and history are pure logic and portable. Global shortcut registration differs per OS.
 

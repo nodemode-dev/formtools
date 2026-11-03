@@ -20,6 +20,8 @@ Overlay lines follow the pointer; gliding cursor moves the pointer along guided 
 Many defaults unstated.
 
 ## Cross-platform note
+(analysis, not sourced) The macOS and Linux mapping below is the researchers' own analysis, not taken from PowerToys or Microsoft documentation.
+
 macOS and Linux lack a built-in crosshair; implement as click-through overlay following global pointer position. Gliding cursor is similar to switch-control style accessibility tools.
 
 ## formtools note

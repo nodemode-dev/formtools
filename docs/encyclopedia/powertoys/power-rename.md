@@ -35,6 +35,8 @@ Devdocs: shell extension DLL (classic and Windows 11 sparse MSIX menus), WinUI 3
 Collision handling not documented; metadata tokens need EXIF/XMP present; docs list $ALTITUDE twice.
 
 ## Cross-platform note
+(analysis, not sourced) The macOS and Linux mapping below is the researchers' own analysis, not taken from PowerToys or Microsoft documentation.
+
 Pure logic (regex, tokens) is portable; use a regex engine with documented dialect (ECMAScript-like, via Rust regex or JS engines; no lookbehind in Rust regex without fancy-regex). EXIF via exiv2 or libexif. Shell integration: Finder Quick Action, Nautilus/Dolphin actions. Provide own undo journal since Finder and Linux managers differ.
 
 ## formtools note

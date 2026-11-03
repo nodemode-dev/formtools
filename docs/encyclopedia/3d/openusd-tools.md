@@ -11,7 +11,8 @@ formtools note: OpenUSD is heavy to embed (large C++ build, Python for tools). P
 
 - usdview: interactive viewer with scenegraph browser, introspection tools and embedded Python interpreter. Needs Python bindings, PySide6 or PySide2 and PyOpenGL. Options: `--renderer` (Storm default, Embree, RenderMan), `--select PRIMPATH`, `--camera`, `--mask`, `--unloaded` (skip payloads), `--sessionLayer`, `--complexity` (subdivision level), `--viewportSize WxH`, `--mute`, `--norender`, `--numThreads`, `--quitAfterStartup`.
 - usdcat: print any USD-readable file as text; `-o` output, `--usdFormat usda|usdc`, `-l` load check only, `-f` flatten, `--flattenLayerStack`, `--mask`, `--layerMetadata`. Also the converter between usda/usdc/usd and, via plugins, other formats.
-- usdzip: creates and inspects usdz packages (builds valid 64-byte-aligned zero-compression archives). Options were not captured (toolset page truncated).
+- usdzip: creates and inspects usdz packages (builds valid 64-byte-aligned zero-compression archives). Usage `usdzip [OPTIONS] [usdzFile] [inputFiles...]`. Options per the toolset page: `-r/--recurse` add sub-directory files; `-a/--asset PATH` isolate and copy the asset rooted at a resolvable root layer path; `-c/--checkCompliance` run compliance checks and refuse to build the package on failure; `-l/--list [FILE]` list package contents (stdout if no path or `-`); `-d/--dump [FILE]` dump contents; `-v/--verbose` print each file added.
+- usdchecker options (from the same page): `--includeKeywords`, `-s/--skipVariants`, `-p/--rootPackageOnly`, `-o/--out`, `--noAssetChecks`, `-d/--dumpRules`, `-v`, `-t/--strict` (non-zero exit on warnings), `--variantSets`, `--variants`.
 - Others listed: usdedit (edit via temp .usda), usddiff, usdchecker (compliance, general knowledge: validates ARKit-compatible usdz), usdtree, usdrecord (Hydra image/sequence capture), usdresolve, usdstitch, usdstitchclips, usddumpcrate, sdfdump, sdffilter, usdmeasureperformance, usdGenSchema, usdcrush and others.
 
 ### Scene graph and stats
@@ -27,7 +28,7 @@ Zero compression, no encryption; 64-byte data alignment; allowed content USD lay
 formtools note: write USDZ with a dedicated routine, never a generic zip library.
 
 ## Sources
-- https://openusd.org/release/toolset.html (read in two parts; usdzip section missing)
+- https://openusd.org/release/toolset.html (usdzip and usdchecker sections read in full on 2026-11-03)
 - https://openusd.org/release/spec_usdz.html
 - https://raw.githubusercontent.com/PixarAnimationStudios/OpenUSD/release/LICENSE.txt
 - https://github.com/PixarAnimationStudios/OpenUSD

@@ -22,6 +22,8 @@ Hold Alt, tap the key repeatedly to move the highlight through preview thumbnail
 - Needs a US-style layout assumption for the backtick key (inference, not documented).
 
 ## Cross-platform note
+(analysis, not sourced) The macOS and Linux mapping below is the researchers' own analysis, not taken from PowerToys or Microsoft documentation.
+
 macOS already has this natively (Cmd+`). Linux desktops vary: GNOME has Alt+` for same-app switching, KDE offers Walk Through Windows of Current Application. So formtools value is mainly consistency and previews.
 
 formtools note: Low priority; only build if offering a unified window-switcher, using native same-app cycling on macOS and GNOME.

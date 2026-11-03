@@ -31,6 +31,8 @@ Installs a low-level keyboard hook (source: devdocs). Event order: pass-through 
 No effect on sign-in or secure screens or elevated windows unless PowerToys is elevated; poor fit for games; other keyboard hooks can interfere; certain media/calculator keys cannot be injected into elevated windows (UIPI); no per-keyboard mappings; no Mac or Linux profiles.
 
 ## Cross-platform note
+(analysis, not sourced) The macOS and Linux mapping below is the researchers' own analysis, not taken from PowerToys or Microsoft documentation.
+
 macOS: CGEventTap (needs Input Monitoring and Accessibility permissions), or IOKit HID remapping (hidutil) for plain key swaps. Linux: evdev/uinput grabbing (needs input group or root) works on X11 and Wayland; compositor-level hooks are not portable. Per-device mapping is feasible on Linux and macOS HID, unlike on Windows.
 
 ## formtools note

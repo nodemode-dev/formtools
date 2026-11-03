@@ -15,6 +15,8 @@ Off by default. Hold an enabled button still for the hold duration, release, mov
 May fail in games using raw or exclusive mouse input; not over the on-screen keyboard; not over elevated-app windows unless PowerToys is elevated.
 
 ## Cross-platform note
+(analysis, not sourced) The macOS and Linux mapping below is the researchers' own analysis, not taken from PowerToys or Microsoft documentation.
+
 macOS has Mouse Keys/Drag lock options under accessibility; Linux (X11 and some desktops) has similar accessibility toggles. Synthetic button-down events require input injection permissions (macOS Accessibility, uinput on Linux).
 
 ## formtools note

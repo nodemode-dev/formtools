@@ -4,7 +4,7 @@
 Measures on-screen pixel distances using edge detection on a screen capture. Inspired by Pete Blois's Rooler.
 
 ## Activation
-Win+Ctrl+Shift+M (customizable) shows a toolbar. Esc or the close control exits. Ctrl+1 to Ctrl+4 select toolbar tools (docs do not map numbers to modes explicitly; likely toolbar order, unverified).
+Win+Ctrl+Shift+M (customizable) shows a toolbar. Esc or the close control exits. Ctrl+1 to Ctrl+4 select toolbar tools. Mapping, from the UI string resources: Ctrl+1 Bounds, Ctrl+2 Spacing (the cross), Ctrl+3 Horizontal spacing, Ctrl+4 Vertical spacing.
 
 ## Modes
 - Bounds: drag a box; hold Shift to leave boxes in place until cancelled.
@@ -32,6 +32,8 @@ Dev docs: a module interface DLL starts/stops a UI process (PowerToys.MeasureToo
 - DIP depends on per-monitor scaling.
 
 ## Cross-platform note
+(analysis, not sourced) The macOS and Linux mapping below is the researchers' own analysis, not taken from PowerToys or Microsoft documentation.
+
 Needs screen-capture permission (macOS Screen Recording, Linux portal/PipeWire on Wayland, X11 grab). Edge detection over a pixel buffer is portable; the overlay must be a transparent click-through window per display. Handle Retina/HiDPI by reporting physical and logical units.
 
 formtools note: Implement the edge scan as a pure image function in a shared core, with thin per-OS capture and overlay shells; report physical px plus logical px.
@@ -40,3 +42,4 @@ formtools note: Implement the edge scan as a pure image function in a shared cor
 - https://learn.microsoft.com/en-us/windows/powertoys/screen-ruler
 - https://raw.githubusercontent.com/microsoft/PowerToys/main/doc/devdocs/modules/screenruler.md
 - https://github.com/microsoft/PowerToys/releases
+- https://raw.githubusercontent.com/microsoft/PowerToys/main/src/modules/MeasureTool/MeasureToolUI/Strings/en-us/Resources.resw

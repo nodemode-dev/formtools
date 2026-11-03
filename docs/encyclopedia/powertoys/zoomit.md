@@ -26,12 +26,14 @@ Zoom in/out: wheel or arrows. Left click starts drawing, right click stops. Ctrl
 - 0.102 added snip with dictation (press Space during a snip, speech transcribed on device) and smoother zoom transitions. 0.103 preview improved DemoType clipboard text loading.
 
 ## Internals (dev docs)
-PowerToys.ZoomIt.exe plus a module interface DLL; hotkeys registered with RegisterHotKey including conflict warnings; settings kept in the registry (not JSON) for compatibility with the standalone build, bridged to the Settings UI by a WinRT interop library; fonts stored as binary LOGFONT; named events for settings changes and exit; shared Sysinternals code under a common folder. Docs do not describe zoom rendering or panorama stitching (not verified). Which OCR engine backs text recognition is not stated.
+PowerToys.ZoomIt.exe plus a module interface DLL; hotkeys registered with RegisterHotKey including conflict warnings; settings kept in the registry (not JSON) for compatibility with the standalone build, bridged to the Settings UI by a WinRT interop library; fonts stored as binary LOGFONT; named events for settings changes and exit; shared Sysinternals code under a common folder. Docs do not describe zoom rendering or panorama stitching (not verified). OCR engine (from source): the snip-with-OCR path (OcrFromHBITMAP in ZoomIt/Zoomit.cpp) converts the capture to a SoftwareBitmap and runs the Windows built-in Windows.Media.Ocr engine, created with OcrEngine::TryCreateFromUserProfileLanguages, so recognition languages follow the user's installed profile languages and an empty result is returned if no engine can be created. It is not Tesseract or a bundled model. The dev doc separately describes an optional on-device dictation snip (Ctrl+6 with dictation enabled, using SAPI among other paths), which is speech, not OCR.
 
 ## Limitations
 Default hotkeys can conflict with other software; some features need recent Windows; options tabs are undocumented on the Sysinternals page.
 
 ## Cross-platform note
+(analysis, not sourced) The macOS and Linux mapping below is the researchers' own analysis, not taken from PowerToys or Microsoft documentation.
+
 macOS: Screen Recording and Accessibility permissions, ScreenCaptureKit for recording and zoom frames, global hotkeys via Carbon/CGEventTap. Linux: PipeWire and portals for capture on Wayland; global hotkeys and click-through draw overlay are restricted on Wayland. Draw overlay, annotation tools and break timer are portable UI; recording can use ffmpeg.
 
 formtools note: Split ZoomIt into independent modules (annotate overlay, timer, region recorder, scrolling capture, OCR snip) so each can ship per platform as capture APIs allow.
@@ -41,3 +43,4 @@ formtools note: Split ZoomIt into independent modules (annotate overlay, timer, 
 - https://learn.microsoft.com/en-us/sysinternals/downloads/zoomit
 - https://raw.githubusercontent.com/microsoft/PowerToys/main/doc/devdocs/modules/zoomit.md
 - https://github.com/microsoft/PowerToys/releases
+- https://raw.githubusercontent.com/microsoft/PowerToys/main/src/modules/ZoomIt/ZoomIt/Zoomit.cpp

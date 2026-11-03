@@ -42,6 +42,8 @@ From the repo devdoc: a hotkey listener tells the AlwaysOnTop class to pin or un
 `ConfigureEnabledUtilityAlwaysOnTop`.
 
 ## Cross-platform note
+(analysis, not sourced) The macOS and Linux mapping below is the researchers' own analysis, not taken from PowerToys or Microsoft documentation.
+
 
 (Analysis.) Linux X11: set `_NET_WM_STATE_ABOVE` through EWMH on the other client's window; easy. Linux Wayland: a client cannot raise or pin other clients' windows; it needs compositor features (KDE window rules, GNOME's built-in "Always on Top" titlebar entry, wlroots foreign-toplevel protocols), so formtools can only offer it per compositor or for its own windows. macOS: no public API to change another app's window level; options are Accessibility to raise windows repeatedly, a private CGS call (fragile, needs SIP considerations in some tools), or restricting to formtools-owned windows. The border overlay is a simple transparent click-through window on every platform.
 

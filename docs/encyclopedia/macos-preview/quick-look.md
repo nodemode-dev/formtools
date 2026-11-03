@@ -44,7 +44,7 @@ formtools note: model viewers as pluggable provider modules (preview + thumbnail
 
 ## qlmanage CLI
 Synopsis (man page): qlmanage -r | -m [name] | -t [-x] [-i] [-s size] [-f factor] [-c contentTypeUTI [-g generator]] [file...] | -p [-x] [-c UTI [-g generator]] [file...] | -h.
-- -p preview (floating window), -t thumbnail, -s size, -f scale factor, -c force content type UTI, -g force generator, -x and -i not described in fetched sources.
+- -p preview (floating window), -t thumbnail, -s size, -f scale factor, -c force content type UTI, -g force generator (Eclectic Light shows -c public.svg-image and -g with a .qlgenerator path). Apple's man page text (re-read) describes only -r, -m, -t, -p and -h; -s, -f, -c, -g, -x and -i appear in its synopsis with no description, and it defers to qlmanage -h for "extensive help". Apple's archived Quick Look Programming Guide has an argument table with only -p, -t, -r, -m, -h and says to consult the man page for the rest. So -x and -i have no vendor description in any fetchable source; to close this, run qlmanage -h on a Mac. The man page is dated March 29, 2007.
 - -m server info and generator list; -r reset quicklookd; -r cache clears thumbnail cache (Eclectic Light).
 - -z reports generation time (Eclectic Light, third-party).
 - Debug logging: defaults write -g QLEnableLogging YES (from Apple's archived guide).
@@ -66,6 +66,6 @@ formtools note: ship a CLI (formtools preview/thumb) with type/generator overrid
 - https://developer.apple.com/documentation/quicklookthumbnailing/qlthumbnailgenerator.md
 - https://keith.github.io/xcode-man-pages/qlmanage.1.html
 - https://developer.apple.com/library/mac/documentation/userexperience/conceptual/quicklook_programming_guide/Articles/QLDebugTest.html
-- https://eclecticlight.co/2018/04/05/inside-quicklook-previews-with-qlmanage/
+- https://eclecticlight.co/2018/04/05/inside-quicklook-previews-with-qlmanage/ (re-read for -c, -g, -z)
 - https://eclecticlight.co/2024/04/05/a-quick-look-at-quicklook-and-its-problems/
 - https://www.macrumors.com/2026/06/08/apple-announces-macos-golden-gate/

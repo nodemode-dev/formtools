@@ -50,6 +50,8 @@ Calls the Win32 `SetThreadExecutionState` API from background threads: system-re
 `ConfigureEnabledUtilityAwake`.
 
 ## Cross-platform note
+(analysis, not sourced) The macOS and Linux mapping below is the researchers' own analysis, not taken from PowerToys or Microsoft documentation.
+
 
 (Analysis.) macOS: `IOPMAssertionCreateWithName` (PreventUserIdleSystemSleep, PreventUserIdleDisplaySleep) or spawn `caffeinate -d -t N`. Linux: D-Bus `org.freedesktop.login1.Inhibit` for idle/sleep and `org.freedesktop.ScreenSaver.Inhibit` or the Wayland idle-inhibit protocol or portal Inhibit for the display; `systemd-inhibit` as a fallback. The mode, timer and expiry logic is portable; only the final "hold" call differs. Tray with timed entries maps to a menu bar item (macOS) or StatusNotifier icon (Linux).
 

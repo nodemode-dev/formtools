@@ -22,7 +22,7 @@ Scope: 7-Zip, Keka, The Unarchiver, PeaZip, Windows 11 built-in archive support,
 - Extract from: more than 30 formats including ZIP, ZIPX, RAR, 7Z, TAR, ISO, CAB, MSI, JAR, APK, IPA.
 - Workflow: drop files on the Dock icon or window to compress, AES-256 for 7Z, legacy Zip 2.0 encryption for ZIP, split into volumes for size limits.
 - Platforms: macOS 10.10 or newer for v1.6.8, legacy builds for older macOS, an iOS app exists. Distribution: Mac App Store (supports development) plus direct download.
-- License: the site gives no license statement; the GitHub repo exists but a license file was not confirmed. Engine not stated on the pages fetched. (single source)
+- Price and licence (re-checked 2026-11-03): the keka.io direct download is free, with optional donations (sponsor, PayPal-style buttons, crypto tips). The Mac App Store listing carries a structured offer of 6.49 USD (US storefront); the Keka Terms of Use page says App Store in-app purchases are tips that unlock no extra features, and the site says the App Store build is the same app, updated through the store. The Terms of Use contain only a warranty disclaimer, no licence grant; the GitHub repository's README says it is used mainly for issues and wiki, and a LICENSE file at the master path returned 404. So source availability and licence are not established; treat as proprietary freeware. Engine not stated on the pages fetched. (vendor pages only)
 - formtools note: Keka's drop-onto-icon compress model and a short, honest format picker is the UX bar for a macOS-first archive entry point.
 
 ## The Unarchiver
@@ -70,6 +70,9 @@ Scope: 7-Zip, Keka, The Unarchiver, PeaZip, Windows 11 built-in archive support,
 - https://github.com/peazip/PeaZip
 - https://www.keka.io/en/
 - https://github.com/aonez/Keka
+- https://raw.githubusercontent.com/aonez/Keka/master/README.md
+- https://www.keka.io/termsofuse
+- https://apps.apple.com/us/app/keka/id470158793?mt=12
 - https://theunarchiver.com/
 - https://github.com/libarchive/libarchive
 - https://raw.githubusercontent.com/libarchive/libarchive/master/COPYING

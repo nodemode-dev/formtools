@@ -48,11 +48,11 @@ formtools note: an ordered action list with presets, placeholder-based output na
 | File listing | Text/CSV style metadata table for selected images using field placeholders | SITE, SEIBERT |
 | Strip of images | Single-row/column strip | SITE |
 | Collage, mosaic | Mentioned in the 2017 guide ("collages, mosaics, contact sheets") | GUIDE |
-| Web page / gallery | Not found in non-wiki sources; upload-to-web and FTP send exist. Panorama stitching: no evidence in sources. | not verified |
+| Web page / gallery | Not listed on the current xnviewmp product page (2026-11 recheck); upload-to-web and FTP send exist. Panorama stitching: no evidence in sources. The vendor wiki that might settle this no longer resolves. | not verified |
 
 ## 5. Duplicate finder (Tools > Find similar)
 
-Compares by name, size, date, binary content or visual similarity (detects recompressed or resized copies), according to the FAQ (single source for method list). SITE.
+Compares by name, size, date, binary content or visual similarity (detects recompressed or resized copies), according to the FAQ (single source for method list). The product page (2026-11) confirms a "Duplicate File Finder" exists but gives no modes. SITE.
 
 ## 6. Screen capture
 
@@ -71,6 +71,7 @@ Scanner support (vendor list, no detail). Upload web / FTP send exist. SITE, REL
 * https://www.xnview.com/en/how-to-batch-convert-and-batch-process/
 * https://www.xnview.com/en/how-to-resize-images/
 * https://www.xnview.com/en/xnconvert/
+* https://www.xnview.com/en/xnviewmp/
 * https://www.xnview.com/en/nconvert/
 * https://www.xnview.com/en/xnresize/
 * https://www.xnview.com/en/faq/

@@ -67,6 +67,8 @@ Repo devdoc: `FancyZones` (thread and module init) wraps `FancyZonesLib` (all dr
 `ConfigureEnabledUtilityFancyZones`.
 
 ## Cross-platform note
+(analysis, not sourced) The macOS and Linux mapping below is the researchers' own analysis, not taken from PowerToys or Microsoft documentation.
+
 
 (Analysis.) The layout model (grid with percentages, canvas with rectangles, per-monitor and per-desktop assignment, JSON files) is completely portable and is the valuable part. The enforcement is not: macOS needs the Accessibility API to read and set other apps' window frames (permission prompt) and an event tap for the drag modifier, with Spaces having no public API (so per-desktop layouts are hard); Linux X11 can do it through EWMH and XInput; Linux Wayland has no generic way to move other apps' windows, so it needs compositor extensions (KWin scripts, GNOME Shell extension, wlroots protocols). Existing macOS tools (Rectangle, Magnet) show the Accessibility route works.
 

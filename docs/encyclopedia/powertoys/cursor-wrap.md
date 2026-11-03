@@ -20,6 +20,8 @@ Watches pointer position and warps it at boundaries (single source; no internals
 Defaults not explicitly stated on the page.
 
 ## Cross-platform note
+(analysis, not sourced) The macOS and Linux mapping below is the researchers' own analysis, not taken from PowerToys or Microsoft documentation.
+
 Pointer warping is easy on macOS (CGWarp) and X11, hard on Wayland (no portable warp; compositor or libei needed).
 
 ## formtools note

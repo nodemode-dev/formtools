@@ -27,6 +27,8 @@ Devdocs: WPF MVVM app named PowerLauncher; plugins implement IPlugin (Init, Quer
 Keyword conflicts; units not localized; Windows Search depends on index coverage; thumbnails may hurt speed; Pinyin experimental.
 
 ## Cross-platform note
+(analysis, not sourced) The macOS and Linux mapping below is the researchers' own analysis, not taken from PowerToys or Microsoft documentation.
+
 Equivalents: Spotlight, Alfred, Raycast (macOS); Albert, Ulauncher, Rofi, KRunner (Linux). Plugin set maps well: calculator, units, hashes/UUID, web search, app launch (desktop entries and .app bundles), window switching (needs Accessibility or compositor APIs), file search (Spotlight index, plocate/Tracker).
 
 ## formtools note

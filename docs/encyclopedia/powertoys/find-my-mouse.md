@@ -20,6 +20,8 @@ Overlay window drawn above the desktop; trigger detection via keyboard/mouse hoo
 Defaults for several options are not stated.
 
 ## Cross-platform note
+(analysis, not sourced) The macOS and Linux mapping below is the researchers' own analysis, not taken from PowerToys or Microsoft documentation.
+
 macOS has a built-in shake-to-find (accessibility). Linux: KDE has Shake Cursor effect; GNOME has Ctrl highlight of pointer under accessibility. A portable build needs a transparent click-through overlay (not possible for global overlays on some Wayland compositors without layer-shell).
 
 ## formtools note

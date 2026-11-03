@@ -16,6 +16,8 @@ Ignores tiny movements below a threshold; touchpad-simulated mouse input restore
 Apps that draw their own cursor may still show it.
 
 ## Cross-platform note
+(analysis, not sourced) The macOS and Linux mapping below is the researchers' own analysis, not taken from PowerToys or Microsoft documentation.
+
 macOS hides the cursor while typing in many apps natively (CGDisplayHideCursor is app-scoped, so global hide is limited). Linux: unclutter (X11); Wayland has no global equivalent.
 
 ## formtools note

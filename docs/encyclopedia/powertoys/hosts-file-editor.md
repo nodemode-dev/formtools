@@ -27,6 +27,8 @@ Reads and rewrites the plain-text hosts file, applying placement, whitespace and
 Needs admin rights to save; edits are system-wide; no shortcut.
 
 ## Cross-platform note
+(analysis, not sourced) The macOS and Linux mapping below is the researchers' own analysis, not taken from PowerToys or Microsoft documentation.
+
 macOS and Linux both use /etc/hosts (same format), writing needs root: use a privileged helper (polkit on Linux, authorization services or a helper tool on macOS). Flush DNS cache differs per OS (dscacheutil/mDNSResponder on macOS, systemd-resolved or nscd on Linux).
 
 ## formtools note

@@ -41,6 +41,8 @@ Repo devdoc: two shell extensions (a classic COM `FileLocksmithExt` for Windows 
 `ConfigureEnabledUtilityFileLocksmith`.
 
 ## Cross-platform note
+(analysis, not sourced) The macOS and Linux mapping below is the researchers' own analysis, not taken from PowerToys or Microsoft documentation.
+
 
 (Analysis.) Linux: scan `/proc/*/fd` (and `/proc/*/maps`) or call `fuser` or `lsof`; seeing other users' processes requires root. macOS: `lsof` or libproc (`proc_pidinfo` with `PROC_PIDLISTFDS`, `proc_pidfdinfo`), also limited to your own processes without root. Neither platform has mandatory file locking like Windows, so "locked" usually means "open"; advisory locks (`flock`, `fcntl`) can also be reported. Context-menu integration: macOS Finder Sync or Quick Actions; Linux Nautilus extensions, Dolphin service menus, Thunar custom actions. A CLI with `--json`, `--wait` and `--kill` ports almost one to one.
 

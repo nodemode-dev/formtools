@@ -21,11 +21,11 @@ Formtools note: counts matter as positioning only. A reimplementation should aim
 
 ## Tab model
 
-XnConvert is a four-step wizard in one window: Input, Actions, Output, Status, plus a Settings tab (language, startup behaviour, loading the last script at launch). A fifth region, a before/after preview, sits beside the Actions list. One source describes the layout as action options on the left and image preview on the right. (The Status tab name is confirmed for XnResize via gHacks; for XnConvert it is inferred from the same codebase, so treat as likely.)
+XnConvert is a four-step wizard in one window: Input, Actions, Output, Status, plus a Settings tab (language, startup behaviour, loading the last script at launch). A fifth region, a before/after preview, sits beside the Actions list. One source describes the layout as action options on the left and image preview on the right. (The vendor's own batch guide now confirms the tab names Input, Action, Output and Status for XnConvert, and says to check the Status tab for errors or warnings; the Settings tab is a separate dialog in the 1.118.0 binary.)
 
 ### Input tab
 
-- Add Files, Add Folder, or drag and drop. Subfolders are included automatically when a folder is added (Clemson guide, single source).
+- Add Files, Add Folder, or drag and drop. Subfolders are included automatically when a folder is added (Clemson guide; the vendor guide says the Add folder button adds the folder and its contents, and files at the top of the list convert first, so the list is user-orderable).
 - File list shows thumbnails with name, resolution, size; sortable columns and switchable view modes (XnResize guide; XnConvert shares the UI, likely).
 - Remove selected / remove all.
 - Hot folders: a checkbox plus folder list on the Input tab. See below.
@@ -36,7 +36,10 @@ XnConvert is a four-step wizard in one window: Input, Actions, Output, Status, p
 - Described by the vendor as automatically applying the saved set of edits to new or changed images.
 - Operation (forum, community-confirmed): add folders on the Input tab, set actions and output, press Convert once; the app then stays running and processes new arrivals. Files already present when Convert is pressed were not processed in one user test.
 - Known caveats: never write output into the watched folder (infinite loop); one settings set per running instance, so different actions per folder means separate instances; a bug existed where subfolders with fewer than 10 added files were missed (fixed after v1.65); the Convert button was reported greyed out until a file was loaded (v1.98).
-- Polling vs OS file events: not documented. (Could not verify.)
+- Vendor statements (author, Aug 2026, forum thread t=51206): a "watch hot folders" checkbox is always present, unchecking it pauses watching, and the folders are designated in a "Hot folders..." dialog. The product page says only that it watches folders for new or updated images and applies a custom set of edits.
+- Dialog contents (labels in the 1.118.0 Linux binary): a folder list with "Add folder...", a "Recursive" option, and an "Extensions" list; the Settings dialog has a "Frequency" label and a stored check-frequency key (its exact scope is not clear).
+- Watch method (binary, indirect): the program contains directory-changed handlers of the kind Qt's file-system watcher emits, plus a directory timer and a process timer, so detection is likely OS directory notifications combined with a timed re-scan at the configured frequency. Exact mechanism not stated by the vendor; treat as inferred.
+- The ARM64 1.115.0 thread reports that a re-processing pass handled every file in the folder rather than only new ones (user report, one source); the vendor did not address it.
 - Formtools note: needs a watcher service with debounce (wait for file write to finish), an ignore-own-output rule, and per-folder profiles (improvement over XnConvert).
 
 ### Status tab
@@ -54,6 +57,8 @@ Progress and error reporting for the run. Users requested a consolidated error l
 ## Presets and scripts
 
 - Settings are saved as "scripts"/presets: a file holding the action list and output settings. A forum config excerpt shows an XML-style structure with attributes on an options element (for example a delete-original flag and an overwrite integer code), so scripts are XML-ish (single source, partial).
+- Vendor build facts (1.118.0 binary): preset buttons read "Load preset", "Save preset", "Remove preset from list" under a "Presets:" drop-down; the file dialogs use the extension `.xbs` ("Load script", "Save script"); a separate "Export script" writes a `.bat`, and "Export for NConvert..." builds an NConvert command line. The internal serialisation of `.xbs` is not documented and was not seen (a sample file was not available); the binary stores per-action values under short keys such as active and collapse flags, and keeps a "lastActions" list for "Save actions list at exiting". Whether `.xbs` is XML or INI-style remains open.
+- The vendor guide says a preset stores actions, parameters, format and format settings.
 - The Settings tab can reload the last script at startup.
 - Application settings live in `xnconvert.ini` (Windows: AppData\Roaming\xnconvert); the INI must sit beside the program in portable form.
 - Formtools note: store presets as versioned JSON, include a schema version, make them importable/exportable, and keep app settings separate from job presets.
@@ -71,8 +76,9 @@ Progress and error reporting for the run. Users requested a consolidated error l
 
 ## Not verified
 
-- Official help pages: the xnview.com wiki was excluded by the research rules and the official XnConvert help text could not be fetched, so some per-action parameters are inferred from NConvert flags.
-- Exact UI wording of every control, threading ("use multiple cores") details, and the script file schema.
+- Official help pages: the vendor wiki is allowed under the owner's ruling but no longer exists (xnview.com/wiki and wiki.xnview.com now redirect to the forum index, checked 2026-11-03), so there is no help text to cite. Per-action parameters were re-read from the vendor's 1.118.0 program file; value ranges for effect actions remain unknown.
+- Threading ("use multiple cores") details, the hot-folder watch mechanism (inferred only) and the `.xbs` script schema.
+- The vendor forum announcement for 1.118 (author post dated 2026-10-12) says the program accepts file names as arguments or `@filelist`, and lists a Flatpak and a Mac App Store build besides the downloads on the product page.
 
 ## Sources
 
@@ -89,3 +95,8 @@ Progress and error reporting for the run. Users requested a consolidated error l
 - https://newsgroup.xnview.com/viewtopic.php?p=127958 (export for NConvert)
 - https://newsgroup.xnview.com/viewtopic.php?p=190508 (export gaps, delete original, GIF to WebP)
 - https://newsgroup.xnview.com/viewtopic.php?p=150592 (metadata and PNG intermediate)
+- https://www.xnview.com/en/how-to-batch-convert-and-batch-process/ (vendor guide: tabs, input ordering, presets, CPU cores)
+- https://newsgroup.xnview.com/viewtopic.php?t=51206 (hot folders thread, vendor replies)
+- https://newsgroup.xnview.com/viewtopic.php?t=51458 (XnConvert 1.118 announcement, command-line arguments)
+- https://download.xnview.com/XnConvert-linux-x64.tgz (vendor build, strings inspected, not executed)
+- https://www.xnview.com/wiki/index.php/XnConvert (fetched 2026-11-03: redirects to forum, wiki gone)

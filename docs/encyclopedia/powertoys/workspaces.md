@@ -25,9 +25,11 @@ Components: WorkspacesLib (core, signature verification), Launcher and Launcher 
 ## Limitations
 - Admin apps may not reposition (fix pending per docs).
 - No restoration of snapped state.
-- Storage location of workspace definitions is not documented in sources read (not verified).
+- Storage (from source): definitions live in workspaces.json inside the module's settings folder, which resolves to %LOCALAPPDATA%\Microsoft\PowerToys\Workspaces\. A just-created, not yet saved workspace is held in temp-workspaces.json in the same folder, and the window arranger checks that file first (WorkspacesData.cpp, WorkspacesWindowArranger/main.cpp, settings_helpers.cpp). The Workspaces folder name is confirmed by the UI test helper; the docs pages do not state the path.
 
 ## Cross-platform note
+(analysis, not sourced) The macOS and Linux mapping below is the researchers' own analysis, not taken from PowerToys or Microsoft documentation.
+
 macOS has no public API to place other apps' windows without Accessibility permission (AXUIElement); launch via open with bundle ids and arguments. Linux X11: wmctrl/xdotool; Wayland: largely impossible without compositor-specific protocols (KWin scripting, GNOME extensions). Spaces/virtual desktops add variance.
 
 formtools note: Store workspaces as portable JSON (app id, args, rect, monitor id) and degrade gracefully to launch-only where window placement is unavailable.
@@ -36,3 +38,7 @@ formtools note: Store workspaces as portable JSON (app id, args, rect, monitor i
 - https://learn.microsoft.com/en-us/windows/powertoys/workspaces
 - https://raw.githubusercontent.com/microsoft/PowerToys/main/doc/devdocs/modules/workspaces.md
 - https://github.com/microsoft/PowerToys/releases
+- https://raw.githubusercontent.com/microsoft/PowerToys/main/src/modules/Workspaces/WorkspacesLib/WorkspacesData.cpp
+- https://raw.githubusercontent.com/microsoft/PowerToys/main/src/modules/Workspaces/WorkspacesWindowArranger/main.cpp
+- https://raw.githubusercontent.com/microsoft/PowerToys/main/src/common/SettingsAPI/settings_helpers.cpp
+- https://raw.githubusercontent.com/microsoft/PowerToys/main/src/modules/Workspaces/Tests/Workspaces.UITests.Next/WorkspaceTestState.cs

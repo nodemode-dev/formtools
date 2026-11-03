@@ -30,6 +30,8 @@ Six projects per the dev docs: a common library with per-letter mappings and a L
 - Docs do not state where usage-frequency data is stored.
 
 ## Cross-platform note
+(analysis, not sourced) The macOS and Linux mapping below is the researchers' own analysis, not taken from PowerToys or Microsoft documentation.
+
 macOS has a native press-and-hold accent popup (can be disabled per app), so the value there is custom sets and a unified picker. Linux has Compose key and IBus/Fcitx but no built-in hold-to-pick; a keyboard hook (evdev/X11 XInput, limited on Wayland, needs input-method protocol) plus a non-focus-stealing overlay is required. Character tables are portable data.
 
 formtools note: Ship character-set data as plain JSON and build a hold-to-pick overlay per platform, preferring OS input-method APIs over raw hooks.

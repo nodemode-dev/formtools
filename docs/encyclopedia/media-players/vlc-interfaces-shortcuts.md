@@ -20,7 +20,10 @@ formtools note: Prefer JSON over XML and require a token for any network control
 ## 3. Extensions and Lua
 
 - Lua playlist scripts since 0.9.0: each defines `probe()` and `parse()`; helpers `vlc.access`, `vlc.path`, `vlc.peek()`, `vlc.readline()`; items carry path, name, duration, description. Drop into the platform playlist folder or user data folder. VLC ships site parsers.
-- Extensions are `.lua` files from the add-ons site (installed in the program directory, or user folder), loaded after restart; also interface and service-discovery Lua types. Extension descriptor and dialog API details not retrieved (code host blocked robots; unverified).
+- Extensions are `.lua` files from the add-ons site (installed in the program directory, or user folder), loaded after restart; also interface and service-discovery Lua types. Extension API, read from the 3.0.x official source (modules/lua/extension.c, extension_thread.c, share/lua/README.txt):
+  - The script defines a global `descriptor()` returning a table with `title`, `version`, `author`, `url`, `shortdesc`, `description`, `icon` and `capabilities`. Capabilities are strings: `menu`, `trigger`, `input-listener`, `meta-listener`, `playing-listener`.
+  - Hook functions VLC calls if present: `activate()`, `deactivate()`, `close()` (dialog closed), `menu()` (returns the list of menu entry names), `trigger_menu(id)`, `trigger()` (trigger-only extensions), `input_changed()`, `meta_changed()`, `playing_changed()`.
+  - Inside, `vlc.deactivate()` ends the extension; `vlc.dialog(title)` builds a grid-layout UI with methods `show`, `hide`, `delete`, `set_title`, `update`, `add_button`, `add_label`, `add_html`, `add_text_input`, `add_password`, `add_check_box`, `add_dropdown`, `add_list`, `add_image`, `del_widget`. The extensions README in the tree is itself a TODO stub, so this is the code-level contract.
 - Browser NPAPI plugin was removed in 3.0.24, and the bundled YouTube Lua script was removed as broken.
 
 formtools note: A small scripting surface (event hooks plus playlist resolvers) beats a large plugin API.
@@ -52,3 +55,7 @@ See vlc-filters-effects.md section 5.
 - https://docs.videolan.me/vlc-user/desktop/3.0/en/addons/index.html
 - https://docs.videolan.me/vlc-user/desktop/3.0/en/advanced/interfaces/index.html (stubs)
 - https://www.videolan.org/vlc/releases/3.0.24.html
+- https://raw.githubusercontent.com/videolan/vlc/3.0.x/modules/lua/extension.c
+- https://raw.githubusercontent.com/videolan/vlc/3.0.x/modules/lua/extension_thread.c
+- https://raw.githubusercontent.com/videolan/vlc/3.0.x/share/lua/README.txt
+- https://raw.githubusercontent.com/videolan/vlc/3.0.x/share/lua/extensions/README.txt

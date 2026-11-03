@@ -19,9 +19,17 @@ Built-in apps include the Windows shell, File Explorer, Notepad, Paint, Microsof
 ## Limitations
 - Only apps with a manifest show content.
 - Needs PowerToys running and the module enabled.
-- Dev doc page for internals could not be fetched; internals not verified.
+- Dev doc: rated P3 (lower priority); displayed shortcuts other than PowerToys' own are not localized; the manifest spec is "in development".
+
+## Internals (dev doc)
+- Four projects: ShortcutGuide.Ui (main UI), ShortcutGuide.IndexYmlGenerator (kept separate so it can be ported to WinGet), a C++ interop project, and ShortcutGuideModuleInterface (opens and closes the UI).
+- UI startup order: copy built-in manifests into the user manifest folder (overwriting), generate index.yml, add the user's PowerToys shortcuts to the PowerToys manifest, start the UI.
+- Interop: IsCurrentWindowExcludedFromShortcutGuide() checks the exclude list; get_buttons(monitor, size) finds taskbar button positions (max 10) by walking window classes (Shell_TrayWnd, ReBarWindow32, MSTaskSwWClass, MSTaskListWClass; Shell_SecondaryTrayWnd for other monitors) with a fallback for newer Windows through DesktopWindowContentBridge, skipping same-name buttons and entries not starting with "Appid:". This feeds the taskbar indicators.
+- The listener process stays alive while the overlay is hidden. Planned: fetch manifests via WinGet, localize built-in manifests.
 
 ## Cross-platform note
+(analysis, not sourced) The macOS and Linux mapping below is the researchers' own analysis, not taken from PowerToys or Microsoft documentation.
+
 The manifest format (YAML, window filter, modifier flags) is OS-neutral and reusable. Foreground-app detection needs NSWorkspace on macOS and, on Linux, X11 properties or compositor-specific APIs (limited on Wayland). Hold-modifier triggers need a global key listener (Accessibility permission on macOS).
 
 formtools note: Adopt the YAML manifest schema, with per-OS modifier mapping (Cmd for Ctrl/Win), and a searchable window fed by foreground-app detection.
@@ -29,3 +37,4 @@ formtools note: Adopt the YAML manifest schema, with per-OS modifier mapping (Cm
 ## Sources
 - https://learn.microsoft.com/en-us/windows/powertoys/shortcut-guide
 - https://github.com/microsoft/PowerToys/releases
+- https://raw.githubusercontent.com/microsoft/PowerToys/main/doc/devdocs/modules/shortcut_guide.md

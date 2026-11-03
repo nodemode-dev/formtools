@@ -12,7 +12,7 @@ formtools note: provide one export dialog with a batch mode driven by a selectio
 HEIC, JPEG, JPEG-2000, OpenEXR, PDF, PNG, TIFF.
 
 ## Hidden formats (Option-click on Format)
-Apple says only that specialized or older formats appear. Third-party sources name ICNS, KTX, Photoshop, PostScript (addictivetips) and say 19 formats total vs 6 by default on 2016 macOS (TidBITS). Also commonly seen: BMP, GIF, ICO, TGA, SGI, JPEG 2000 variants; these were not confirmed by a fetched source this session. (single sources, unverified for macOS 27)
+Apple says only that specialized or older formats appear. Third-party sources name ICNS, KTX, Photoshop, PostScript (addictivetips) and say 19 formats total vs 6 by default on 2016 macOS (TidBITS). Re-fetched TidBITS: it confirms the 6-versus-19 count but does not tie names to the hidden set; it lists 14 "other image formats" in the article: ASTC, ICNS, JPEG-2000, KTX, Microsoft BMP, Microsoft Icon, OpenEXR, PBM/PGM/PPM, PVRTC, Photoshop, QuickTime Movie, SGI, TGA and PostScript. Apple's own guide still says only that Option reveals more; no vendor list exists. Not verified for macOS 27. Also commonly seen: BMP, GIF, ICO, TGA, SGI, JPEG 2000 variants; these were not confirmed by a fetched source this session. (single sources, unverified for macOS 27)
 
 formtools note: target at least JPEG, PNG, TIFF, HEIC, GIF, BMP, WebP, AVIF, PDF; Apple's list lacks WebP/AVIF export, which is a gap to fill.
 
@@ -43,3 +43,4 @@ formtools note: add a "preserve metadata" toggle and size presets to match this 
 - https://support.apple.com/guide/mac-help/use-quick-actions-in-the-finder-mchl97ff9142/mac
 - https://tidbits.com/2016/05/18/the-power-of-preview-converting-images-and-exporting-pdfs/
 - https://www.addictivetips.com/mac-os/show-hidden-export-formats-in-preview-on-macos
+- https://support.apple.com/guide/preview/prvw1012 (re-read for macOS 27)

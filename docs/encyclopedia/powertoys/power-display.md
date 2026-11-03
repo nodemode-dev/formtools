@@ -30,6 +30,8 @@ DDC/CI with VCP codes (for example 0x14 color temperature, 0x60 input source), c
 Hardware variability; input switching can lose software control; admin mode disables drag reorder.
 
 ## Cross-platform note
+(analysis, not sourced) The macOS and Linux mapping below is the researchers' own analysis, not taken from PowerToys or Microsoft documentation.
+
 DDC/CI: ddcutil (Linux, i2c-dev access), m1ddc/MonitorControl style on macOS (Apple Silicon needs private APIs; built-in panel uses DisplayServices). Linux laptops use backlight sysfs. Windows-style risk warnings apply everywhere.
 
 ## formtools note

@@ -25,7 +25,7 @@ Edits happen in View mode on an in-memory image; nothing is saved until Save, Sa
 | Text overlay | Placed by click, resizable, outline and shadow | GUIDE |
 | Watermark | Text or image (PNG with transparency) with opacity, position, offset; applied in batch mostly | SITE (FAQ), EDELIN |
 | Paste / New image | Paste clipboard into new image, resize canvas question on paste | REL |
-| Adobe Photoshop filter plugins | Listed as a vendor feature; mechanism not documented in non-wiki sources | SITE (single source) |
+| Adobe Photoshop filter plugins | Listed as a vendor feature ("Support for Adobe Photoshop Filters" on the product page, re-confirmed 2026-11); mechanism not documented anywhere reachable, because the xnview.com wiki now redirects to the forum | SITE (single source) |
 
 ## Notes for reimplementation
 
@@ -37,6 +37,7 @@ formtools note: ship a pipeline of reversible "ops" with live preview and an exp
 ## Sources
 
 * https://www.xnview.com/en/faq/
+* https://www.xnview.com/wiki/index.php/Filters (fetched 2026-11; redirects to the forum, no content)
 * https://www.xnview.com/en/how-to-resize-images/
 * https://www.xnview.com/en/xnviewmp/
 * https://www.xnview.com/download/XnViewMP%20for%20Beginners.pdf

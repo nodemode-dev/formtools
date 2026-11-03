@@ -21,6 +21,8 @@ EventMonitor listens for a shared named event to start the flow; an overlay offe
 - No documented table or multi-line modes; no version or multi-monitor detail on the learn page.
 
 ## Cross-platform note
+(analysis, not sourced) The macOS and Linux mapping below is the researchers' own analysis, not taken from PowerToys or Microsoft documentation.
+
 macOS: Vision framework (VNRecognizeTextRequest) gives on-device OCR, plus Live Text. Linux: Tesseract (traineddata per language) or PaddleOCR; Wayland capture goes through the portal. Region selection overlay is the same pattern as Screen Ruler and ZoomIt snip.
 
 formtools note: Define an OCR provider trait (Vision, Windows OCR, Tesseract) behind one capture-region-to-clipboard flow, with a language selector listing installed packs.

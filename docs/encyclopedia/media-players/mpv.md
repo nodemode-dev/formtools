@@ -42,7 +42,17 @@ formtools note: Copy this wire format for formtools remote control; add auth if 
 
 ## 6. Rendering, shaders, quality
 
-- `gpu-next` (libplacebo) is the default as of 0.41; `gpu` remains with `fast` and `high-quality` profiles; GPU context/API selectable; custom GLSL shaders via `--glsl-shaders` (an append-style list), scalers, dithering, deband (key `b`), HDR tone mapping, interpolation with `video-sync=display-resample`, ICC color management (details of these options were not in fetched excerpts; names from manual cross-references).
+- `gpu-next` (libplacebo) is the default as of 0.41; `gpu` remains with `fast` and `high-quality` profiles; GPU context/API selectable; custom GLSL shaders, scalers, dithering, deband (key `b`), HDR tone mapping, interpolation with `video-sync=display-resample`, ICC color management. Details of the shader, scaler and HDR options are in the next subsection (read from the manual source on mpv master, so a few values may be newer than 0.41).
+
+### Shader, scaler and HDR options (mpv manual, master)
+
+- Shaders: `--glsl-shader=<file>` (CLI/config alias for `--glsl-shaders-append`) adds one file per use; `--glsl-shaders=<list>` replaces the whole list (path-list option). A user shader is text with `//!` metadata lines forming HOOK, TEXTURE and PARAM blocks, with a `hook()` function returning a vec4; the manual warns the syntax is not stable. `--glsl-shader-opts=name=value,...` sets tunable parameters, optionally prefixed with a shader's base file name and a slash.
+- Scalers: `--scale` (upscale, default `lanczos`), `--cscale` (chroma, defaults to the scale filter), `--dscale` (downscale; `hermite` is the stated default), `--tscale` (temporal, used only with `--interpolation`, default `oversample`). Named filters in the manual include `bilinear`, `lanczos`, `ewa_lanczos`, `ewa_lanczossharp` (default under the `high-quality` profile), `ewa_lanczos4sharpest` (built-in anti-ringing on gpu-next), `mitchell`, `hermite`, `catmull_rom`, `oversample`, `linear`; `--scale=help` lists all. Per-scaler tuning: `-param1/-param2`, `-blur`, `-clamp`, `-taper`, `-radius`, `-antiring`, `-window`, `-wparam`. `--scaler-resizes-only` limits scaling to actual resizes.
+- Related quality options: `--deband` (with `-iterations`, `-threshold`, `-range`, `-grain`), `--dither` (`fruit`, `ordered`, `error-diffusion`, `no`), `--dither-depth`, `--interpolation` (needs a `display-` `--video-sync` mode), `--blend-subtitles`.
+- HDR output: `--target-colorspace-hint=<auto|yes|no>` sets output colorspace metadata on the swapchain for HDR passthrough (gpu-next only; auto works on Wayland, D3D11 and winvk), with `--target-colorspace-hint-mode`. Display description: `--target-prim`, `--target-trc`, `--target-peak`, `--target-contrast`, `--target-gamut`, `--target-lut`, and `--hdr-reference-white`.
+- HDR to SDR: `--tone-mapping` values `auto` (bt.2390 on gpu, spline on gpu-next), `clip`, `mobius`, `reinhard`, `hable`, `bt.2390`, `gamma`, `linear`, plus gpu-next-only `spline`, `bt.2446a`, `st2094-40`, `st2094-10`. Tuning: `--tone-mapping-param`, `-knee-*`, `-slope-*`, `-spline-contrast`, `-reinhard-contrast`, `-linear-knee`, `-exposure`; `--inverse-tone-mapping` with `--tone-mapping-max-boost`; `--tone-mapping-visualize`.
+- Gamut and peak: `--gamut-mapping-mode` values `auto`, `clip`, `perceptual`, `relative`, `saturation`, `absolute`, `desaturate`, `darken`, `warn`, `linear` (most are gpu-next only). `--hdr-compute-peak=<auto|yes|no>` computes per-frame peak and average brightness for dynamic tone mapping (needs compute shaders); related `--hdr-peak-percentile`, `--hdr-peak-decay-rate`, `--hdr-scene-threshold-low/high`, `--hdr-contrast-recovery`, `--hdr-contrast-smoothness`, `--hdr-mastering-clip`, `--hdr-film-strength`.
+- Color management: `--icc-profile=<file>`, `--icc-profile-auto` (uses the OS display profile; on Windows it must be an ICC profile, not WCS), `--icc-cache`. `--target-prim` and `--target-trc` apply only when ICC management is off.
 - Hardware decoding must be requested with `--hwdec` (try `auto` first); 0.41 prefers Vulkan hwdec.
 - Features seen in manual: A-B loop (`--ab-loop-a/b`), `--loop-file`, `--speed`, `--pitch`, backward playback `--play-direction`, bluray/dvd/cdda/dvb inputs, `--ytdl` integration (yt-dlp/youtube-dl) with format and raw options, `--start/--end/--length`, hr-seek.
 - Keys: 1-8 adjust contrast, brightness, gamma, saturation; Ctrl+h toggles hwdec; `?` shows bindings.
@@ -60,4 +70,5 @@ formtools note: Treat shaders and scalers as an "advanced video" preset layer; d
 - https://raw.githubusercontent.com/mpv-player/mpv/master/DOCS/man/ipc.rst
 - https://raw.githubusercontent.com/mpv-player/mpv/master/DOCS/man/osc.rst
 - https://raw.githubusercontent.com/mpv-player/mpv/master/DOCS/man/vo.rst
+- https://raw.githubusercontent.com/mpv-player/mpv/master/DOCS/man/options.rst
 - https://github.com/mpv-player/mpv/wiki/User-Scripts

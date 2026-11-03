@@ -42,6 +42,8 @@ Repo devdoc: three projects (app and main window, module interface and packaging
 `ConfigureEnabledUtilityEnvironmentVariables`.
 
 ## Cross-platform note
+(analysis, not sourced) The macOS and Linux mapping below is the researchers' own analysis, not taken from PowerToys or Microsoft documentation.
+
 
 (Analysis.) There is no registry on macOS or Linux; "persistent User variables" become shell startup files (`~/.zprofile`, `~/.zshenv`, `~/.profile`, `~/.config/fish/conf.d`), `systemd --user` `environment.d` fragments (Linux GUI sessions), and `launchctl setenv` or a LaunchAgent (macOS GUI apps), while "System variables" map to `/etc/environment`, `/etc/paths` and `/etc/paths.d` needing root. A profile can become a sourced snippet file that formtools injects between marker comments. A cleaner cross-platform angle is a direnv-like per-folder profile, which PowerToys lacks.
 

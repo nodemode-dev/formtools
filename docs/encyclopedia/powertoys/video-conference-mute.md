@@ -13,6 +13,8 @@ Maintainers cited maintenance mode since v0.67, low usage, hard testing and debu
 The removal PR also deleted the Webcam Report Tool and added registry cleanup so stale virtual camera entries vanish. A later (October 2026) PR removed remaining installer custom action, helper header and the deprecated Group Policy setting.
 
 ## Cross-platform note
+(analysis, not sourced) The macOS and Linux mapping below is the researchers' own analysis, not taken from PowerToys or Microsoft documentation.
+
 Muting the mic is easy via OS APIs (CoreAudio, PulseAudio/PipeWire). Camera disable is not: macOS and Linux lack a per-app global kill, so a virtual camera (CoreMediaIO extension, v4l2loopback) is the only route and carries the driver pain that killed this module.
 
 formtools note: Do not build a virtual camera; if wanted, offer a global mic mute hotkey plus an on-screen indicator only.

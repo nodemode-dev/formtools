@@ -43,6 +43,8 @@ PowerShell calls feedback providers when a command is not found; the WinGet modu
 `ConfigureEnabledUtilityCmdNotFound`.
 
 ## Cross-platform note
+(analysis, not sourced) The macOS and Linux mapping below is the researchers' own analysis, not taken from PowerToys or Microsoft documentation.
+
 
 (Analysis.) This idea already exists natively elsewhere: bash and zsh call `command_not_found_handle` / `command_not_found_handler`, which Debian/Ubuntu (`command-not-found`, PackageKit), Fedora, Arch (`pkgfile`) and Homebrew (`brew command-not-found-init`) hook. formtools could ship a shell-integration installer that appends a marked block to `~/.zshrc`, `~/.bashrc` or `config.fish`, with the same marker-based clean uninstall, and a lookup against the platform package manager.
 

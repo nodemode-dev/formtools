@@ -44,10 +44,12 @@ formtools note: keep our viewer simpler; link out to MeshLab for heavy editing.
 
 - Site mentions 3MF, glTF/GLB, NXS/NXZ (multiresolution), E57, U3D export, and VisualSFM NVM/RD.OUT projects.
 - PyMeshLab I/O page, load: 3ds, apts, asc, bre, ctm, dae, e57, es, fbx, glb, gltf, obj, off, pdb, ply, pts, ptx, qobj, stl, tri, txt, vmi, wrl, x3d, x3dv, xyz. Save: 3ds, ctm, dae, dxf, e57, idtf, json, nxs, nxz, obj, off, ply, stl, u3d, wrl, x3d, xyz.
-- Discrepancy: the PyMeshLab list does not show glTF save or 3MF, while meshlab.net advertises them; version skew is likely, verify on a current build.
+- Discrepancy resolved from the MeshLab repository source (main branch, read 2026-11-03). glTF: the io_gltf plugin declares import formats GLTF and GLB, its export list is empty, and its save function just reports a wrong save format, so glTF is load only. 3MF: the io_3mf plugin (built on Lib3MF, loaded as a library at runtime) declares both import and export of 3MF, and implements save. The PyMeshLab I/O list omits 3MF entirely, so that Python build most likely does not include the 3MF plugin; the desktop app can write 3MF only if the plugin and Lib3MF are present. Summary: glTF save N; 3MF save Y in the plugin source, not in PyMeshLab.
 
 ## Sources
 - https://www.meshlab.net/
 - https://github.com/cnr-isti-vclab/meshlab
 - https://pymeshlab.readthedocs.io/en/latest/filter_list.html
 - https://pymeshlab.readthedocs.io/en/latest/io_format_list.html
+- https://raw.githubusercontent.com/cnr-isti-vclab/meshlab/main/src/meshlabplugins/io_gltf/io_gltf.cpp
+- https://raw.githubusercontent.com/cnr-isti-vclab/meshlab/main/src/meshlabplugins/io_3mf/io_3mf.cpp

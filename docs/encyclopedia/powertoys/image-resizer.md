@@ -26,10 +26,21 @@ Batch-resizes images from the File Explorer context menu, by drag-and-drop with 
 ## How it works
 Developer docs: a shell extension DLL (context menu, registered via sparse MSIX on Windows 11, classic COM extension on Windows 10), a WPF UI app, and a core library built on the Windows Imaging Component (WIC) (source: devdocs, single source for internals). The menu appears only for image types (the extension checks perceived type). Output keeps the original codec when an encoder exists, else the fallback.
 
+## Defaults (from source, main branch, 2026-11-03)
+- Four built-in presets, all unit Pixel and fit mode Fit: Small 854 x 480, Medium 1366 x 768, Large 1920 x 1080, Phone 320 x 568 (src/modules/imageresizer/ui/Properties/Settings.cs). Names are localized resources.
+- Other defaults in the same constructor: selected preset index 0, shrink-only off, replace off, ignore orientation ON, remove metadata off, JPEG quality 90, PNG interlace Default, TIFF compression Default, filename format "%1 (%2)", keep date modified off, fallback encoder JPEG. The same file also defines a custom size of 1024 x 640 Fit and an AI size setting, which postdate the Learn page.
+
+## Supported input formats (from source)
+- The batch validator accepts these extensions, case-insensitive: .bmp .dib .gif .jfif .jpe .jpeg .jpg .jxr .png .rle .tif .tiff .wdp (ui/Models/ResizeBatch.cs). The file picker adds .exif.
+- The encoder table maps JPEG, PNG, BMP, TIFF, GIF and JPEG XR to WinRT encoders (ui/Utilities/CodecHelper.cs).
+- The context-menu handler does not check extensions: it asks the shell for the file's perceived type and shows the entry for any type registered as image (dll/ContextMenuHandler.cpp). So the menu can appear for formats (for example HEIC with a codec installed) that the validator then may not accept; that mismatch is inferred from the two code paths, not tested.
+
 ## Limitations
-No full input format list in docs; default preset values not documented in the pages fetched; no format conversion.
+No format conversion. The Learn page gives no format list or preset values; the numbers above come from the source file named, which may change between releases.
 
 ## Cross-platform note
+(analysis, not sourced) The macOS and Linux mapping below is the researchers' own analysis, not taken from PowerToys or Microsoft documentation.
+
 Replace WIC with libvips, ImageMagick or the platform codecs (ImageIO on macOS). Context menu integration: Finder Quick Actions / Services on macOS; Nautilus/Dolphin/Thunar scripts or actions on Linux. Keep the preset model, fit modes and token naming identical across OSes.
 
 ## formtools note
@@ -39,3 +50,7 @@ Core feature: presets plus Fill/Fit/Stretch, %1..%6 naming tokens, shrink-only, 
 - https://learn.microsoft.com/en-us/windows/powertoys/ (index)
 - https://learn.microsoft.com/en-us/windows/powertoys/image-resizer
 - https://raw.githubusercontent.com/microsoft/PowerToys/main/doc/devdocs/modules/imageresizer.md
+- https://raw.githubusercontent.com/microsoft/PowerToys/main/src/modules/imageresizer/ui/Properties/Settings.cs
+- https://raw.githubusercontent.com/microsoft/PowerToys/main/src/modules/imageresizer/ui/Models/ResizeBatch.cs
+- https://raw.githubusercontent.com/microsoft/PowerToys/main/src/modules/imageresizer/ui/Utilities/CodecHelper.cs
+- https://raw.githubusercontent.com/microsoft/PowerToys/main/src/modules/imageresizer/dll/ContextMenuHandler.cpp

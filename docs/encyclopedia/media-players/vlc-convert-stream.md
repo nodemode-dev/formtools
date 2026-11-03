@@ -10,7 +10,13 @@ formtools note: Model conversion as a graph of source, filters, encoder, muxer, 
 
 ## 2. Convert/Save wizard (GUI)
 
-Media, Convert/Save: add input(s), choose destination file and a profile from a dropdown, Start. Profiles are editable and can be created (container, video codec, audio codec, subtitle options). Streaming wizard: Media, Stream: choose source, pick destination (display locally, File, HTTP, MS-WMSP/MMSH, UDP, RTP, IceCast), optional SAP/SLP announce, transcoding profile, then a editable "Stream Output MRL" string is shown. Containers named for profiles: MPEG-TS, MPEG-PS, Ogg, ASF, AVI, MP4, MOV. Known quirks from the wiki: a missing file suffix can silently pick FLV; MP4 is only supported for files, not live streaming; clients can fail below 5 fps. The exact stock profile list (Video H.264+MP3 MP4, Video H.265, Audio MP3, Audio FLAC, etc.) is not in the fetched docs (unverified).
+Media, Convert/Save: add input(s), choose destination file and a profile from a dropdown, Start. Profiles are editable and can be created (container, video codec, audio codec, subtitle options). Streaming wizard: Media, Stream: choose source, pick destination (display locally, File, HTTP, MS-WMSP/MMSH, UDP, RTP, IceCast), optional SAP/SLP announce, transcoding profile, then a editable "Stream Output MRL" string is shown. Containers named for profiles: MPEG-TS, MPEG-PS, Ogg, ASF, AVI, MP4, MOV. Known quirks from the wiki: a missing file suffix can silently pick FLV; MP4 is only supported for files, not live streaming; clients can fail below 5 fps.
+
+Stock profile list (23 entries), read from the 3.0.x branch of the official VLC repository, file modules/gui/qt/components/sout/profiles.hpp, in dropdown order:
+- Video: H.264 + MP3 (MP4); VP80 + Vorbis (Webm); H.264 + MP3 (TS); H.265 + MP3 (MP4); Theora + Vorbis (OGG); MPEG-2 + MPGA (TS); Dirac + MP3 (TS); WMV + WMA (ASF); DIV3 + MP3 (ASF).
+- Audio: Vorbis (OGG); MP3; FLAC; CD (16-bit PCM in WAV).
+- Device presets: MPEG4 720p TV/device; MPEG4 1080p TV/device; DivX compatible player; iPod SD; iPod HD/iPhone/PSP; Android SD Low; Android SD High; Android HD; Youtube SD; Youtube HD.
+Each profile is a semicolon-separated key list (audio_codec, acodec_bitrate, acodec_channels, acodec_samplerate, video_codec, vcodec_bitrate, vcodec_framerate, vcodec_width/height, muxer_mux). Typical defaults are 128 kb/s stereo 44.1 kHz audio; the H.264 MP4 default leaves video bitrate at 0 while the TS variant uses 800 kb/s. This is the 3.0 branch; later versions may differ.
 
 formtools note: Show the generated command/chain beside the GUI so power users can learn and copy it.
 
@@ -39,3 +45,4 @@ Desktop and webcam capture are done as inputs in Convert/Save or Open Capture De
 - https://docs.videolan.me/vlc-user/desktop/3.0/en/advanced/streaming/introduction.html (stub)
 - https://wiki.videolan.org/Documentation:Streaming_HowTo_New/
 - https://www.videolan.org/vlc/releases/3.0.24.html
+- https://raw.githubusercontent.com/videolan/vlc/3.0.x/modules/gui/qt/components/sout/profiles.hpp

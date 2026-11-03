@@ -46,7 +46,7 @@ Apple confirms: exposure, contrast, saturation, tint "and other values", plus Au
 - Eyedropper for neutral white balance
 - Auto Level button, Reset All
 
-Slider ranges and processing order are not documented. A forum thread notes an older "Gamma" slider was removed in 10.6. (single source for slider list; version drift likely)
+Re-checked against Apple's current Preview User Guide (page selector shows macOS 27 Golden Gate down to High Sierra): the "Annotate an image" page still gives only one line, "exposure, contrast, saturation, tint, and more" plus Auto Levels and Reset All, and the macOS 10.13, 10.14, 11 and 12 versions of the same page carry identical wording. Apple publishes no slider list or ranges for Preview at any version, so the list above stays third-party and the gap stays open. (Apple's separate Photos guide documents a different, larger adjustment set; do not treat it as Preview's.) Slider ranges and processing order are not documented. A forum thread notes an older "Gamma" slider was removed in 10.6. (single source for slider list; version drift likely)
 
 formtools note: implement the slider set above via a standard image pipeline (levels, exposure, contrast, HSL/temperature, unsharp mask); ranges are ours to choose.
 
@@ -68,7 +68,7 @@ formtools note: OCR plus data-detector overlay is a high-value feature; use plat
 
 ## Visual Look Up
 
-Documented for the Photos app on Mac (landmarks, art, plants, flowers, pets, other objects) via a toolbar button or an on-photo icon. Apple's Preview guide does not mention Visual Look Up; whether Preview exposes it is unverified.
+Documented for the Photos app on Mac (landmarks, art, plants, flowers, pets, other objects) via a toolbar button or an on-photo icon. Apple's Preview guide does not mention Visual Look Up: a text search of the 47 Preview User Guide pages reachable from the macOS 27 table of contents found no occurrence. The Preview Live Text page documents only text actions (Look Up for words, translate, data detectors). Macworld's walkthrough likewise describes the feature only in Photos (since macOS 12). Conclusion: no official or journalistic source says Preview has Visual Look Up; treat it as absent in Preview unless tested on a Mac.
 
 formtools note: out of scope for v1; needs an online recognition service.
 
@@ -102,3 +102,6 @@ formtools note: add "capture screenshot into editor" and "import from folder or 
 - https://support.apple.com/guide/preview/keyboard-shortcuts-cpprvw0003/mac
 - https://www.howtogeek.com/258246/how-to-make-quick-color-corrections-to-photos-with-preview-for-os-x/
 - https://discussions.apple.com/thread/2474994 (search snippet only, not fetched)
+- https://support.apple.com/guide/preview/annotate-an-image-prvw1501/mac (re-read for macOS 27; older-version URLs under /10.0/mac/10.14, /11.0/mac/12.0, /11.0/mac/11.0, /10.0/mac/10.13)
+- https://support.apple.com/guide/preview/welcome/mac (table of contents, used for the page-wide Visual Look Up text search)
+- https://www.macworld.com/article/2424053/how-to-use-plants-birds-and-other-object-identifiers-in-photos.html

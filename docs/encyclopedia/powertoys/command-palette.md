@@ -53,6 +53,8 @@ Extensions: Gallery (curated feed, installs through WinGet, community list in th
 `ConfigureEnabledUtilityCmdPal`. (PowerToys Run has richer plugin policies; Command Palette has none beyond enabled state in the docs table.)
 
 ## Cross-platform note
+(analysis, not sourced) The macOS and Linux mapping below is the researchers' own analysis, not taken from PowerToys or Microsoft documentation.
+
 
 (Analysis.) macOS has Spotlight, Raycast and Alfred as direct competitors; implementing a launcher means a borderless panel (NSPanel), a global hotkey via Carbon or an event tap, an app index from LaunchServices, Spotlight metadata queries for files, and Accessibility for window switching. Linux: global shortcuts are the hard part on Wayland (use the xdg-desktop-portal GlobalShortcuts portal, or a compositor binding that runs `formtools --toggle`); app index from `.desktop` files; file search via Tracker or a custom index; layer-shell or a plain always-on-top window for the surface. The extension idea (out-of-process providers exposing commands and pages over a typed IPC) maps well to JSON-RPC over stdio or a local socket, which is language-neutral and works on all three OSes. The Dock maps to a macOS menu bar/Dock-like panel or a Linux layer-shell bar, and is the least portable part.
 

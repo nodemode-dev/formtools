@@ -71,6 +71,8 @@ A registry-based module: when you toggle a handler, PowerToys writes shell regis
 - Source files above the size limit show an error instead of a preview.
 
 ## Cross-platform note
+(analysis, not sourced) The macOS and Linux mapping below is the researchers' own analysis, not taken from PowerToys or Microsoft documentation.
+
 
 (Analysis.) macOS: Quick Look is the equivalent, built from Preview Extensions (`QLPreviewingController`) and Thumbnail Extensions (`QLThumbnailProvider`) shipped in an app bundle; Markdown, source code and SVG are easy with WKWebView; PDF is native (PDFKit). Linux: thumbnails use the freedesktop thumbnailer spec (`.thumbnailer` files that name a command and MIME types, output to `~/.cache/thumbnails`), consumed by Nautilus, Dolphin, Thunar; previews have no common pane, so Sushi (GNOME), Dolphin's preview panel (KDE) or a formtools-own preview window. MIME types should replace extension lists. The out-of-process helper-per-file design is a good isolation pattern for all platforms.
 

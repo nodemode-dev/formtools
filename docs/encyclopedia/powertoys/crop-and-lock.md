@@ -41,6 +41,8 @@ Repo devdoc: separate window classes per mode (`ThumbnailCropAndLockWindow` with
 `ConfigureEnabledUtilityCropAndLock`.
 
 ## Cross-platform note
+(analysis, not sourced) The macOS and Linux mapping below is the researchers' own analysis, not taken from PowerToys or Microsoft documentation.
+
 
 (Analysis.) Thumbnail and Screenshot map to window capture: macOS ScreenCaptureKit (needs Screen Recording permission) streaming a single window with a source rectangle; Linux PipeWire screencast through the xdg-desktop-portal (user prompt per session) or X11 Composite/XShm. Reparent has no safe equivalent on macOS or Wayland because a process cannot embed another app's window; on X11 it is possible through XEmbed-like reparenting but is fragile. Offer only Thumbnail and Screenshot outside Windows.
 

@@ -25,6 +25,7 @@ Research date: 2026-11-03.
 ## WinDirStat duplicate view
 
 - WinDirStat (see disk-usage.md) also lists duplicates, with optional sparse hashing that labels sampled matches "Probable duplicates".
+- formtools note: label sampled-hash matches as probable and offer a full-hash confirm step before any delete; WinDirStat's `/SaveDupesTo` report flag is a model for scriptable output.
 
 ## Design patterns to adopt
 

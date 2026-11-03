@@ -20,6 +20,8 @@ Click-driven animated overlay; docs give no implementation detail (single source
 Several defaults unstated.
 
 ## Cross-platform note
+(analysis, not sourced) The macOS and Linux mapping below is the researchers' own analysis, not taken from PowerToys or Microsoft documentation.
+
 macOS and Linux have accessibility pointer-highlight features of varying strength; a portable approach is a click-through transparent overlay window fed by a global mouse listener (macOS needs Input Monitoring permission; Wayland restricts global listeners).
 
 ## formtools note
