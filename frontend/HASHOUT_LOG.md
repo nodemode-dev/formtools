@@ -15,6 +15,18 @@ Context for the frontend code, kept here instead of in comments.
 - Open in its app calls the OS default app through the shell's `open_with_default`. The FormPortal `open_file` hand-off is Phase 10 work.
 - Drag and drop: the desktop app uses Tauri's webview drag-drop event (paths), so the shell no longer turns the drop handler off. In a browser tab dropped files have no paths, and a toast says so.
 
+## v0.3.0 · 2026-11-02 · Phase 2 finish, Phases 3 and 4
+
+- Browser: multi-select (Mod-click toggles, Shift-click and Shift-arrows extend from the anchor, Mod+A all). `selection()` is the picked set, or the focused item. A reload with `keepSelection` restores the focus ring without touching the picked set, because the batch tools reload the folder after a run.
+- Ratings and labels follow Lightroom's keys: 0 to 5 rate, 6 to 9 toggle red, yellow, green and blue, in the browser and the viewer. Tags live in XMP sidecars (`name.ext.xmp`) through `/api/meta/*`; the browser reads them in one batch after each render and paints a badge. The badge stars are the `ftStarFill` icon, not the U+2605 character, because the no-emoji gate scans that range.
+- Folder tree (`ui/tree.ts`): roots are the engine's places plus "Computer" (`/`) on macOS and Linux, children load on first expand, and reveal expands the deepest unopened ancestor until the open folder is visible. A reveal after a navigation shifts the rows below (measured 0.0003 under throttling); it is the result the navigation asked for, recorded rather than hidden.
+- Viewer: "actual pixels" moved from 1 to A, because digits now rate. Crop (R) is an overlay in image coordinates, with aspect presets; dragging inside the box moves it, outside draws a new one. Resize (Shift+R) and Save as open `SaveDialog`, which never replaces the original unless "Replace the original" is chosen, and gives focus back to whatever had it. Pixel inspector (P) samples a decoded copy (at most 40 megapixels; larger pictures are sampled from a scaled copy) and copies the hex on click.
+- Media: every video and audio file opens in the viewer; native containers start at once from the raw file; `/api/media/info` decides whether a lossless remux stream (`/api/media/stream`) replaces it. The remux stream cannot seek by byte range; the bar says so. `MediaBar` adds speed, A-B loop (B), frame steps (comma and period, from the stream's fps), J and L, subtitles as `<track>` elements (embedded and beside the file), snapshots and lossless clips and audio extraction through jobs. Audio gets a waveform canvas, drawn once; the playhead and A-B marks move with CSS variables only.
+- Viewer grid rows are pinned (`grid-row` 1, 2, 3) because the media bar leaves the grid when hidden, which had collapsed the stage to zero height.
+- Tools page (`ui/tools/`): Batch convert, Resize and Rename built once and switched with `hidden`. Action cards are generated from `/api/batch/actions`; the preview reloads 400 ms after the last change and swaps the image only once the new one has decoded. Rename keeps the applied mapping for Undo, because the plan is recomputed after an apply.
+- Jobs (`ui/jobs.ts`): a status-bar button and a popover, polled every 400 ms only while a job runs; rows patch in place.
+- Toasts use one slot that updates in place: a stack of three moved the first toast when a second appeared (layout shift 0.0009).
+
 ## v0.2.0 · 2026-11-02 · viewer and browser (Phase 2)
 
 - Browser: `patchList` keyed by path; thumbnails load through an IntersectionObserver with a 400 px margin and are decoded off-screen before the `img` is shown, so a tile goes from glyph to picture in one write. Tiles reserve a 4:3 box; `content-visibility: auto` keeps large folders cheap.

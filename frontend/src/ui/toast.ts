@@ -1,7 +1,7 @@
 import { el, setText } from './dom';
 import { icon } from './icons';
 
-const MAX = 3;
+const MAX = 1;
 const pool: HTMLElement[] = [];
 
 export function toast(text: string, kind: 'info' | 'error' = 'info', ms = 3200): void {

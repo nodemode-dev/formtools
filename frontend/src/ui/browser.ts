@@ -1,8 +1,11 @@
-import { api, type Entry, type Listing, type Place } from '../io/api';
-import { delayedIndicator, el, escapeHtml, patchList, q, setClass, setHidden, setText, setValue, type Disposer } from './dom';
+import { api, type Entry, type Label, type Listing, type Place, type Tag } from '../io/api';
+import { delayedIndicator, el, escapeHtml, isMac, patchList, q, setClass, setHidden, setText, setValue, type Disposer } from './dom';
 import { icon } from './icons';
 import { loadPrefs, onPrefs, updatePrefs, type Prefs } from './prefs';
 import { toast } from './toast';
+import { FolderTree } from './tree';
+
+export const LABEL_KEYS: Record<string, Label> = { '6': 'red', '7': 'yellow', '8': 'green', '9': 'blue' };
 
 export interface BrowserDeps {
   openFile: (entries: Entry[], index: number) => void;
@@ -14,7 +17,9 @@ export interface BrowserDeps {
 const TYPE_ICON: Record<string, string> = {
   dir: 'folder', image: 'fileImage', video: 'ftMedia', audio: 'ftAudio', model: 'ftCube', text: 'ftText', archive: 'ftArchive', font: 'ftFont', pdf: 'ftText', family: 'ftFamily', other: 'newFile',
 };
-const THUMBABLE = new Set(['image', 'family']);
+const THUMBABLE = new Set(['image', 'family', 'video', 'audio']);
+const TAGGABLE = new Set(['image', 'family', 'video']);
+const thumbFor = (e: Entry): string => e.type === 'video' || e.type === 'audio' ? api.mediaThumbUrl(e.path, 320, e.mtime) : api.thumbUrl(e.path, 320, e.mtime);
 const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
 
 function fmtSize(n: number): string {
@@ -40,6 +45,11 @@ export class Browser {
   private listing: Listing | null = null;
   private shown: Entry[] = [];
   private selected = -1;
+  private readonly picked = new Set<string>();
+  private anchor = -1;
+  private readonly tags = new Map<string, Tag>();
+  private tagTimer = 0;
+  private readonly tree: FolderTree;
   private loadSeq = 0;
   private stopIndicator: Disposer | null = null;
   private readonly io: IntersectionObserver;
@@ -48,7 +58,7 @@ export class Browser {
     const p = loadPrefs();
     this.root = el<HTMLElement>(`
       <section class="ft-browser ft-page" aria-label="Browser" data-page="browse" hidden>
-        <aside class="ft-places" aria-label="Places"><div class="ft-places-title">Places</div><div class="ft-places-list"></div></aside>
+        <aside class="ft-places" aria-label="Places"><div class="ft-places-title">Places</div><div class="ft-places-list"></div><div class="ft-places-title">Folders</div><div class="ft-tree-slot"></div></aside>
         <div class="ft-browser-main">
           <div class="ft-bbar">
             <button class="cv-tt-btn" type="button" data-act="up" title="Enclosing folder" aria-label="Enclosing folder">${icon('ftUp', 16)}</button>
@@ -78,6 +88,8 @@ export class Browser {
     this.size = q(this.root, '.ft-size');
     this.empty = q(this.root, '.ft-grid-empty');
     this.bar = q(this.root, '.ft-bbar');
+    this.tree = new FolderTree((path) => void this.open(path));
+    q(this.root, '.ft-tree-slot').replaceWith(this.tree.root);
     this.io = new IntersectionObserver((entries) => {
       for (const e of entries) if (e.isIntersecting) this.loadThumb(e.target as HTMLElement);
     }, { root: this.grid, rootMargin: '400px 0px' });
@@ -111,7 +123,12 @@ export class Browser {
     });
     this.grid.addEventListener('click', (e) => {
       const item = e.target instanceof Element ? e.target.closest<HTMLElement>('.ft-item') : null;
-      if (item) this.select(this.shown.findIndex((x) => x.path === item.dataset.key));
+      if (!item) return;
+      const i = this.shown.findIndex((x) => x.path === item.dataset.key);
+      const toggle = isMac ? e.metaKey : e.ctrlKey;
+      if (e.shiftKey) this.select(i, 'range');
+      else if (toggle) this.select(i, 'toggle');
+      else this.select(i);
     });
     this.grid.addEventListener('dblclick', (e) => {
       const item = e.target instanceof Element ? e.target.closest<HTMLElement>('.ft-item') : null;
@@ -134,6 +151,9 @@ export class Browser {
     try {
       const home = await api.home();
       this.setPlaces(home.roots);
+      const roots = home.roots.map((r) => ({ name: r.name, path: r.path, has_children: true }));
+      if (home.home.startsWith('/') && !roots.some((r) => r.path === '/')) roots.push({ name: 'Computer', path: '/', has_children: true });
+      this.tree.setRoots(roots);
       const last = loadPrefs().lastFolder;
       await this.open(last || home.home, false, home.home);
     } catch (e) {
@@ -165,11 +185,16 @@ export class Browser {
       this.listing = listing;
       this.pathInput.value = listing.path;
       if (!keepSelection) { this.filter.value = ''; this.grid.scrollTop = 0; }
+      if (!keepSelection || listing.path !== prevPath) { this.picked.clear(); this.anchor = -1; }
       this.selected = -1;
       this.render();
-      if (keep) { const i = this.shown.findIndex((x) => x.path === keep); if (i >= 0) this.select(i); }
+      if (keep) {
+        const i = this.shown.findIndex((x) => x.path === keep);
+        if (i >= 0) { if (keepSelection) this.markSelected(i); else this.select(i); }
+      }
       updatePrefs({ lastFolder: listing.path });
       this.deps.folderChanged(listing.path);
+      void this.tree.reveal(listing.path);
     } catch (e) {
       if (seq !== this.loadSeq) return;
       if (fallback && fallback !== path) { await this.open(fallback); return; }
@@ -205,6 +230,7 @@ export class Browser {
       setText(q(node, '.ft-item-name'), e.name);
       setText(q(node, '.ft-item-meta'), e.kind === 'dir' ? 'Folder' : `${e.ext.toUpperCase() || 'File'} · ${fmtSize(e.size)}`);
       setText(q(node, '.ft-item-date'), fmtDate(e.mtime));
+      this.paintTag(node, this.tags.get(e.path));
       const stamp = String(e.mtime);
       if (node.dataset.stamp !== stamp) {
         node.dataset.stamp = stamp;
@@ -217,6 +243,7 @@ export class Browser {
       create: (e) => {
         const n = el<HTMLElement>(`<div class="ft-item" role="option" aria-selected="false" data-type="${e.kind === 'dir' ? 'dir' : e.type}">
           <div class="ft-item-thumb"><span class="ft-item-glyph">${icon(TYPE_ICON[e.kind === 'dir' ? 'dir' : e.type] ?? 'newFile', 28)}</span><img class="ft-item-img" alt="" decoding="async" hidden></div>
+          <span class="ft-item-tag" aria-hidden="true"><span class="ft-item-stars"></span><i class="ft-item-label"></i></span>
           <span class="ft-item-name"></span><span class="ft-item-meta"></span><span class="ft-item-date"></span></div>`);
         n.dataset.stamp = String(e.mtime);
         update(n, e);
@@ -231,6 +258,59 @@ export class Browser {
     const i = prevKey ? this.shown.findIndex((x) => x.path === prevKey) : -1;
     this.markSelected(i);
     this.report();
+    this.queueTags();
+  }
+
+  private paintTag(node: HTMLElement, tag: Tag | undefined): void {
+    const rating = tag?.rating ?? 0, label = tag?.label ?? null;
+    const stars = q(node, '.ft-item-stars');
+    if (stars.dataset.rating !== String(rating)) { stars.dataset.rating = String(rating); stars.innerHTML = icon('ftStarFill', 10).repeat(rating); }
+    const dot = q(node, '.ft-item-label');
+    if ((dot.dataset.label ?? '') !== (label ?? '')) { if (label) dot.dataset.label = label; else delete dot.dataset.label; }
+    setClass(node, 'is-tagged', rating > 0 || !!label);
+  }
+
+  private queueTags(): void {
+    window.clearTimeout(this.tagTimer);
+    this.tagTimer = window.setTimeout(() => void this.loadTags(), 120);
+  }
+
+  private async loadTags(): Promise<void> {
+    const want = this.shown.filter((e) => e.kind === 'file' && TAGGABLE.has(e.type) && !this.tags.has(e.path)).slice(0, 2000);
+    if (!want.length) return;
+    const folder = this.listing?.path;
+    try {
+      const r = await api.metaRead(want.map((e) => e.path));
+      for (const e of want) this.tags.set(e.path, r.items[e.path] ?? { rating: 0, label: null });
+      if (folder !== this.listing?.path) return;
+      for (const node of Array.from(this.grid.children) as HTMLElement[]) { const t = this.tags.get(node.dataset.key ?? ''); if (t) this.paintTag(node, t); }
+    } catch {
+      for (const e of want) this.tags.set(e.path, { rating: 0, label: null });
+    }
+  }
+
+  private async tag(change: Partial<Tag>): Promise<void> {
+    const targets = this.selection().filter((e) => e.kind === 'file' && TAGGABLE.has(e.type));
+    if (!targets.length) return;
+    let failed = 0;
+    await Promise.all(targets.map(async (e) => {
+      try {
+        const t = await api.metaWrite(e.path, change);
+        this.tags.set(e.path, t);
+        const node = Array.from(this.grid.children).find((n) => (n as HTMLElement).dataset.key === e.path) as HTMLElement | undefined;
+        if (node) this.paintTag(node, t);
+      } catch { failed++; }
+    }));
+    if (failed) toast(`${failed} file${failed === 1 ? '' : 's'} could not be tagged.`, 'error');
+    else this.deps.status(change.rating !== undefined ? `${change.rating ? `${change.rating} star${change.rating === 1 ? '' : 's'}` : 'Rating cleared'} on ${targets.length} file${targets.length === 1 ? '' : 's'}` : `${change.label ? `Label ${change.label}` : 'Label cleared'} on ${targets.length} file${targets.length === 1 ? '' : 's'}`);
+  }
+
+  tagFor(path: string): Tag | undefined { return this.tags.get(path); }
+
+  setTag(path: string, tag: Tag): void {
+    this.tags.set(path, tag);
+    const node = Array.from(this.grid.children).find((n) => (n as HTMLElement).dataset.key === path) as HTMLElement | undefined;
+    if (node) this.paintTag(node, tag);
   }
 
   private loadThumb(node: HTMLElement): void {
@@ -240,7 +320,7 @@ export class Browser {
     const entry = this.shown.find((x) => x.path === node.dataset.key);
     if (!entry) return;
     const img = q<HTMLImageElement>(node, '.ft-item-img');
-    const src = api.thumbUrl(entry.path, 320, entry.mtime);
+    const src = thumbFor(entry);
     img.dataset.src = src;
     const probe = new Image();
     probe.decoding = 'async';
@@ -256,28 +336,61 @@ export class Browser {
   }
 
   private markSelected(i: number): void {
-    const prev = this.selected >= 0 ? this.grid.querySelector<HTMLElement>(`.ft-item.is-selected`) : null;
-    if (prev) { setClass(prev, 'is-selected', false); prev.setAttribute('aria-selected', 'false'); }
     this.selected = i;
-    if (i < 0) return;
-    const node = this.grid.children[i] as HTMLElement | undefined;
-    if (!node) return;
-    setClass(node, 'is-selected', true);
-    node.setAttribute('aria-selected', 'true');
+    const focusKey = i >= 0 ? this.shown[i]?.path : undefined;
+    for (const node of Array.from(this.grid.children) as HTMLElement[]) {
+      const key = node.dataset.key ?? '';
+      const on = this.picked.has(key);
+      setClass(node, 'is-selected', on);
+      setClass(node, 'is-focus', key === focusKey);
+      if (node.getAttribute('aria-selected') !== String(on)) node.setAttribute('aria-selected', String(on));
+    }
   }
 
-  private select(i: number): void {
+  private select(i: number, mode: 'one' | 'toggle' | 'range' = 'one'): void {
     if (i < 0 || i >= this.shown.length) return;
+    const key = this.shown[i].path;
+    if (mode === 'toggle') {
+      if (this.picked.has(key)) this.picked.delete(key); else this.picked.add(key);
+      this.anchor = i;
+    } else if (mode === 'range' && this.anchor >= 0) {
+      const [a, b] = this.anchor < i ? [this.anchor, i] : [i, this.anchor];
+      this.picked.clear();
+      for (let k = a; k <= b; k++) this.picked.add(this.shown[k].path);
+    } else {
+      this.picked.clear();
+      this.picked.add(key);
+      this.anchor = i;
+    }
     this.markSelected(i);
     (this.grid.children[i] as HTMLElement | undefined)?.scrollIntoView({ block: 'nearest' });
     this.report();
   }
+
+  selectAll(): void {
+    this.picked.clear();
+    for (const e of this.shown) this.picked.add(e.path);
+    this.markSelected(this.selected < 0 ? 0 : this.selected);
+    this.report();
+  }
+
+  selection(): Entry[] {
+    const picked = this.shown.filter((e) => this.picked.has(e.path));
+    if (picked.length) return picked;
+    const cur = this.selected >= 0 ? this.shown[this.selected] : undefined;
+    return cur ? [cur] : [];
+  }
+
+  selectedFiles(): Entry[] { return this.selection().filter((e) => e.kind === 'file'); }
+
+  files(): Entry[] { return this.shown.filter((e) => e.kind === 'file'); }
 
   private report(): void {
     const files = this.shown.filter((e) => e.kind === 'file').length;
     const dirs = this.shown.length - files;
     const sel = this.selected >= 0 ? this.shown[this.selected] : null;
     const base = `${dirs} folder${dirs === 1 ? '' : 's'}, ${files} file${files === 1 ? '' : 's'}`;
+    if (this.picked.size > 1) { this.deps.status(`${base} · ${this.picked.size} selected`); return; }
     this.deps.status(sel ? `${base} · ${sel.name}${sel.kind === 'file' ? ` · ${fmtSize(sel.size)}` : ''}` : base);
   }
 
@@ -302,7 +415,17 @@ export class Browser {
     if (!n && e.key !== 'Backspace') return;
     const cols = this.columns();
     const at = this.selected;
-    const go = (i: number): void => { e.preventDefault(); this.select(Math.max(0, Math.min(n - 1, i))); };
+    const go = (i: number): void => { e.preventDefault(); this.select(Math.max(0, Math.min(n - 1, i)), e.shiftKey ? 'range' : 'one'); };
+    const mod = isMac ? e.metaKey : e.ctrlKey;
+    if (mod && e.key.toLowerCase() === 'a') { e.preventDefault(); this.selectAll(); return; }
+    if (!mod && !e.altKey && /^[0-5]$/.test(e.key)) { e.preventDefault(); void this.tag({ rating: Number(e.key) }); return; }
+    if (!mod && !e.altKey && LABEL_KEYS[e.key]) {
+      e.preventDefault();
+      const cur = this.selection()[0];
+      const now = cur ? this.tags.get(cur.path)?.label : null;
+      void this.tag({ label: now === LABEL_KEYS[e.key] ? null : LABEL_KEYS[e.key] });
+      return;
+    }
     switch (e.key) {
       case 'ArrowRight': go(at < 0 ? 0 : at + 1); break;
       case 'ArrowLeft': go(at < 0 ? 0 : at - 1); break;

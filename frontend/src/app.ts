@@ -14,11 +14,14 @@ import { Viewer } from './ui/viewer';
 import { StatusBar } from './ui/status';
 import { SettingsDialog } from './ui/settings';
 import { Palette } from './ui/palette';
+import { Jobs } from './ui/jobs';
+import { SaveDialog } from './ui/save-dialog';
+import { ToolsPage, type ToolId } from './ui/tools/page';
 import { addRecent, loadPrefs } from './ui/prefs';
 import { applyTheme, readChoice, setTheme } from './ui/themes';
 import { toast } from './ui/toast';
 
-type Page = 'home' | 'browse' | 'view';
+type Page = 'home' | 'browse' | 'view' | 'tool';
 
 const SHELL = `
   <div class="cv-app ft-app">
@@ -49,7 +52,10 @@ export function startApp(): void {
   const commands = new Commands();
   const settings = new SettingsDialog();
   const palette = new Palette(commands);
-  overlay.append(settings.root, palette.root);
+  const jobs = new Jobs();
+  const saveDialog = new SaveDialog();
+  overlay.append(settings.root, palette.root, jobs.panel, saveDialog.root);
+  status.mount(jobs.button);
 
   let page: Page = 'home';
   let lastViewerPath: string | null = null;
@@ -102,15 +108,37 @@ export function startApp(): void {
     title: (name) => setText(q(header, '.cv-tb-doc'), name),
     openIn,
     reveal: (p) => { if (inDesktop()) void host.reveal(p); else toast('Show in folder works in the desktop app.'); },
+    tagOf: (p) => browser.tagFor(p),
+    tagged: (p, t) => browser.setTag(p, t),
+    saved: () => { if (browser.path) void browser.open(browser.path, true); },
+    jobs,
+    saveDialog,
   });
-  area.append(home.root, browser.root, viewer.root);
+  let toolReturn: Page = 'browse';
+  const selectionPaths = (): string[] => {
+    const sel = browser.selection().map((e) => e.path);
+    return sel.length ? sel : browser.path ? [browser.path] : [];
+  };
+  const tools = new ToolsPage(selectionPaths, jobs, () => setPage(toolReturn), () => { if (browser.path) void browser.open(browser.path, true); });
+  const openTool = (id: ToolId): void => {
+    if (page !== 'tool') toolReturn = page;
+    const fromViewer = page === 'view' && viewer.current ? [viewer.current.path] : null;
+    const inputs = fromViewer ?? (page === 'browse' ? selectionPaths() : undefined);
+    tools.show(id, inputs);
+    setPage('tool');
+  };
+  area.append(home.root, browser.root, viewer.root, tools.root);
 
-  const anyOverlay = (): boolean => settings.isOpen || palette.isOpen;
+  const anyOverlay = (): boolean => settings.isOpen || palette.isOpen || saveDialog.isOpen;
   const isText = (t: EventTarget | null): boolean => t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement || t instanceof HTMLSelectElement;
 
   commands.add(
     { id: 'go-home', label: 'Home', group: 'Go', description: 'Show the Home screen with every tool.', useWhen: 'Use when the person wants the start page.', keys: ['Mod+Shift+H'], run: () => setPage('home'), checked: () => page === 'home' },
     { id: 'go-browse', label: 'Browser', group: 'Go', description: 'Show the folder browser.', useWhen: 'Use when the person wants to look through a folder.', keys: ['Mod+B'], run: () => setPage('browse'), checked: () => page === 'browse' },
+    { id: 'tool-convert', label: 'Batch Convert...', group: 'Tools', description: 'Convert pictures in batches with an ordered list of actions, presets and naming tokens.', useWhen: 'Use when many pictures need the same changes or a new format.', keys: ['Mod+Shift+C'], run: () => openTool('convert'), checked: () => page === 'tool' && tools.current === 'convert' },
+    { id: 'tool-resize', label: 'Resize Pictures...', group: 'Tools', description: 'Resize pictures to a size, a box or a percentage.', useWhen: 'Use when pictures need to be smaller or a fixed size.', keys: ['Mod+Shift+E'], run: () => openTool('resize'), checked: () => page === 'tool' && tools.current === 'resize' },
+    { id: 'tool-rename', label: 'Rename...', group: 'Tools', description: 'Rename files and folders with rules, counters, dates and a live preview.', useWhen: 'Use when many files need consistent names.', keys: ['Mod+Shift+N'], run: () => openTool('rename'), checked: () => page === 'tool' && tools.current === 'rename' },
+    { id: 'select-all-files', label: 'Select All Files', group: 'Edit', description: 'Select everything in the browser.', useWhen: 'Use before a batch tool.', enabled: () => page === 'browse', run: () => browser.selectAll() },
     { id: 'go-viewer', label: 'Viewer', group: 'Go', description: 'Return to the image last opened.', useWhen: 'Use when the person wants the viewer back.', run: () => setPage('view'), enabled: () => viewer.current !== null, checked: () => page === 'view' },
     { id: 'open-folder', label: 'Open Folder...', group: 'File', description: 'Pick a folder and browse it.', useWhen: 'Use when the person names a folder to look at.', keys: ['Mod+Shift+O'], run: async () => {
       if (inDesktop()) { const p = await host.pickFolder(); if (p) void openPath(p); }
@@ -144,6 +172,7 @@ export function startApp(): void {
     { label: 'File', items: ['open-files', 'open-folder', '-', 'open-in', 'reveal'] },
     { label: 'Edit', items: ['undo', 'redo', '-', 'cut', 'copy', 'paste', 'select-all', '-', 'settings'] },
     { label: 'View', items: ['go-home', 'go-browse', 'go-viewer', '-', 'previous', 'next', '-', 'palette', 'toggle-light'] },
+    { label: 'Tools', items: ['tool-convert', 'tool-resize', 'tool-rename', '-', 'select-all-files'] },
   ];
 
   let menus: NativeMenus | null = null;
