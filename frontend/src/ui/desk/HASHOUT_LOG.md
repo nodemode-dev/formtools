@@ -1,0 +1,15 @@
+# HASHOUT_LOG · ui/desk
+
+Context for the desktop utilities page and its Preferences panel, kept here instead of in comments.
+
+## v0.5.0 · 2026-11-03 · main window (builder F2)
+
+- `DeskPage` is built once, hidden, and switches nine sections with `hidden`: Colour picker, Screen ruler, Text extractor, Zoom and draw (one tab for both tools), Break timer, Awake, Always on top, Hosts file, Environment. It asks `desk.caps()` once through `store.ts` (`deskCaps()` is memoised) and hides the tab of an unsupported utility; when nothing is supported, or there is no desktop app, every tab stays and each section shows one sentence and no buttons.
+- Section classes extend `DeskSection` (`common.ts`): `setSupport`, `describe(caps)`, `shown()`, `run(tool)`, `result(r)`. Results and shortcuts are routed by tool id from `DeskPage.handleResult` and `handleShortcut`.
+- Picker, ruler and text keep their last picks (24), measures (20) and texts (12) in localStorage (`formtools_desk_picks`, `_measures`, `_texts`). Rows are patched by key; nothing is cleared and refilled.
+- Preferences live in `formtools_desk_prefs` (`store.ts`). `DeskPrefs` is a self-contained `ft-sec` the lead mounts in Preferences; its shortcut fields record keys into Tauri accelerators (`CommandOrControl+Shift+Alt+C`), show Ctrl Shift Alt C, or the Mac symbols (written as escapes in `accel.ts`). Escape cancels, Backspace clears, Tab leaves the field. A shortcut needs a modifier other than Shift unless it is an F key. Shell refusals from `desk_shortcuts_set` appear under the field in a reserved line.
+- Zero-flash rules followed: every changing label sits in a reserved width (`min-width` on the Save, Reload, Add, Copy and countdown buttons, the hint and state lines, the colour value line); controls are disabled, never hidden, while a request runs or nothing has changed; validation, error and backup lines keep their height when empty; the awake radio shows the requested mode at once and keeps it while the engine answers.
+- Hosts: rows keyed by a client id; after a save the engine's rows take the keys of the rows with the same address and names, so the table is patched, not rebuilt. New rows are sent without `line`. Blank new rows are ignored. A row's message appears only after its first edit or blur. Save arms ("Write as administrator?") only when the engine reports the file is not writable; Reload arms ("Discard changes?") only when there are unsaved edits.
+- Environment: rows keyed by variable name across scopes, so a scope switch patches the same nodes; unsaved values are kept in a draft map keyed by scope and name and survive a reload. Remove always takes two clicks; Save takes two on the System scope. Scopes the engine does not list are disabled tabs.
+- Awake reads `until` as epoch milliseconds, or seconds when the number is below 1e12.
+- No desktop app: the page does not call `/api/hosts` or `/api/env` (the caps call is the gate, as the contract says); the harness fakes `__TAURI_INTERNALS__` to exercise the sections in a browser.
