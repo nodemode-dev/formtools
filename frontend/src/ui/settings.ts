@@ -60,6 +60,7 @@ export class SettingsDialog {
               <section class="ft-sec" data-sec="integration"><h3>Integration</h3>
                 <label class="ft-row"><span class="ft-row-label">On macOS, keep the menus in the window (next start)</span><input type="checkbox" class="ft-check ft-menus-in-window"></label>
                 <p class="ft-note">Open in its app hands a file to the Form app that makes it through FormPortal when FormPortal is installed, and to the system's default app otherwise.</p>
+                <div class="ft-sec-slot" data-slot="osmenu"></div>
               </section>
               <section class="ft-sec" data-sec="about"><h3>About</h3>
                 <p class="ft-note">formtools ${VERSION} · Copyright (C) 2026 NodeAgentc, Inc. · Apache License 2.0</p>

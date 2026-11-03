@@ -26,6 +26,10 @@
 .ft-range-out { width: 48px; color: var(--text-muted); font-size: 12px; font-variant-numeric: tabular-nums; text-align: right; }
 .ft-accent { width: 40px; height: 28px; padding: 0; border: 1px solid var(--line-2); border-radius: var(--radius); background: transparent; }
 .ft-note { margin: var(--space-2) 0; color: var(--text-muted); font-size: 12px; line-height: 1.5; }
+.ft-osmenu { margin-top: var(--space-3); }
+.ft-osmenu-title { margin: 0 0 var(--space-1); color: var(--text-primary); font-size: 12px; font-weight: 600; }
+.ft-osmenu-btns { margin-top: var(--space-2); }
+.ft-osmenu-note { min-height: 36px; }
 .ft-swatches { display: flex; flex-wrap: wrap; gap: 6px; }
 .ft-swatches .nm-theme-swatch { width: 30px; height: 30px; padding: 0; border: 2px solid; border-radius: 8px; cursor: pointer; }
 .ft-swatches .nm-theme-swatch:focus-visible { outline: 2px solid var(--accent-color); outline-offset: 2px; }

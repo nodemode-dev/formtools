@@ -21,6 +21,7 @@ import { UtilitiesPage, type UtilId } from './ui/utilities/page';
 import './ui/desk/icons';
 import { DeskPage } from './ui/desk/page';
 import { DeskPrefs } from './ui/desk/prefs';
+import { ContextMenuPanel } from './ui/osmenu';
 import { desk, type DeskCaps } from './io/desk';
 import { addRecent, loadPrefs } from './ui/prefs';
 import { applyTheme, readChoice, setTheme } from './ui/themes';
@@ -151,6 +152,8 @@ export function startApp(): void {
   const deskPage = new DeskPage({ status: (t) => status.setHint(t), back: () => setPage(toolReturn) });
   const deskPrefs = new DeskPrefs();
   settings.mount('desk', deskPrefs.root, () => deskPrefs.refresh());
+  const osMenu = new ContextMenuPanel();
+  settings.mount('osmenu', osMenu.root, () => osMenu.refresh());
   const openDesk = (section: string): void => {
     if (page !== 'tool' && page !== 'util' && page !== 'desk') toolReturn = page;
     deskPage.show(section);
@@ -248,6 +251,22 @@ export function startApp(): void {
       setClass(document.documentElement, 'is-dragging-files', ev.payload.type === 'enter' || ev.payload.type === 'over');
     })).catch(() => undefined);
     void host.onOpenPaths(dropTarget);
+    const pending = new Map<string, { paths: string[]; timer: number }>();
+    const runTool = (tool: string, paths: string[]): void => {
+      if (tool === 'view') { if (paths.length) void openPath(paths[0]); return; }
+      if (page !== 'tool' && page !== 'util' && page !== 'desk') toolReturn = page;
+      if (tool === 'convert' || tool === 'resize' || tool === 'rename') { tools.show(tool, paths); setPage('tool'); return; }
+      const util = ({ hash: 'hash', dupes: 'dupes', disk: 'disk' } as Record<string, UtilId>)[tool];
+      if (util) { utilities.show(util, paths); setPage('util'); return; }
+      if (paths.length) void openPath(paths[0]);
+    };
+    void host.onOpenTool((tool, paths) => {
+      const cur = pending.get(tool) ?? { paths: [], timer: 0 };
+      cur.paths.push(...paths.filter((p) => !cur.paths.includes(p)));
+      window.clearTimeout(cur.timer);
+      cur.timer = window.setTimeout(() => { pending.delete(tool); runTool(tool, cur.paths); }, 400);
+      pending.set(tool, cur);
+    });
   } else {
     window.addEventListener('dragover', (e) => e.preventDefault());
     window.addEventListener('drop', (e) => { e.preventDefault(); toast('In a browser tab, type a folder path in the browser bar. Dropping files works in the desktop app.'); });
