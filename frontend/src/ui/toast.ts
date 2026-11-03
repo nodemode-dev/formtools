@@ -7,11 +7,23 @@ const pool: HTMLElement[] = [];
 export function toast(text: string, kind: 'info' | 'error' = 'info', ms = 3200): void {
   const root = document.getElementById('toast-root');
   if (!root) return;
-  let node = pool.find((n) => n.hidden);
+  const make = (): HTMLElement => el<HTMLElement>(`<div class="cv-toast" role="status" hidden><span class="cv-toast-icon"></span><span class="cv-toast-text"></span></div>`);
+  let node = pool.find((n) => n.hidden && n.querySelector('.cv-toast-text')?.textContent === text) ?? pool.find((n) => n.hidden);
+  if (node && node.querySelector('.cv-toast-text')?.textContent !== text) {
+    const fresh = make();
+    node.replaceWith(fresh);
+    pool[pool.indexOf(node)] = fresh;
+    node = fresh;
+  }
   if (!node) {
-    if (pool.length >= MAX) node = pool[0];
-    else {
-      node = el<HTMLElement>(`<div class="cv-toast" role="status" hidden><span class="cv-toast-icon"></span><span class="cv-toast-text"></span></div>`);
+    if (pool.length >= MAX) {
+      const old = pool[0];
+      window.clearTimeout(Number(old.dataset.timer || 0));
+      node = make();
+      old.replaceWith(node);
+      pool[0] = node;
+    } else {
+      node = make();
       root.appendChild(node);
       pool.push(node);
     }

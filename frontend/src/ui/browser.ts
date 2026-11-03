@@ -225,7 +225,9 @@ export class Browser {
     if (!this.listing) return;
     const f = this.filter.value.trim().toLowerCase();
     const prevKey = this.selected >= 0 ? this.shown[this.selected]?.path : undefined;
-    this.shown = this.sorted(this.listing.entries.filter((e) => !f || e.name.toLowerCase().includes(f)));
+    const names = new Set(this.listing.entries.map((e) => e.name));
+    const sidecar = (e: Entry): boolean => e.kind === 'file' && e.ext === 'xmp' && names.has(e.name.slice(0, -4));
+    this.shown = this.sorted(this.listing.entries.filter((e) => !sidecar(e) && (!f || e.name.toLowerCase().includes(f))));
     const update = (node: HTMLElement, e: Entry): void => {
       setText(q(node, '.ft-item-name'), e.name);
       setText(q(node, '.ft-item-meta'), e.kind === 'dir' ? 'Folder' : `${e.ext.toUpperCase() || 'File'} · ${fmtSize(e.size)}`);
