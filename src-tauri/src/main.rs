@@ -1,12 +1,18 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use std::io::{BufRead, BufReader};
+use std::process::{Child, Command, Stdio};
 use std::sync::Mutex;
 use std::time::Duration;
 
 use tauri::{Emitter, Manager, RunEvent, WebviewUrl, WebviewWindowBuilder, WindowEvent};
 use tauri_plugin_dialog::DialogExt;
-use tauri_plugin_shell::process::{CommandChild, CommandEvent};
-use tauri_plugin_shell::ShellExt;
+
+#[cfg(windows)]
+use std::os::windows::process::CommandExt;
+
+#[cfg(windows)]
+const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 
 mod files;
 mod packaged;
@@ -21,7 +27,7 @@ const SCREEN_FRACTION: f64 = 0.9;
 const DEV_ENGINE: &str = "http://127.0.0.1:8240";
 const OPEN_EVENT: &str = "open-paths";
 
-struct Backend(Mutex<Option<CommandChild>>);
+struct Backend(Mutex<Option<Child>>);
 
 #[derive(Default)]
 struct Opens {
@@ -50,10 +56,10 @@ fn dev_engine_url() -> Option<String> {
 fn kill_backend(handle: &tauri::AppHandle) {
     let state = handle.state::<Backend>();
     let child = state.0.lock().ok().and_then(|mut slot| slot.take());
-    if let Some(child) = child {
+    if let Some(mut child) = child {
         #[cfg(unix)]
         {
-            let pid = child.pid().to_string();
+            let pid = child.id().to_string();
             let signal = |sig: &str| {
                 std::process::Command::new("kill")
                     .args([sig, pid.as_str()])
@@ -65,13 +71,14 @@ fn kill_backend(handle: &tauri::AppHandle) {
             if signal("-TERM") {
                 for _ in 0..30 {
                     std::thread::sleep(Duration::from_millis(50));
-                    if !signal("-0") {
+                    if matches!(child.try_wait(), Ok(Some(_))) {
                         return;
                     }
                 }
             }
         }
         let _ = child.kill();
+        let _ = child.wait();
     }
 }
 
@@ -142,15 +149,44 @@ fn paths_from_args(args: &[String], cwd: Option<&str>) -> Vec<String> {
         .collect()
 }
 
-async fn read_port(mut rx: tauri::async_runtime::Receiver<CommandEvent>) -> Option<u16> {
+fn forward_lines<R: std::io::Read + Send + 'static>(stream: R, tx: tauri::async_runtime::Sender<String>) {
+    std::thread::spawn(move || {
+        for line in BufReader::new(stream).split(b'\n') {
+            let Ok(bytes) = line else { break };
+            let _ = tx.blocking_send(String::from_utf8_lossy(&bytes).into_owned());
+        }
+    });
+}
+
+fn start_engine(program: &std::path::Path) -> std::io::Result<(Child, tauri::async_runtime::Receiver<String>)> {
+    let mut command = Command::new(program);
+    command
+        .env("FORMTOOLS_PORT", "0")
+        .env("PYTHONUNBUFFERED", "1")
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    if let Some(folder) = program.parent() {
+        command.current_dir(folder);
+    }
+    #[cfg(windows)]
+    command.creation_flags(CREATE_NO_WINDOW);
+    let mut child = command.spawn()?;
+    let (tx, rx) = tauri::async_runtime::channel::<String>(64);
+    if let Some(stdout) = child.stdout.take() {
+        forward_lines(stdout, tx.clone());
+    }
+    if let Some(stderr) = child.stderr.take() {
+        forward_lines(stderr, tx);
+    }
+    Ok((child, rx))
+}
+
+async fn read_port(mut rx: tauri::async_runtime::Receiver<String>) -> Option<u16> {
     let pattern = regex::Regex::new(r"http://127\.0\.0\.1:(\d+)").unwrap();
-    while let Some(event) = rx.recv().await {
-        let text = match event {
-            CommandEvent::Stdout(bytes) | CommandEvent::Stderr(bytes) => String::from_utf8_lossy(&bytes).into_owned(),
-            CommandEvent::Terminated(_) => return None,
-            _ => continue,
-        };
+    while let Some(text) = rx.recv().await {
         if let Some(port) = pattern.captures(&text).and_then(|found| found[1].parse::<u16>().ok()) {
+            tauri::async_runtime::spawn(async move { while rx.recv().await.is_some() {} });
             return Some(port);
         }
     }
@@ -270,14 +306,12 @@ fn main() {
                 return Ok(());
             }
 
-            let command = match packaged::engine_folder() {
-                Some(program) => Ok(app.shell().command(program)),
-                None => app.shell().sidecar("formtools-engine"),
-            };
-            let spawned = command.and_then(|command| command.env("FORMTOOLS_PORT", "0").spawn());
+            let spawned = packaged::engine_program(&handle)
+                .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::NotFound, "engine not found"))
+                .and_then(|program| start_engine(&program));
             tauri::async_runtime::spawn(async move {
                 let port = match spawned {
-                    Ok((rx, child)) => {
+                    Ok((child, rx)) => {
                         if let Ok(mut slot) = handle.state::<Backend>().0.lock() {
                             *slot = Some(child);
                         }

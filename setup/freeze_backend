@@ -30,7 +30,6 @@ sign_engine() {
 ft_rust_env
 ft_venv
 python -c "import PyInstaller" 2>/dev/null || ft_die "PyInstaller missing, run ./formtools install-desktop"
-triple="$(ft_target_triple)" || ft_die "rustc not found; install Rust or set FORMTOOLS_TARGET"
 [ -f "$FORMTOOLS_ROOT/frontend/dist/index.html" ] || "$FORMTOOLS_ROOT/setup/build_frontend"
 cd "$FORMTOOLS_ROOT/backend"
 sep=":"
@@ -40,16 +39,14 @@ src="$(ft_native_path "$FORMTOOLS_ROOT")"
 extra=()
 [ -z "${FORMTOOLS_PYI_ARCH:-}" ] || extra+=(--target-arch "$FORMTOOLS_PYI_ARCH")
 for m in ${FT_EXTRA_HIDDEN_IMPORTS[@]+"${FT_EXTRA_HIDDEN_IMPORTS[@]}"}; do extra+=(--hidden-import "$m"); done
-mode=--onefile
 if [ "$(ft_os)" = macos ]; then
-  mode=--onedir
   if [ -n "${APPLE_SIGNING_IDENTITY:-}" ]; then
     extra+=(--codesign-identity "$APPLE_SIGNING_IDENTITY")
     [ ! -f "$FORMTOOLS_ROOT/src-tauri/entitlements.plist" ] || extra+=(--osx-entitlements-file "$FORMTOOLS_ROOT/src-tauri/entitlements.plist")
   fi
 fi
 rm -rf build/pyinstaller dist-engine
-pyinstaller --noconfirm --clean "$mode" --name formtools-engine \
+PYTHONPATH="$src/backend${PYTHONPATH:+:$PYTHONPATH}" pyinstaller --noconfirm --clean --onedir --name formtools-engine \
   --distpath dist-engine --workpath build/pyinstaller --specpath build/pyinstaller \
   --add-data "$src/frontend/dist${sep}ui" \
   --paths "$src/backend" \
@@ -57,17 +54,9 @@ pyinstaller --noconfirm --clean "$mode" --name formtools-engine \
   --hidden-import OpenEXR --hidden-import rawpy --hidden-import psd_tools \
   ${extra[@]+"${extra[@]}"} \
   "$src/backend/formtools_engine.py"
-if [ "$mode" = --onedir ]; then
-  out="$FORMTOOLS_ROOT/src-tauri/engine"
-  rm -rf "$out"
-  cp -R dist-engine/formtools-engine "$out"
-  [ -z "${APPLE_SIGNING_IDENTITY:-}" ] || sign_engine "$out"
-  "$out/formtools-engine" --selfcheck
-  ft_say "engine folder ready: $out"
-  exit 0
-fi
-mkdir -p "$FORMTOOLS_ROOT/src-tauri/binaries"
-out="$FORMTOOLS_ROOT/src-tauri/binaries/formtools-engine-${triple}${ext}"
-cp "dist-engine/formtools-engine${ext}" "$out"
-"$out" --selfcheck
-ft_say "sidecar ready: $out"
+out="$FORMTOOLS_ROOT/src-tauri/engine"
+rm -rf "$out"
+cp -R dist-engine/formtools-engine "$out"
+if [ "$(ft_os)" = macos ] && [ -n "${APPLE_SIGNING_IDENTITY:-}" ]; then sign_engine "$out"; fi
+"$out/formtools-engine${ext}" --selfcheck
+ft_say "engine folder ready: $out"

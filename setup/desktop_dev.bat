@@ -2,5 +2,4 @@
 setlocal
 cd /d "%~dp0.."
 call setup\freeze_backend.bat || exit /b 1
-cd frontend
-call npx tauri dev
+call frontend\node_modules\.bin\tauri.cmd dev %*
