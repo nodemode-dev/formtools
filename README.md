@@ -1,10 +1,10 @@
 # formtools
 
-![version](https://img.shields.io/badge/version-v0.2.0-f97316) ![licence](https://img.shields.io/badge/licence-Apache--2.0-blue) ![stage](https://img.shields.io/badge/stage-alpha-lightgrey)
+![version](https://img.shields.io/badge/version-v0.3.0-f97316) ![licence](https://img.shields.io/badge/licence-Apache--2.0-blue) ![stage](https://img.shields.io/badge/stage-alpha-lightgrey)
 
 The form* family's media and file utility belt: one desktop app for macOS, Windows and Linux that opens, previews and converts what the Form apps make, views almost any file, batch-processes images, and carries the desktop utilities people reach for every day.
 
-**Stage: alpha.** v0.2.0 runs: the window shell, Home, a folder browser with thumbnails, the image and media viewer, and formvis project previews. The tools marked "planned" on Home arrive in later phases.
+**Stage: alpha.** v0.3.0 runs: Home, a folder browser with a folder tree, thumbnails, multi-select, star ratings and colour labels; the image viewer with crop, resize, save as, a pixel inspector and compare; Batch convert, Resize and Rename with presets, naming tokens and undo; a video and audio player with subtitles, A-B loop, frame steps, snapshots and lossless clips; media information; formvis project previews. The tools marked "planned" on Home arrive in later phases.
 
 ## Quick start
 
@@ -21,6 +21,23 @@ The form* family's media and file utility belt: one desktop app for macOS, Windo
 | 8240 | engine (FastAPI), 127.0.0.1 only | `FORMTOOLS_PORT` |
 
 The desktop app starts its own engine on a free port. Every file is read on this computer; nothing is uploaded.
+
+```bash
+./formtools cli convert --format webp --out ~/Pictures/web ~/Pictures/trip    # batch convert
+./formtools cli resize --longest 2048 ~/Pictures/trip                         # resize
+./formtools cli rename --find IMG_ --replace trip- --counter ~/Pictures/trip   # print the plan; add --apply
+```
+
+Video and audio use FFmpeg 7.1.5 (an LGPL build). formtools uses an `ffmpeg` already on PATH; otherwise the desktop app fetches the Form family's pinned build once, checks its SHA-256, and keeps it in a per-person folder that formcut and formvis share. Transcoding is formencoder's job: formtools only plays, inspects and copies streams without re-encoding.
+
+| Keys | Browser | Viewer |
+| --- | --- | --- |
+| 0 to 5 | rate the selection | rate the picture |
+| 6, 7, 8, 9 | red, yellow, green, blue label | the same |
+| Space | quick look | next, or close a quick look |
+| R, Shift+R | | crop, resize |
+| P, A, F | | pixel inspector, actual pixels, fit |
+| K, J, L, comma, period, B | | play, back 5 s, forward 5 s, frame back, frame forward, A-B loop |
 
 ## What it will do
 
