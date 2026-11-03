@@ -41,5 +41,13 @@ export default defineConfig({
     },
   },
   preview: { host: false, port: 5241, strictPort: true },
-  build: { target: 'es2022', sourcemap: true, outDir: 'dist', emptyOutDir: true },
+  build: {
+    target: 'es2022',
+    sourcemap: true,
+    outDir: 'dist',
+    emptyOutDir: true,
+    rollupOptions: {
+      input: { main: resolve(__dirname, 'index.html'), overlay: resolve(__dirname, 'overlay.html') },
+    },
+  },
 });
