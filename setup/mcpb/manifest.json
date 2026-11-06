@@ -2,7 +2,7 @@
   "manifest_version": "0.2",
   "name": "formtools",
   "display_name": "formtools",
-  "version": "0.6.0",
+  "version": "0.6.2",
   "description": "Browse folders, read picture and media details, batch convert, resize and rename pictures, inspect 3D models, list and safely extract archives, compute checksums and find duplicates, through the formtools engine on this computer.",
   "long_description": "formtools is the Form family's media and file utility belt. This extension is a stdio bridge to the formtools engine's MCP endpoint on 127.0.0.1. Start the formtools app or run ./formtools boot first; the bridge also tries to start the engine when it can.",
   "author": {

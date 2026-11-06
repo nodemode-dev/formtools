@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.2 · 2026-11-03
+
+- The README follows the Form family template, with screenshots in `docs/images/`. Nothing in the app changed.
+
+## 0.6.1 · 2026-11-03
+
+- The app icon is the Form family's unified icon on the desktop, in the splash and in the browser tab, and the compiled app is named FormTools. The repo now has a CODEOWNERS file. Nothing else in the app changed.
+
 ## 0.6.0 · 2026-11-03
 
 - Desktop builds: `./build_app` (macOS and Linux) and `build_app.bat` (Windows) build the app start to finish in the family's pattern, passing formcompiler's `--config` through. Linux makes deb, rpm and an AppImage; the AppImage now bundles with the frozen engine's own libraries.

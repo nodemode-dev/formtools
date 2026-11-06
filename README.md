@@ -1,93 +1,170 @@
-# formtools
+<p align="center">
+  <img src="assets/app-icon/formtools-256.png" width="128" height="128" alt="FormTools icon: a dark rounded square holding a window with a photo, a waveform, a 3D cube, text lines and a column of tool switches">
+</p>
 
-![version](https://img.shields.io/badge/version-v0.6.0-f97316) ![licence](https://img.shields.io/badge/licence-Apache--2.0-blue) ![stage](https://img.shields.io/badge/stage-alpha-lightgrey)
+<h1 align="center">FormTools</h1>
 
-The form* family's media and file utility belt: one desktop app for macOS, Windows and Linux that opens, previews and converts what the Form apps make, views almost any file, batch-processes images, and carries the desktop utilities people reach for every day.
+<p align="center">
+  <b>Media and file utilities; the Form family's utility belt.</b><br>
+  Viewers for almost any file, batch image tools, 3D viewing and desktop utilities,<br>
+  in one window with no account. Local, and yours.
+</p>
 
-**Stage: alpha.** v0.5.0 runs: Home, a folder browser with a folder tree, thumbnails, multi-select, star ratings and colour labels; the image viewer with crop, resize, save as, a pixel inspector and compare; Batch convert, Resize and Rename with presets, naming tokens and undo; a video and audio player with subtitles, A-B loop, frame steps, snapshots and lossless clips; a 3D viewer with measure, animation and conversion; text, code, Markdown, CSV, JSON, SQLite, PDF, font, hex and archive viewers with safe extraction; checksums with verify; duplicates, disk usage, clean up, file templates and a file lock finder; formvis project previews; the desktop utilities (colour picker, screen ruler, text extractor, zoom and draw, break timer, Awake, always on top, hosts file, environment variables) with global shortcuts; file associations as a viewer, `--tool` launches, file manager menu entries and a Linux thumbnailer.
+<p align="center">
+  <img alt="version 0.6.2" src="https://img.shields.io/badge/version-0.6.2-eef0f4?style=flat-square">
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-Vite-3178c6?style=flat-square&logo=typescript&logoColor=white">
+  <img alt="Python FastAPI engine" src="https://img.shields.io/badge/Python-FastAPI-009688?style=flat-square">
+  <img alt="macOS, Windows, Linux" src="https://img.shields.io/badge/macOS%20%C2%B7%20Windows%20%C2%B7%20Linux-native-2f7bf5?style=flat-square">
+  <img alt="License: Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-3a3a3a?style=flat-square">
+  <img alt="Status: alpha" src="https://img.shields.io/badge/status-alpha-d69e2e?style=flat-square">
+</p>
 
-## Quick start
+<p align="center">
+  <a href="https://formai.studio/"><b>Download FormTools on formai.studio</b></a> ·
+  <a href="#run-it-from-source">Run it from source</a>
+</p>
 
-```bash
+<br>
+
+<p align="center">
+  <img src="docs/images/formtools-hero.png" alt="The FormTools folder browser showing twelve CC0 photos as thumbnails, with star ratings and colour labels on several of them and two selected" width="100%">
+  <br>
+  <sub>The folder browser: thumbnails, star ratings, colour labels and multi-select.</sub>
+</p>
+
+<p align="center">
+  <a href="#features">Features</a> ·
+  <a href="#everything-in-the-box">In the box</a> ·
+  <a href="#built-for-agents">Agents</a> ·
+  <a href="#under-the-hood">Under the hood</a> ·
+  <a href="#download">Download</a> ·
+  <a href="#run-it-from-source">Run from source</a>
+</p>
+
+<br>
+
+<table>
+  <tr>
+    <td width="25%" valign="top"><h3>View anything</h3>Open RAW, HDR, EXR, PSD, video, audio, 3D models, fonts, PDFs, databases and archives in one app.</td>
+    <td width="25%" valign="top"><h3>Batch images</h3>Convert, resize and rename whole folders with an ordered action pipeline, a live preview and shared presets.</td>
+    <td width="25%" valign="top"><h3>Desktop utilities</h3>Colour picker, screen ruler, text extractor, zoom and draw, break timer and more, on global shortcuts.</td>
+    <td width="25%" valign="top"><h3>Agent-ready</h3>The same engine from the window, the CLI and an MCP server with 30 tools.</td>
+  </tr>
+</table>
+
+## Features
+
+<table>
+  <tr>
+    <td width="33%" valign="top">
+      <img src="docs/images/formtools-image-info.webp" alt="The image viewer with a Venice sunset photo and the information panel open, showing rating, colour label, histogram and file details" width="100%">
+      <br><sub>The image viewer with the information panel.</sub>
+      <h3>Image viewer</h3>Crop, resize, save as, compare and inspect pixels. Rate and label from the keyboard.
+    </td>
+    <td width="33%" valign="top">
+      <img src="docs/images/formtools-batch-convert.webp" alt="Batch convert with twelve photos listed, a resize action, WebP output and a live preview" width="100%">
+      <br><sub>Batch convert: twelve photos, a resize action, WebP output.</sub>
+      <h3>Batch convert</h3>Chain actions, pick a format and naming tokens, check the names, then convert. Undo is built in.
+    </td>
+    <td width="33%" valign="top">
+      <img src="docs/images/formtools-3d-viewer.webp" alt="The 3D viewer showing a brass lantern glTF model on a grid with triangle and vertex counts" width="100%">
+      <br><sub>The 3D viewer with a glTF lantern.</sub>
+      <h3>3D viewer</h3>View, measure and inspect models, play animation, and convert to glTF, GLB or USDZ.
+    </td>
+  </tr>
+</table>
+
+## Everything in the box
+
+<table>
+  <tr>
+    <td width="33%" valign="top"><h4>Viewers</h4>Folder browser · Image viewer · Player · Media info · 3D viewer · Text, code and data · Archives · Fonts · Form projects</td>
+    <td width="33%" valign="top"><h4>Tools</h4>Batch convert · Resize · Rename · Checksums · Duplicates · Disk usage · Clean up · New from template · Who has this open</td>
+    <td width="33%" valign="top"><h4>Formats</h4>Opens: JPEG, PNG, WebP, AVIF, TIFF, RAW, PSD, EXR, HDR, SVG, GIF, JXL, HEIC, MP4, glTF, CSV, JSON, SQLite, PDF · Saves: JPEG, PNG, WebP, AVIF, TIFF, BMP, GIF</td>
+  </tr>
+</table>
+
+Desktop utilities: colour picker · screen ruler · text extractor · zoom and draw · break timer · Awake · always on top · hosts file · environment variables.
+
+## Built for agents
+
+30 MCP tools, one engine; the window, the CLI and the MCP server call the same code.
+
+```sh
+./formtools cli convert --format webp --out ~/Pictures/web ~/Pictures/trip   # batch convert
+./formtools cli resize --longest 2048 ~/Pictures/trip                        # resize
+./formtools cli rename --find IMG_ --replace trip- --counter ~/Pictures/trip # print the plan; add --apply
+./formtools mcp                                                              # MCP server on stdio for Claude Code, Codex and Cursor
+```
+
+`.mcp.json`, `.codex/config.toml` and `.cursor/mcp.json` are already wired in this repo. See [`AGENTS.md`](AGENTS.md).
+
+## Under the hood
+
+- **Window:** vanilla TypeScript and Vite, on port 5240 in development.
+- **Engine:** Python and FastAPI on 127.0.0.1:8240, with 8 tool modules registered at start.
+- **Desktop:** a Tauri 2 shell that starts its own engine on a free port.
+- **Local:** every file is read on this computer and nothing is uploaded.
+- **Media:** FFmpeg (LGPL build) for playback, inspection and lossless clips; transcoding stays in FormEncoder.
+- **Checked in CI:** frontend build, type check, byte-compile of the engine and the agents kit.
+
+## Download
+
+| Platform | Download | Release |
+|---|---|---|
+| macOS | [Download FormTools for macOS](https://formai.studio/get/formtools/macos) | [FormTools releases on FormCompiler](https://github.com/nodemode-dev/formcompiler/releases?q=formtools-v&expanded=true) |
+| Windows | [Download FormTools for Windows](https://formai.studio/get/formtools/windows) | [FormTools releases on FormCompiler](https://github.com/nodemode-dev/formcompiler/releases?q=formtools-v&expanded=true) |
+| Linux | [Download FormTools for Linux](https://formai.studio/get/formtools/linux) | [FormTools releases on FormCompiler](https://github.com/nodemode-dev/formcompiler/releases?q=formtools-v&expanded=true) |
+
+All FormTools builds are compiled and released from [FormCompiler](https://github.com/nodemode-dev/formcompiler); this repo holds the source.
+
+## Run it from source
+
+Prefer it in your browser, or want to contribute? Run the web UI straight from this repo.
+
+**Requires:** Python 3.12 or newer, and Node.js 20.19+ or 22.12+. The desktop window also needs Rust.
+
+```sh
+git clone git@github.com:nodemode-dev/formtools.git
+cd formtools
 ./formtools_oc_install     # backend venv, Python packages, frontend packages
-./formtools                # engine on 127.0.0.1:8240 and the window on http://127.0.0.1:5240
-./formtools desktop dev    # the desktop app (needs Rust; ./formtools install-desktop first)
-./formtools mcp            # the MCP server on stdio, for Claude Code, Codex and Cursor
+./formtools                # engine on :8240 and the web UI at http://127.0.0.1:5240
 ```
 
-Build the desktop app from this folder, start to finish (it checks the tools, installs the engine and the interface, freezes the engine and builds the installers; every step's output goes to `build_app.log`):
+The engine listens on 127.0.0.1:8240 (`FORMTOOLS_PORT`). `./formtools desktop dev` opens the desktop window instead (run `./formtools install-desktop` first). On Windows use `formtools_oc_install.bat` and `formtools.bat`.
 
-```bash
-./build_app                # macOS: formtools.app and a disk image, copied to Applications; Linux: deb, rpm and AppImage
-./build_app --install      # Linux: install the built package too
-./build_app --open         # open the app when the build is done
-build_app.bat              # Windows: the MSI and setup.exe
-```
+> [!IMPORTANT]
+> **Status:** alpha. Features are broad and still being hardened; the 3D viewer needs WebGL. See [`CHANGELOG.md`](CHANGELOG.md).
 
-Releases are built by formcompiler (`apps/formtools.json`), which runs the same `build_app` with its own `--config`.
-
-| Port | What | Set by |
-| --- | --- | --- |
-| 5240 | Vite dev server, 127.0.0.1 only | `frontend/vite.config.ts` |
-| 8240 | engine (FastAPI), 127.0.0.1 only | `FORMTOOLS_PORT` |
-
-The desktop app starts its own engine on a free port. Every file is read on this computer; nothing is uploaded.
-
-```bash
-./formtools cli convert --format webp --out ~/Pictures/web ~/Pictures/trip    # batch convert
-./formtools cli resize --longest 2048 ~/Pictures/trip                         # resize
-./formtools cli rename --find IMG_ --replace trip- --counter ~/Pictures/trip   # print the plan; add --apply
-```
-
-Video and audio use FFmpeg 7.1.5 (an LGPL build). formtools uses an `ffmpeg` already on PATH; otherwise the desktop app fetches the Form family's pinned build once, checks its SHA-256, and keeps it in a per-person folder that formcut and formvis share. Transcoding is formencoder's job: formtools only plays, inspects and copies streams without re-encoding.
-
-| Keys | Browser | Viewer |
-| --- | --- | --- |
-| 0 to 5 | rate the selection | rate the picture |
-| 6, 7, 8, 9 | red, yellow, green, blue label | the same |
-| Space | quick look | next, or close a quick look |
-| R, Shift+R | | crop, resize |
-| P, A, F | | pixel inspector, actual pixels, fit |
-| K, J, L, comma, period, B | | play, back 5 s, forward 5 s, frame back, frame forward, A-B loop |
-
-## What it will do
-
-| Area | In formtools |
-| --- | --- |
-| View | Images (RAW, HDR, EXR, PSD, JXL, AVIF, HEIC, animation), video and audio, 3D models and splats, fonts, text and code, CSV, JSON and SQLite, hex, archives; a folder browser; a Quick View hotkey |
-| Batch images | Convert with an ordered action pipeline and live preview, resize, rename with tokens and regex, presets shared by the window, the CLI and agents |
-| 3D | View, inspect, measure, convert and optimise to glTF, GLB and USDZ |
-| File utilities | Archives (safe extraction), hashing, duplicate finder, disk usage, file lock finder, file templates |
-| Desktop utilities | Colour picker, screen ruler, text extractor (local OCR), always on top, awake, crop and lock, quick accent, zoom and draw |
-
-Work that belongs to a sibling app opens in that app: layered editing in formvis, transcoding in formencoder, PDF editing in formpdf, libraries in formdam and formlit, video editing in formcut, audio editing in formwav, sculpting in formsculpt.
-
-## Family
-
-| Repo | Role for formtools |
-| --- | --- |
-| `nodemode-dev/formcompiler` | builds, signs and releases formtools for the three OSes from a `compile_vX.Y.Z` branch |
-| `nodemode-dev/formportal` | installs, opens and updates formtools; routes "Open in ..." hand-offs |
-| `nodemode-dev/formMCP` | reaches formtools for agents through `./formtools mcp` |
-| `nodemode-dev/formskills` | lists formtools' released skills |
-| `nodemode-dev/formvis` | the UI, theme and shell formtools shares |
+**Contributing:** branch from `main`, keep changes to source here, and leave packaging and releases to FormCompiler. See [`AGENTS.md`](AGENTS.md).
 
 ## Repository
 
-| Path | Holds |
-| --- | --- |
-| `frontend/` | vanilla TypeScript and Vite window: Home, browser, viewer, Preferences, command palette |
-| `backend/` | Python and FastAPI engine: file listing, image decoding (RAW, PSD, EXR, HDR, AVIF, TIFF and more), formvis project reader, MCP |
-| `src-tauri/` | Tauri 2 desktop shell: splash, window, menus, file dialogs, drag and drop |
-| `setup/` | the scripts behind `./formtools` |
-| `docs/encyclopedia/` | 130 sourced pages on how XnView, XnConvert, PowerToys, Preview, VLC and many other tools work. Start at `INDEX.md`; open gaps are in `GAPS.md` |
-| `docs/family-formats/` | how formtools reads each Form app's project files |
-| `LICENSE` | Apache-2.0 |
-| `NOTICE.md` | third-party components and trademark notes |
-| `CLAUDE.md`, `AGENTS.md` | rules for agents working here |
+| Path | What it is |
+|---|---|
+| `frontend/` | Vanilla TypeScript and Vite window: Home, browser, viewer, Preferences, command palette |
+| `backend/` | Python and FastAPI engine: file listing, image decoding, project reader, MCP |
+| `src-tauri/` | Tauri 2 desktop shell: splash, window, menus, file dialogs |
+| `setup/` | The scripts behind `./formtools` |
+| `docs/` | Encyclopedia of comparable tools and how FormTools reads Form project files |
 
-Planning documents (DEV_PLAN, BUILD_NOTES, HASHOUT_LOG) ship in the planning sidecar zip, not in this tree.
+Docs: [`docs/encyclopedia`](docs/encyclopedia) · Agents: [`CLAUDE.md`](CLAUDE.md), [`AGENTS.md`](AGENTS.md)
 
-## Licence
+<br>
 
-Copyright (C) 2026 NodeAgentc, Inc. Licensed under the Apache License, Version 2.0. Product names in the encyclopedia belong to their owners and appear only to describe what those products do.
+---
+
+## Maintainers
+
+| Maintainer | Role |
+|---|---|
+| [@nodemode-ai](https://github.com/nodemode-ai) | Owner |
+| [@gbarnai](https://github.com/gbarnai) | Co-owner |
+
+Code owners are set in [`.github/CODEOWNERS`](.github/CODEOWNERS).
+
+## License
+
+FormTools is licensed under the Apache License, Version 2.0 ([`LICENSE`](LICENSE), SPDX `Apache-2.0`). Copyright (C) 2026 NodeAgentc, Inc. Third-party notices: [`NOTICE.md`](NOTICE.md).
+
+<sub>Screenshot content: CC0 photos and models from Poly Haven.</sub>
