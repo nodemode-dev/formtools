@@ -16,6 +16,7 @@ DEFAULT_URL = f"http://127.0.0.1:{PORT}/mcp"
 URL = os.environ.get("FORMTOOLS_MCP_URL", DEFAULT_URL)
 session = ""
 started = False
+found = ""
 
 
 def read_version():
@@ -43,6 +44,39 @@ def answering():
             return r.status == 200
     except (urllib.error.URLError, OSError):
         return False
+
+
+def data_dir():
+    raw = os.environ.get("FORMTOOLS_DATA_DIR", "").strip()
+    if raw:
+        return os.path.expanduser(raw)
+    home = os.path.expanduser("~")
+    if sys.platform == "darwin":
+        return os.path.join(home, "Library", "Application Support", "formtools")
+    if os.name == "nt":
+        return os.path.join(os.environ.get("APPDATA") or os.path.join(home, "AppData", "Roaming"), "formtools")
+    xdg = os.environ.get("XDG_DATA_HOME") or ""
+    return os.path.join(xdg if os.path.isabs(xdg) else os.path.join(home, ".local", "share"), "formtools")
+
+
+def find_engine():
+    global URL, found
+    if URL not in (DEFAULT_URL, found):
+        return False
+    URL = DEFAULT_URL
+    try:
+        with open(os.path.join(data_dir(), "engine.port"), encoding="utf-8") as f:
+            port = int(json.load(f).get("port", 0))
+    except (OSError, ValueError, AttributeError, TypeError):
+        return False
+    if not 0 < port < 65536:
+        return False
+    found = URL = f"http://127.0.0.1:{port}/mcp"
+    if answering():
+        print(f"[formtools mcp] using the running engine at {URL}", file=sys.stderr, flush=True)
+        return True
+    URL = DEFAULT_URL
+    return False
 
 
 def start_engine():
@@ -91,7 +125,7 @@ def forward(line, retry=True):
         body = exc.read().decode("utf-8") or ""
     except (urllib.error.URLError, OSError) as exc:
         print(f"[formtools mcp] the engine is not answering at {URL}: {exc}", file=sys.stderr, flush=True)
-        if retry and start_engine():
+        if retry and (find_engine() or start_engine()):
             return forward(line, False)
         return error_reply(msg, "The formtools engine is not running and could not be started: run ./formtools boot in the formtools folder, then retry.")
     if msg.get("id") is None:
