@@ -29,6 +29,7 @@ usage: ./formtools [command] [options]
   agents install [--dry-run] [claude|codex|cursor]  set up the MCP server and the driving skill for this user account
   agents sync | check  mirror .claude/skills into .agents/skills; check the mirror, the skills and the MCP configs
   mcpb check | build DIR  validate the Claude Desktop extension manifest; write formtools.mcpb into DIR
+  sparkle             fail if the banned three-star sparkle icon is back in the app
   doctor              check the toolchain, installs and ports
   clean [--all]       remove build output (--all also venv and node_modules)
   version             the version and build (also --version)
@@ -65,6 +66,7 @@ case "$cmd" in
       build) exec python3 setup/mcpb.py --build "$@" ;;
       *) usage; exit 2 ;;
     esac ;;
+  sparkle) exec python3 setup/sparkle.py --check ;;
   doctor) exec setup/doctor "$@" ;;
   clean) exec setup/clean "$@" ;;
   version|--version|-V)

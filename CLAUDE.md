@@ -17,6 +17,7 @@ Alpha (v0.6.4): Phases 1 to 9 of the approved plan, with Phase 2b for formvis an
 - Surgical, hand-made edits: one region per change; no sed, scripts, patches or bundles.
 - Zero DOM flash, flicker or re-render: render once, then patch in place, with space reserved.
 - Colours and z-index from tokens only; icons are inline `currentColor` SVG; no icon libraries.
+- The three-star sparkle icon is banned app-wide, under any name and in any form (SVG, glyph, CSS content), including icons ported from other Form apps; Claude Code, agents and assistants use the `agent`, `agentChat` and `terminal` icons. `./formtools sparkle` (also in CI) fails if it returns.
 - No emoji anywhere; no U+2014 em dash in Markdown (use the interpunct); near-zero comments, with context in the `HASHOUT_LOG.md` files.
 - Versions are `v*.*.*` with dots.
 - Vite `server.host` stays `false` with a pinned port.
