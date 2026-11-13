@@ -295,6 +295,8 @@ export function startApp(): void {
   }
   const bar = new MenuBar(commands, MENUS, overlay);
   q(header, '.ft-tb-brand').after(bar.root);
+  const brand = q<HTMLElement>(header, '.ft-tb-brand');
+  new ResizeObserver(() => header.style.setProperty('--cv-tb-lead', `${brand.offsetWidth + bar.root.offsetWidth}px`)).observe(bar.root);
   new CaptionButtons(header, () => true);
 
   commands.bindKeys(window, (e) => anyOverlay() || (isText(e.target) && !(e.metaKey || e.ctrlKey)) || bar.isOpen);
