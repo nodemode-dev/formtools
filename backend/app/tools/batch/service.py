@@ -8,12 +8,13 @@ from PIL import Image
 
 from app.core import jobs
 from app.core.errors import ApiError
-from app.core.filetypes import ext_of
+from app.core.filetypes import RAW, ext_of
 from app.core.jobs import Cancelled
 from app.routers.fs import absolute, natural_key
 from app.tools.batch import actions, naming, worker
 from app.tools.batch.pool import runner, worker_count
 from app.tools.image import decode, libs
+from app.tools.image.info import raw_info
 
 log = logging.getLogger("formtools.batch")
 
@@ -153,12 +154,20 @@ def destination(entry: dict, out: dict) -> str:
     return target
 
 
+def source_size(src: str) -> tuple[int, int]:
+    if ext_of(src) in RAW:
+        found = raw_info(src)
+        return found["width"], found["height"]
+    with Image.open(src) as image:
+        width, height = image.size
+        if image.getexif().get(0x0112, 1) in (5, 6, 7, 8):
+            width, height = height, width
+    return width, height
+
+
 def predicted_size(src: str, acts: list[dict]) -> tuple[int, int]:
     try:
-        with Image.open(src) as image:
-            width, height = image.size
-            if image.getexif().get(0x0112, 1) in (5, 6, 7, 8):
-                width, height = height, width
+        width, height = source_size(src)
     except Exception:
         return 0, 0
     return actions.chain_dims((width, height), acts)
@@ -353,8 +362,7 @@ def preview(body: dict) -> bytes:
     working = min(4096, max(2048, limit * 2))
     original = None
     try:
-        with Image.open(source) as probe:
-            original = max(probe.size)
+        original = max(source_size(source))
     except Exception:
         original = None
     if original is None:
