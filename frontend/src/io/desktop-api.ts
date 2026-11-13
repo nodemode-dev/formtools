@@ -1,7 +1,7 @@
 import { ApiError } from './api';
 
 export interface HostEntry { line?: number; enabled: boolean; address: string; names: string[]; comment: string }
-export interface HostsInfo { path: string; writable: boolean; entries: HostEntry[]; raw: string }
+export interface HostsInfo { path: string; writable: boolean; entries: HostEntry[]; raw: string; version?: string }
 export interface HostsSaved { ok: boolean; backup: string; elevated: boolean }
 
 export type EnvScopeId = 'process' | 'user' | 'system';
@@ -24,7 +24,7 @@ const post = <T>(path: string, body: unknown): Promise<T> => request<T>(path, {
 
 export const desktopApi = {
   hosts: () => request<HostsInfo>('/api/hosts'),
-  saveHosts: (entries: HostEntry[]) => post<HostsSaved>('/api/hosts', { entries }),
+  saveHosts: (entries: HostEntry[], version?: string) => post<HostsSaved>('/api/hosts', version ? { entries, version } : { entries }),
   env: () => request<{ scopes: EnvScope[] }>('/api/env'),
   setEnv: (scope: EnvScopeId, name: string, value: string | null) => post<{ ok: boolean }>('/api/env', { scope, name, value }),
 };

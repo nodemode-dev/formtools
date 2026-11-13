@@ -38,6 +38,7 @@ export class HostsSection extends DeskSection {
   private rows: Row[] = [];
   private baseline = '';
   private writable = true;
+  private version: string | undefined;
   private loaded = false;
   private loading = false;
   private saving = false;
@@ -120,6 +121,7 @@ export class HostsSection extends DeskSection {
     try {
       const info = await desktopApi.hosts();
       this.writable = info.writable;
+      this.version = info.version;
       this.rows = this.fromEntries(info.entries);
       this.baseline = this.signature(this.rows);
       this.loaded = true;
@@ -222,7 +224,7 @@ export class HostsSection extends DeskSection {
       return e;
     });
     try {
-      const r = await desktopApi.saveHosts(entries);
+      const r = await desktopApi.saveHosts(entries, this.version);
       setText(q(this.root, '.ft-desk-backup'), r.backup ? `Backup saved to ${r.backup}${r.elevated ? '. Written with administrator rights.' : '.'}` : '');
       this.deps.status('The hosts file was saved.');
       toast('The hosts file was saved.');
