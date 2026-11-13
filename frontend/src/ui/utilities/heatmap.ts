@@ -58,6 +58,10 @@ export class HeatmapPane {
   constructor(private readonly enter: (node: UsageNode) => void) {
     this.buildLegend();
     new ResizeObserver(() => this.schedule(true)).observe(this.wrap);
+    const watchDpr = (): void => {
+      matchMedia(`(resolution: ${window.devicePixelRatio || 1}dppx)`).addEventListener('change', () => { this.schedule(true); watchDpr(); }, { once: true });
+    };
+    watchDpr();
     const refresh = (): void => { this.palette = null; this.schedule(false); };
     new MutationObserver(refresh).observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'style', 'data-theme'] });
     new MutationObserver(refresh).observe(document.body, { attributes: true, attributeFilter: ['class', 'style'] });
