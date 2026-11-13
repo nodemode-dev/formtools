@@ -98,7 +98,7 @@ def walk(root: str, recursive: bool, include_hidden: bool, on_error: Callable[[s
             continue
         for entry in entries:
             try:
-                if entry.is_symlink():
+                if entry.is_symlink() or entry.is_junction():
                     continue
                 if not include_hidden and entry.name.startswith("."):
                     continue
@@ -108,7 +108,7 @@ def walk(root: str, recursive: bool, include_hidden: bool, on_error: Callable[[s
                     continue
                 if not entry.is_file(follow_symlinks=False):
                     continue
-                info = entry.stat(follow_symlinks=False)
+                info = os.stat(entry.path, follow_symlinks=False) if os.name == "nt" else entry.stat(follow_symlinks=False)
             except OSError as exc:
                 on_error(entry.path, exc)
                 continue
