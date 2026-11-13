@@ -1,4 +1,5 @@
 import errno
+import hashlib
 import ipaddress
 import os
 import re
@@ -84,6 +85,7 @@ class Snapshot:
             except OSError as exc:
                 raise ApiError(500, f"the hosts file could not be read ({exc.strerror or type(exc).__name__})")
         self.data = data
+        self.version = hashlib.sha256(data).hexdigest()
         self.bom = data.startswith(BOM)
         body = data[len(BOM):] if self.bom else data
         try:
@@ -124,7 +126,7 @@ def writable(path: Path) -> bool:
 
 def read() -> dict:
     snap = Snapshot(hosts_path())
-    return {"path": str(snap.path), "writable": writable(snap.path), "entries": snap.entries, "raw": snap.text}
+    return {"path": str(snap.path), "writable": writable(snap.path), "entries": snap.entries, "raw": snap.text, "version": snap.version}
 
 
 def clean_entry(entry: dict) -> dict:
@@ -240,10 +242,12 @@ def write_direct(path: Path, data: bytes) -> None:
         write_in_place(path, data)
 
 
-def save(entries: list[dict]) -> dict:
+def save(entries: list[dict], version: str | None = None) -> dict:
     if len(entries) > MAX_ENTRIES:
         raise ApiError(400, "that is more entries than formtools will write")
     snap = Snapshot(hosts_path())
+    if version and version != snap.version:
+        raise ApiError(409, STALE)
     data = build(snap, entries)
     if snap.exists and data == snap.data:
         return {"ok": True, "backup": None, "elevated": False, "changed": False}
