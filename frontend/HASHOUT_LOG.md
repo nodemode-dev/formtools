@@ -2,6 +2,35 @@
 
 Context for the frontend code, kept here instead of in comments.
 
+## v0.6.4 · 2026-11-13 · Review fixes, second pass
+
+`tsc` passes; none of these was run in a browser or the desktop app. Several were confirmed with scratch scripts (named in the commit bodies).
+
+Viewers:
+
+- `ui/docview/pdf.ts`, `sqlite.ts`, `font.ts`, `markdown.ts`, `json.ts` :: `open()` catch · each view clears what it shows when a file fails to open; the previous file's content stayed under the new name.
+- `ui/viewer.ts` :: `Viewer.show` · the busy indicator is stopped right after `this.index = i` and the slideshow is re-armed for non-image kinds; both were handled only on the image path. :: `load`, `open`, `get` · probe images are cancelled when the viewer reopens and when a load fails.
+- `ui/docview/text.ts` :: `TextView.show` · highlights a copy with CR and CRLF normalised to LF, so plain and highlighted lines split alike.
+- `ui/model/engine.ts` :: `countGeometry` uses `traverseVisible` (removed: `if (!o.visible) return;`) and `pick` checks every ancestor's visibility.
+- `ui/docview/archive.ts` :: `key`, `pick` · a `focus` row drives the arrows, so Shift+Arrow extends past one row.
+- `ui/docview/vlist.ts` :: `VirtualList.render` · scaled mode always re-translates its rows.
+- `ui/docview/pdf.ts` :: `render`, `pumpThumbs` · a render decrements the counter only for the document still open, and the thumbnail pump restarts for a new document.
+
+Shell, tools and utilities:
+
+- `app.ts` :: `folderPaths`, `openUtil`; `ui/home/suggest.ts` :: `folderOf`; `ui/utilities/common.ts` :: `UtilDeps.folders`; `ui/utilities/dupes.ts` · Duplicates gets folders (parents of dropped files, the open folder when files are selected); the engine answers 400 for a path that is not a folder.
+- `ui/desk/hosts.ts` :: `validAddress`, `fromEntries`, `commit`; `io/desktop-api.ts` :: `HostsInfo.version`, `saveHosts` · a `%zone` is split off and checked, loaded rows show their problems, the editor sends back the version it read, and a 409 reloads the table with the engine's message. Old test on the raw string: `if (!a.includes(':') || !/^[0-9A-Fa-f:.]+$/.test(a)) return false;`.
+- `ui/utilities/checksums.ts` :: `save` · paths are written relative to the folder all items share. Removed: `${baseName(i.path)}` in the sums line.
+- `ui/save-dialog.ts` · Enter on a button is not turned into a save, and a `saving` flag stops a second save.
+- `ui/jobs.ts` :: `poll` · a 404 marks the job failed. Old: `.catch(() => undefined)`.
+- `ui/utilities/common.ts` :: `trashAll` (new, 5000 paths per call); `cleanup.ts`, `dupes.ts` · bulk selection covers only the rows shown.
+- `app.ts` :: `toggle-light` · switches by the theme's lightness to the chosen pair. Old: `setTheme(readChoice().theme === 'light' ? 'studio' : 'light')`.
+- `ui/prefs.ts` :: `loadPrefs`, `updatePrefs` · a stored non-object gives defaults, and a failed write still notifies listeners. Old: `catch { return cache; }`.
+- `ui/tools/batch.ts` :: `preview` · the probe has an `onerror`, and the no-file branch stops the spinner.
+- `ui/utilities/heatmap.ts` · a resolution media query re-plans on a pixel-density change.
+
+Open, recorded and not changed in 0.6.4: `ui/home/drop.ts` rebuilds the open drop sheet on a second drop (law two; needs keyed patching checked in a browser); raw colour literals remain outside the tokens file.
+
 ## v0.6.3 · 2026-11-12 · Review fixes
 
 Five fixes from a full review; `tsc` passes, none was run in a browser here (the reviewers reproduced the faults in headless Chrome before the change).

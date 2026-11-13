@@ -1,5 +1,9 @@
 # src-tauri HASHOUT_LOG
 
+## 2026-11-13 · v0.6.4 · the wait for the engine's port line ends after a minute
+
+`src/main.rs` :: `read_port`, `PORT_WAIT` · a 60 s timer thread sends on an async channel and `std::future::poll_fn` polls the timer and the engine's output lines together; a timeout returns None, which leads to `engine_failed`. Before, an engine that stayed alive without printing its port left the splash up for ever, because no window existed yet to arm the other fallback. No new crate: the tokio that tauri brings has no time feature. Checked with `cargo check` on a scratch copy and a scratch program with the same code; not run in the app.
+
 ## 2026-11-12 · v0.6.3 · the deb's engine folder is /usr/lib/FormTools
 
 The bundler puts resources under `usr/lib/<productName>`, and the product name became `FormTools` in 0.6.1, so the engine installs to `/usr/lib/FormTools/engine`. Earlier entries below that say `/usr/lib/formtools` describe the layout before the rename. The thumbnailer entry (`backend/app/tools/desktop/formtools.thumbnailer`) now names the new folder. The main binary is still `/usr/bin/formtools`, because the binary name comes from the Cargo package name.
