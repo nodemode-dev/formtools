@@ -383,6 +383,8 @@ export class Viewer {
     if (i < 0 || i >= this.entries.length) return;
     const seq = ++this.seq;
     this.index = i;
+    this.stopBusy?.();
+    this.stopBusy = null;
     const e = this.entries[i];
     setText(q(this.root, '.ft-vbar-name'), e.name);
     setText(q(this.root, '.ft-vbar-count'), `${i + 1} of ${this.entries.length}`);
@@ -407,7 +409,6 @@ export class Viewer {
       this.syncInfo(e, null);
       return;
     }
-    this.stopBusy?.();
     const busy = q(this.root, '.ft-vbar-busy');
     this.stopBusy = delayedIndicator(
       () => { setClass(busy, 'is-on', true); setClass(this.stage, 'is-loading', true); },
