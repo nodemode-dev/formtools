@@ -68,7 +68,20 @@ export class SqliteView implements DocKind {
       if (keep) await this.pick(keep, my);
       else { this.grid.setColumns([]); this.grid.setCount(0); setText(q(this.root, '.dv-title'), ''); setText(q(this.root, '.dv-info'), ''); }
     } catch (err) {
-      if (this.seq.is(my)) setText(q(this.root, '.dv-note'), errText(err));
+      if (this.seq.is(my)) {
+        this.tableToken++;
+        this.pages.clear();
+        this.pending.clear();
+        this.path = '';
+        this.tables = [];
+        this.current = '';
+        this.renderList();
+        this.grid.setColumns([]);
+        this.grid.setCount(0);
+        setText(q(this.root, '.dv-title'), '');
+        setText(q(this.root, '.dv-info'), '');
+        setText(q(this.root, '.dv-note'), errText(err));
+      }
     } finally {
       stop();
       if (this.seq.is(my)) setClass(this.root, 'is-loading', false);

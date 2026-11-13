@@ -107,7 +107,11 @@ export class MarkdownView implements DocKind {
       setText(q(this.root, '.dv-note'), data.truncated ? 'The file is longer than the first 2 MB, which is what is shown.' : '');
       await this.source.show(entry, data);
     } catch (err) {
-      if (this.seq.is(my)) setText(q(this.root, '.dv-note'), errText(err));
+      if (this.seq.is(my)) {
+        this.source.close();
+        this.article.replaceChildren();
+        setText(q(this.root, '.dv-note'), errText(err));
+      }
     } finally {
       stop();
       if (this.seq.is(my)) setClass(this.root, 'is-loading', false);

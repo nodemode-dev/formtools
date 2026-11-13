@@ -147,10 +147,20 @@ export class FontView implements DocKind {
       setText(q(this.root, '.dv-note'), note);
       setText(q(this.root, '.dv-info'), `${info.format} · ${fmtInt(info.glyphs)} glyphs${info.faces > 1 ? ` · ${info.faces} faces` : ''}`);
       this.syncInstall();
+      setHidden(q(this.root, '.dv-font-body'), false);
       this.page = 0;
       this.renderGlyphs();
     } catch (err) {
-      if (this.seq.is(my)) setText(q(this.root, '.dv-note'), errText(err));
+      if (this.seq.is(my)) {
+        if (this.face) { document.fonts.delete(this.face); this.face = null; }
+        this.family = '';
+        this.loaded = false;
+        this.info = null;
+        setHidden(q(this.root, '.dv-font-body'), true);
+        setDisabled(q<HTMLButtonElement>(this.root, '[data-f="install"]'), true);
+        setText(q(this.root, '.dv-info'), '');
+        setText(q(this.root, '.dv-note'), errText(err));
+      }
     } finally {
       stop();
       if (this.seq.is(my)) setClass(this.root, 'is-loading', false);

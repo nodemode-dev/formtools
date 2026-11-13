@@ -129,7 +129,16 @@ export class JsonView implements DocKind {
       }
       this.apply();
     } catch (err) {
-      if (this.seq.is(my)) setText(q(this.root, '.dv-note'), errText(err));
+      if (this.seq.is(my)) {
+        this.text.close();
+        this.hasTree = false;
+        this.tree.replaceChildren();
+        this.selected = null;
+        this.pathBox.value = '';
+        setText(q(this.root, '.dv-info'), '');
+        setText(q(this.root, '.dv-note'), errText(err));
+        this.apply();
+      }
     } finally {
       stop();
       if (this.seq.is(my)) setClass(this.root, 'is-loading', false);

@@ -152,6 +152,11 @@ export class PdfView implements DocKind {
       this.syncCurrent();
     } catch (err) {
       if (this.seq.is(my)) {
+        this.teardown();
+        this.buildNodes(0);
+        setText(q(this.root, '.dv-pages'), '');
+        setText(q(this.root, '.dv-info'), '');
+        this.pageNo.value = '';
         const name = err instanceof Error ? err.name : '';
         setText(q(this.root, '.dv-note'), name === 'PasswordException' ? 'This PDF is protected with a password.' : errText(err));
       }
