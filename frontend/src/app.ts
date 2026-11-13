@@ -39,6 +39,8 @@ const SHELL = `
       <div class="cv-title-tools">
         <button class="cv-tt-btn" type="button" data-cmd="go-home" title="Home" aria-label="Home">${icon('ftHome', 16)}</button>
         <button class="cv-tt-btn" type="button" data-cmd="palette" title="Commands" aria-label="Commands">${icon('search', 16)}</button>
+        <button class="cv-tt-btn" type="button" data-cmd="claude-code" title="Claude Code" aria-label="Claude Code" aria-pressed="false">${icon('agent', 16)}</button>
+        <button class="cv-tt-btn" type="button" data-cmd="terminal-toggle" title="Show Terminal" aria-label="Show Terminal" aria-pressed="false">${icon('terminal', 16)}</button>
         <button class="cv-tt-btn" type="button" data-cmd="toggle-light" title="Light or dark" aria-label="Light or dark">${icon('theme', 16)}</button>
         <button class="cv-tt-btn" type="button" data-cmd="settings" title="Preferences" aria-label="Preferences">${icon('settings', 16)}</button>
       </div>
@@ -58,6 +60,19 @@ export function startApp(): void {
   shell.appendChild(status.root);
   const termDock = new TerminalDock();
   shell.insertBefore(termDock.root, status.root);
+  const dockButtons: Array<[HTMLElement, () => boolean]> = [
+    [q(header, '[data-cmd="claude-code"]'), () => termDock.isShowing('claude')],
+    [q(header, '[data-cmd="terminal-toggle"]'), () => termDock.isOpen()],
+  ];
+  const syncDockButtons = (): void => {
+    for (const [b, lit] of dockButtons) {
+      const on = lit();
+      setClass(b, 'is-on', on);
+      if (b.getAttribute('aria-pressed') !== String(on)) b.setAttribute('aria-pressed', String(on));
+    }
+  };
+  syncDockButtons();
+  termDock.onTab = () => { syncDockButtons(); menus?.refresh(); };
 
   const commands = new Commands();
   const settings = new SettingsDialog(commands);
@@ -243,6 +258,10 @@ export function startApp(): void {
     { id: 'previous', label: 'Previous Item', group: 'View', description: 'Show the previous file in the folder.', useWhen: 'Use when stepping back through images.', enabled: () => page === 'view', run: () => viewer.step(-1) },
     { id: 'palette', label: 'Commands...', group: 'View', description: 'Search every command.', useWhen: 'Use when the person does not know where a command lives.', keys: ['Mod+K'], run: () => palette.open() },
     { id: 'toggle-light', label: 'Light or Dark', group: 'View', description: 'Switch between the dark and light themes.', useWhen: 'Use when the person asks for light or dark mode.', keys: ['Mod+Shift+L'], run: () => { const p = loadPrefs(); setTheme(THEMES[readChoice().theme]?.light ? p.themeDark : p.themeLight); } },
+    { id: 'terminal-toggle', label: 'Terminal', group: 'View', description: 'Show or hide the terminal dock; programs in it keep running while it is hidden.', useWhen: 'Use when the person wants a shell or the dock.', keys: ['Mod+J'], checked: () => termDock.isOpen(), run: () => termDock.toggle() },
+    { id: 'terminal-new', label: 'New Terminal', group: 'View', description: 'Open a new shell tab in the terminal dock.', useWhen: 'Use when the person wants another shell.', run: () => void termDock.newTerminal() },
+    { id: 'claude-code', label: 'Claude Code', group: 'View', description: 'Show Claude Code in a terminal tab with formtools connected, or hide the dock while it is showing.', useWhen: 'Use when the person wants Claude Code to work on their files.', keys: ['Mod+Shift+J'], checked: () => termDock.isShowing('claude'), run: () => void termDock.toggleKind('claude') },
+    { id: 'claude-chat', label: 'Chat with Claude', group: 'View', description: 'Show the Chat tab in the terminal dock, or hide the dock while it is showing.', useWhen: 'Use when the person wants to ask Claude about their files in a chat.', keys: ['Mod+Alt+J'], checked: () => termDock.isShowing('chat'), run: () => void termDock.toggleKind('chat') },
     { id: 'settings', label: 'Preferences...', group: 'formtools', description: 'Open Preferences.', useWhen: 'Use when the person wants to change a setting.', keys: ['Mod+,'], run: () => settings.open() },
     { id: 'undo', label: 'Undo', group: 'Edit', description: 'Undo in the focused text field.', useWhen: 'Use in text fields.', keys: ['Mod+Z'], enabled: () => isText(document.activeElement), run: () => document.execCommand('undo') },
     { id: 'redo', label: 'Redo', group: 'Edit', description: 'Redo in the focused text field.', useWhen: 'Use in text fields.', keys: ['Mod+Shift+Z'], enabled: () => isText(document.activeElement), run: () => document.execCommand('redo') },
@@ -259,7 +278,7 @@ export function startApp(): void {
   const MENUS: MenuDef[] = [
     { label: 'File', items: ['open-files', 'open-folder', 'util-templates', '-', 'open-in', 'reveal'] },
     { label: 'Edit', items: ['undo', 'redo', '-', 'cut', 'copy', 'paste', 'select-all', '-', 'settings'] },
-    { label: 'View', items: ['go-home', 'go-browse', 'go-viewer', '-', 'previous', 'next', '-', 'palette', 'toggle-light'] },
+    { label: 'View', items: ['go-home', 'go-browse', 'go-viewer', '-', 'previous', 'next', '-', 'palette', 'toggle-light', '-', 'terminal-toggle', 'terminal-new', 'claude-code', 'claude-chat'] },
     { label: 'Tools', items: ['tool-convert', 'tool-resize', 'tool-rename', '-', 'util-dupes', 'util-disk', 'util-hash', 'util-cleanup', 'util-locks', '-', 'select-all-files'] },
     { label: 'Desktop', items: ['desk-picker', 'desk-ruler', 'desk-text', 'desk-zoom', 'desk-draw', 'desk-timer', '-', 'desk-topmost', 'desk-awake', '-', 'desk-hosts', 'desk-env', '-', 'go-desk'] },
   ];
