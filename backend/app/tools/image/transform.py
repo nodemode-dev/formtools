@@ -230,9 +230,16 @@ def run(raw: str, operation: str, lossless: bool) -> dict:
         raise ApiError(415, "formtools cannot read that file as a picture")
     try:
         fmt = opened.format
-        if fmt not in WRITABLE:
+        if fmt == "MPO":
+            opened.close()
+            patched = patch_orientation(target.read_bytes(), operation) if lossless else None
+            if patched is None:
+                raise ApiError(415, "that JPEG holds more than one picture, so formtools only turns it by its orientation tag")
+            write_beside(target, lambda path: path.write_bytes(patched))
+            used = True
+        elif fmt not in WRITABLE:
             raise ApiError(415, MESSAGE)
-        if fmt == "JPEG":
+        elif fmt == "JPEG":
             opened.close()
             used = transform_jpeg(target, operation, lossless)
         elif getattr(opened, "n_frames", 1) > 1 and fmt in ("GIF", "WEBP", "PNG"):
