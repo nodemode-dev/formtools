@@ -98,6 +98,8 @@ export function dropTypeOf(e: Entry): DropType {
   return e.kind === 'dir' ? 'folder' : e.type;
 }
 
+const folderOf = (e: Entry): string => e.kind === 'dir' || !e.path ? e.path : e.path.replace(/[^\\/]+[\\/]*$/, '') || e.path;
+
 export function countTypes(entries: Entry[]): Array<[DropType, number]> {
   const counts = new Map<DropType, number>();
   for (const e of entries) {
@@ -117,7 +119,8 @@ export function suggestTools(entries: Entry[]): Suggestion[] {
     const id = `${group}:${r.command}:${r.label}`;
     if (seen.has(id)) continue;
     seen.add(id);
-    out.push({ id, command: r.command, label: r.label, hint: r.hint, icon: r.icon, group, types: [...new Set(hit.map(dropTypeOf))], count: hit.length, paths: hit.map((e) => e.path).filter(Boolean), primary: false });
+    const paths = r.command === 'util-dupes' ? [...new Set(hit.map(folderOf))] : hit.map((e) => e.path);
+    out.push({ id, command: r.command, label: r.label, hint: r.hint, icon: r.icon, group, types: [...new Set(hit.map(dropTypeOf))], count: hit.length, paths: paths.filter(Boolean), primary: false });
   }
   const first = out.find((s) => s.group !== 'any');
   if (first) first.primary = true;

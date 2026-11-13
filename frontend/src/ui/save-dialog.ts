@@ -34,6 +34,7 @@ export class SaveDialog {
   private mode: Mode = 'save';
   private done: (path: string) => void = () => undefined;
   private lastFocus: Element | null = null;
+  private saving = false;
   private readonly w = q<HTMLInputElement>(this.root, '.ft-w');
   private readonly h = q<HTMLInputElement>(this.root, '.ft-h');
 
@@ -45,7 +46,7 @@ export class SaveDialog {
     });
     this.root.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); this.close(); }
-      else if (e.key === 'Enter' && !(e.target instanceof HTMLSelectElement)) { e.preventDefault(); void this.save(); }
+      else if (e.key === 'Enter' && !(e.target instanceof HTMLSelectElement || e.target instanceof HTMLButtonElement)) { e.preventDefault(); void this.save(); }
     });
     this.w.addEventListener('input', () => { if (this.locked() && this.base.w) setValue(this.h, String(Math.max(1, Math.round(Number(this.w.value) * this.base.h / this.base.w)))); });
     this.h.addEventListener('input', () => { if (this.locked() && this.base.h) setValue(this.w, String(Math.max(1, Math.round(Number(this.h.value) * this.base.w / this.base.h)))); });
@@ -94,7 +95,7 @@ export class SaveDialog {
 
   private async save(): Promise<void> {
     const e = this.entry;
-    if (!e) return;
+    if (!e || this.saving) return;
     const ops = [...this.ops];
     if (this.mode === 'resize') {
       const width = Math.round(Number(this.w.value)), height = Math.round(Number(this.h.value));
@@ -112,6 +113,7 @@ export class SaveDialog {
     }
     const btn = q<HTMLButtonElement>(this.root, '[data-save]');
     btn.disabled = true;
+    this.saving = true;
     try {
       const r = await api.edit(e.path, ops, out, replace);
       this.close();
@@ -121,6 +123,7 @@ export class SaveDialog {
       toast(err instanceof Error ? err.message : 'The picture was not saved.', 'error');
     } finally {
       btn.disabled = false;
+      this.saving = false;
     }
   }
 }

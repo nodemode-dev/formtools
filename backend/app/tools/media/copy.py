@@ -53,7 +53,7 @@ def pick(data: dict, op: str, container: str, streams: list[int] | None) -> list
         elif kind == "audio":
             chosen.append(stream["index"])
         elif kind == "subtitle":
-            if container == "mkv" or (container in ("mp4", "mov") and codec == "mov_text") or (container == "webm" and codec == "webvtt"):
+            if (container == "mkv" and codec != "mov_text") or (container in ("mp4", "mov") and codec == "mov_text") or (container == "webm" and codec == "webvtt"):
                 chosen.append(stream["index"])
         elif kind == "attachment" and container == "mkv":
             chosen.append(stream["index"])

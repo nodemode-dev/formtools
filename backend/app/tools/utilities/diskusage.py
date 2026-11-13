@@ -108,7 +108,7 @@ class Scan:
         total = spent = count = 0
         for entry in entries:
             try:
-                if entry.is_symlink():
+                if entry.is_symlink() or entry.is_junction():
                     continue
                 entry_name = entry.name
                 if not self.include_hidden and entry_name.startswith("."):
@@ -119,7 +119,7 @@ class Scan:
                     continue
                 if not entry.is_file(follow_symlinks=False):
                     continue
-                info = entry.stat(follow_symlinks=False)
+                info = os.stat(entry.path, follow_symlinks=False) if os.name == "nt" else entry.stat(follow_symlinks=False)
             except OSError as exc:
                 self.tally(entry.path, exc)
                 continue

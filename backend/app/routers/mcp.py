@@ -126,6 +126,8 @@ def describe_endpoint() -> dict:
 
 @router.post("/mcp")
 async def rpc(request: Request) -> Response:
+    if request.headers.get("content-type", "").split(";", 1)[0].strip().lower() != "application/json":
+        return JSONResponse(rpc_error(None, -32600, "send the request as application/json"), status_code=415)
     try:
         body = json.loads((await request.body()) or b"null")
     except ValueError:

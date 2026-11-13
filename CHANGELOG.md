@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.6.4 · 2026-11-13
+
+The second pass of fixes from the full review; nothing new.
+
+- Pictures and video: JPEGs saved as MPO by phones and cameras can be turned; remuxing an MP4 with mov_text subtitles to MKV works; a snapshot of a video named with `%d` no longer overwrites another file; batch names and previews use a RAW picture's real size.
+- Rename and checksums: renaming a folder together with items inside it is refused with a clear message; Verify reads the B3SUMS, SHA3-256SUMS and XXH64SUMS files formtools saves, and saved sums files list files by their path from the shared folder.
+- 3D: OBJ models with relative face indices show and convert with all their geometry; hidden groups drop out of the counts and measuring.
+- Hosts: saving after another program changed the file is refused and the table reloads; scoped IPv6 entries no longer block Save.
+- Duplicates and Clean up: Duplicates opened from dropped files scans their folders; a folder chosen with a folder inside it is scanned once; bulk selection picks only what is shown; more than 5000 files can go to the trash at once.
+- Viewer: a file that fails to open no longer shows the previous file's content; the slideshow and busy spinner carry on past videos and documents; old Mac line endings show one line per row; Shift+Arrow extends the archive selection; long lists no longer jitter.
+- Window: Light or Dark switches between your chosen themes; a damaged stored preference no longer blanks the window; a job lost to an engine restart is marked failed; the save dialog no longer saves on Enter from Cancel or twice.
+- Agents and the desktop app: the MCP bridge and the desktop extension reach the desktop app's engine and handle non-ASCII paths on Windows; the MCP endpoint accepts only JSON; an engine left behind on Windows exits; the app reports a failed start after a minute instead of waiting for ever.
+- Windows: scans skip junctions and count hard links once; font install works after an environment save; a variable edited to hold `%VAR%` is saved as expandable.
+- Docs: the README rename example renames the pictures, and it gives the right tool count and 3D formats.
+
 ## 0.6.3 · 2026-11-12
 
 Fixes from a full review; nothing new.

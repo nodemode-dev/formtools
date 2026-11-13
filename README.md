@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <img alt="version 0.6.3" src="https://img.shields.io/badge/version-0.6.3-eef0f4?style=flat-square">
+  <img alt="version 0.6.4" src="https://img.shields.io/badge/version-0.6.4-eef0f4?style=flat-square">
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-Vite-3178c6?style=flat-square&logo=typescript&logoColor=white">
   <img alt="Python FastAPI engine" src="https://img.shields.io/badge/Python-FastAPI-009688?style=flat-square">
   <img alt="macOS, Windows, Linux" src="https://img.shields.io/badge/macOS%20%C2%B7%20Windows%20%C2%B7%20Linux-native-2f7bf5?style=flat-square">
@@ -48,7 +48,7 @@
     <td width="25%" valign="top"><h3>View anything</h3>Open RAW, HDR, EXR, PSD, video, audio, 3D models, fonts, PDFs, databases and archives in one app.</td>
     <td width="25%" valign="top"><h3>Batch images</h3>Convert, resize and rename whole folders with an ordered action pipeline, a live preview and shared presets.</td>
     <td width="25%" valign="top"><h3>Desktop utilities</h3>Colour picker, screen ruler, text extractor, zoom and draw, break timer and more, on global shortcuts.</td>
-    <td width="25%" valign="top"><h3>Agent-ready</h3>The same engine from the window, the CLI and an MCP server with 30 tools.</td>
+    <td width="25%" valign="top"><h3>Agent-ready</h3>The same engine from the window, the CLI and an MCP server with 34 tools.</td>
   </tr>
 </table>
 
@@ -69,7 +69,7 @@
     <td width="33%" valign="top">
       <img src="docs/images/formtools-3d-viewer.webp" alt="The 3D viewer showing a brass lantern glTF model on a grid with triangle and vertex counts" width="100%">
       <br><sub>The 3D viewer with a glTF lantern.</sub>
-      <h3>3D viewer</h3>View, measure and inspect models, play animation, and convert to glTF, GLB or USDZ.
+      <h3>3D viewer</h3>View, measure and inspect models, play animation, and convert to GLB, OBJ, STL, PLY or OFF.
     </td>
   </tr>
 </table>
@@ -88,12 +88,12 @@ Desktop utilities: colour picker · screen ruler · text extractor · zoom and d
 
 ## Built for agents
 
-30 MCP tools, one engine; the window, the CLI and the MCP server call the same code.
+34 MCP tools, one engine; the window, the CLI and the MCP server call the same code.
 
 ```sh
 ./formtools cli convert --format webp --out ~/Pictures/web ~/Pictures/trip   # batch convert
 ./formtools cli resize --longest 2048 ~/Pictures/trip                        # resize
-./formtools cli rename --find IMG_ --replace trip- --counter ~/Pictures/trip # print the plan; add --apply
+./formtools cli rename --find IMG --replace trip --counter ~/Pictures/trip/* # print the plan; add --apply
 ./formtools mcp                                                              # MCP server on stdio for Claude Code, Codex and Cursor
 ```
 

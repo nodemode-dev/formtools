@@ -82,7 +82,7 @@ function load(src: string): Promise<HTMLImageElement> {
     probes.set(src, probe);
     probe.decoding = 'async';
     probe.onload = () => { void (probe.decode ? probe.decode().catch(() => undefined) : Promise.resolve()).then(() => resolve(probe)); };
-    probe.onerror = () => reject(new Error('load failed'));
+    probe.onerror = () => { if (probes.get(src) === probe) probes.delete(src); reject(new Error('load failed')); };
     probe.src = src;
   });
 }
@@ -374,6 +374,7 @@ export class Viewer {
 
   open(entries: Entry[], index: number): void {
     this.entries = entries;
+    for (const k of this.cache.keys()) cancel(k);
     this.cache.clear();
     void this.show(Math.max(0, index));
     this.stage.focus({ preventScroll: true });
@@ -383,6 +384,8 @@ export class Viewer {
     if (i < 0 || i >= this.entries.length) return;
     const seq = ++this.seq;
     this.index = i;
+    this.stopBusy?.();
+    this.stopBusy = null;
     const e = this.entries[i];
     setText(q(this.root, '.ft-vbar-name'), e.name);
     setText(q(this.root, '.ft-vbar-count'), `${i + 1} of ${this.entries.length}`);
@@ -391,6 +394,7 @@ export class Viewer {
     if (this.crop.active) this.endCrop();
     this.setMedia(k);
     this.syncTag(e);
+    if (k !== 'image') this.restartSlides();
     if (k === 'video' || k === 'audio') {
       void this.showMedia(e, k, seq);
       return;
@@ -407,7 +411,6 @@ export class Viewer {
       this.syncInfo(e, null);
       return;
     }
-    this.stopBusy?.();
     const busy = q(this.root, '.ft-vbar-busy');
     this.stopBusy = delayedIndicator(
       () => { setClass(busy, 'is-on', true); setClass(this.stage, 'is-loading', true); },
@@ -452,7 +455,7 @@ export class Viewer {
     if (!p) {
       p = load(src);
       this.cache.set(src, p);
-      p.catch(() => this.cache.delete(src));
+      p.catch(() => { if (this.cache.get(src) === p) this.cache.delete(src); });
     }
     return p;
   }

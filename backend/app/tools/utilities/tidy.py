@@ -42,7 +42,7 @@ def open_folder(path: str, tally: walk.Tally, progress: walk.Progress) -> Folder
         return folder
     for entry in entries:
         try:
-            if not entry.is_symlink() and entry.is_dir(follow_symlinks=False):
+            if not entry.is_symlink() and not entry.is_junction() and entry.is_dir(follow_symlinks=False):
                 folder.pending.append(entry.path)
                 progress.grow()
                 continue

@@ -1,3 +1,4 @@
+import { ApiError } from '../../io/api';
 import { desktopApi, type HostEntry } from '../../io/desktop-api';
 import { el, patchList, q, setChecked, setClass, setDisabled, setText, setTitle, setValue } from '../dom';
 import { icon } from '../icons';
@@ -11,8 +12,10 @@ const IPV4 = new RegExp(`^${OCTET}(\\.${OCTET}){3}$`);
 const LABEL = '[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?';
 const NAME = new RegExp(`^${LABEL}(\\.${LABEL})*$`);
 
-export function validAddress(a: string): boolean {
-  if (IPV4.test(a)) return true;
+export function validAddress(raw: string): boolean {
+  if (IPV4.test(raw)) return true;
+  const [a, zone, extra] = raw.split('%');
+  if (extra !== undefined || (zone !== undefined && !/^[^\s/]+$/.test(zone))) return false;
   if (!a.includes(':') || !/^[0-9A-Fa-f:.]+$/.test(a)) return false;
   try { return new URL(`http://[${a}]/`).hostname !== ''; } catch { return false; }
 }
@@ -35,6 +38,7 @@ export class HostsSection extends DeskSection {
   private rows: Row[] = [];
   private baseline = '';
   private writable = true;
+  private version: string | undefined;
   private loaded = false;
   private loading = false;
   private saving = false;
@@ -104,7 +108,7 @@ export class HostsSection extends DeskSection {
     return entries.map((en) => {
       const sig = `${en.address}|${en.names.join(' ')}`;
       const reuse = free.get(sig)?.shift();
-      return { key: reuse?.key ?? this.key(), line: en.line, enabled: en.enabled, address: en.address, names: en.names.join(' '), comment: en.comment ?? '', touched: false };
+      return { key: reuse?.key ?? this.key(), line: en.line, enabled: en.enabled, address: en.address, names: en.names.join(' '), comment: en.comment ?? '', touched: true };
     });
   }
 
@@ -117,6 +121,7 @@ export class HostsSection extends DeskSection {
     try {
       const info = await desktopApi.hosts();
       this.writable = info.writable;
+      this.version = info.version;
       this.rows = this.fromEntries(info.entries);
       this.baseline = this.signature(this.rows);
       this.loaded = true;
@@ -219,7 +224,7 @@ export class HostsSection extends DeskSection {
       return e;
     });
     try {
-      const r = await desktopApi.saveHosts(entries);
+      const r = await desktopApi.saveHosts(entries, this.version);
       setText(q(this.root, '.ft-desk-backup'), r.backup ? `Backup saved to ${r.backup}${r.elevated ? '. Written with administrator rights.' : '.'}` : '');
       this.deps.status('The hosts file was saved.');
       toast('The hosts file was saved.');
@@ -231,6 +236,13 @@ export class HostsSection extends DeskSection {
       const t = e instanceof Error ? e.message : 'The hosts file was not saved.';
       setText(err, t);
       toast(t, 'error');
+      if (e instanceof ApiError && e.status === 409) {
+        this.saving = false;
+        this.loaded = false;
+        await this.load();
+        setText(err, t);
+        return;
+      }
     }
     this.saving = false;
     this.sync();

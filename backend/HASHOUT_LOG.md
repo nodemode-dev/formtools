@@ -2,6 +2,42 @@
 
 Decisions, reasons and anything left out, newest first. Code carries no comments; the context lives here.
 
+## v0.6.4 (2026-11-13): review fixes, second pass
+
+One line per fix: file and symbol, what changed and why. The commit of the same subject carries the reasoning and what was run. Windows-only fixes were not run on Windows.
+
+Batch, image, media, MCP:
+
+- tools/image/transform.py :: `run` · a JPEG that Pillow reports as MPO takes only the lossless orientation patch (`patch_orientation` then `write_beside`) and answers 415 when that is not possible; re-encoding would drop the extra pictures.
+- tools/media/copy.py :: `pick` · a mov_text subtitle track is left out of an MKV remux; Matroska cannot hold it and the default remux of such an MP4 always failed.
+- tools/batch/rename.py :: `paths_from` · a folder listed together with an item inside it answers 400; one order failed part way and the other left an undo that could not run.
+- tools/media/preview.py :: `snapshot` · `-update 1` before the output, so a `%d` in the video's name is not read as a frame pattern that overwrites another file.
+- tools/batch/service.py :: `source_size` (new), `predicted_size`, `preview` · RAW extensions take their size from `image.info.raw_info`; Pillow reads the embedded thumbnail of TIFF-based RAW files. Removed: the inline `with Image.open(source) as probe: original = max(probe.size)`.
+- routers/mcp.py :: `rpc` · a POST that is not `application/json` answers 415; `setup/mcp_stdio.py` already sends that type and the window never posts to `/mcp`.
+
+Files, desktop, model, utilities:
+
+- tools/files/hashing.py :: `BY_NAME` (new), `BY_LENGTH`, `BY_EXTENSION`, `parse_sums` · the sums file name chooses the algorithm when the extension does not (B3SUMS, SHA3-256SUMS, XXH64SUMS and the rest), 16 hex digits are xxh64, and a BSD line needs a known tag with that tag's digest length. Removed: `BY_TAG.get(tag) or BY_LENGTH.get(len(digest))`.
+- tools/model/service.py :: `absolute_obj` (new), `load` · negative OBJ indices are rewritten to absolute ones before trimesh parses, which resolves them against the whole vertex list; :: `mtl_notes` · an `mtllib` line is split only when every part ends in `.mtl`.
+- tools/desktop/hosts.py :: `Snapshot.version`, `read`, `save(entries, version=None)`, tools/desktop/router.py :: `HostsBody.version` · the read reply carries a sha256 of the file and a save with a stale version answers 409 and writes nothing; a save without one behaves as before.
+- tools/utilities/walk.py :: `walk`, `inside` (new), `folder_roots(raw, recursive=True)`; diskusage.py; tidy.py; service.py · junctions are skipped like links, Windows takes identity from `os.stat` because `DirEntry.stat` leaves it zero there, and roots are deduped by real path and containment in a recursive scan.
+- tools/files/fonts.py :: `register_windows` · passes `None` for lParam; `envvars.broadcast` leaves `c_wchar_p` argtypes on the shared `SendMessageTimeoutW`, which refused the int 0.
+- tools/desktop/envvars.py :: `windows_kind` · an existing REG_SZ becomes REG_EXPAND_SZ when the new value holds `%`. Removed: `return kind`.
+- tools/desktop/elevate.py :: `powershell_literal` · doubles the four typographic single quotes as well as the ASCII one.
+
+Engine entry and scripts (setup has its own log for older entries):
+
+- formtools_engine.py :: `watch_parent` · runs on every OS; the loop is `os.getppid() == parent and runtime.alive(parent)`, because Windows keeps the old parent id after the parent exits. Removed: `if os.name != "posix": return`.
+- setup/mcp_stdio.py :: `data_dir`, `find_engine`, `forward`, `main` · when the default address does not answer, the bridge reads `engine.port` from the data folder and uses that engine if its health check answers; stdin and stdout are reconfigured to UTF-8.
+- setup/desktop_dev · tests `src-tauri/engine/formtools-engine` instead of the pre-0.3.0 one-file sidecar; setup/agents.py · `tomllib` is imported inside `check_agent_files`, so `agents sync` runs on Python 3.9.
+- setup/mcpb/manifest.json · `python3`, with a win32 override to `python`.
+
+Open, recorded and not changed in 0.6.4:
+
+- core/runtime.py :: `alive` on Windows uses `OpenProcess` alone, which also succeeds for an exited process while a handle to it is open; checking the exit code would make the parent watch firmer.
+- tools/desktop/hosts.py :: `build` answers 400, not 409, for a line number that no longer exists; tools/desktop/__init__.py does not mention `version` in the `hosts_read` tool description.
+- `.mcp.json` cannot start the bridge on Windows.
+
 ## v0.6.3 (2026-11-12): review fixes
 
 Five fixes from a full review. The commit of the same subject carries the reasoning and what was run.

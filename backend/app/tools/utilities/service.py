@@ -4,7 +4,7 @@ from app.tools.utilities import diskusage, dupes, tidy, walk
 
 def start_dupes(roots: list[str], recursive: bool, min_size: int, mode: str, threshold: int, include_hidden: bool) -> dict:
     params = {
-        "roots": walk.folder_roots(roots),
+        "roots": walk.folder_roots(roots, recursive),
         "recursive": recursive,
         "min_size": max(0, int(min_size)),
         "threshold": max(0, min(64, int(threshold))),

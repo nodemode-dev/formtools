@@ -14,7 +14,20 @@ from app.tools.files import safety
 
 ALGORITHMS = ("md5", "sha1", "sha256", "sha512", "sha3_256", "blake3", "xxh64", "crc32")
 SUMS_LIMIT = 16 * 1024 * 1024
-BY_LENGTH = {8: "crc32", 32: "md5", 40: "sha1", 56: "sha224", 64: "sha256", 96: "sha384", 128: "sha512"}
+BY_LENGTH = {8: "crc32", 16: "xxh64", 32: "md5", 40: "sha1", 56: "sha224", 64: "sha256", 96: "sha384", 128: "sha512"}
+BY_NAME = {
+    "MD5SUMS": "md5",
+    "SHA1SUMS": "sha1",
+    "SHA224SUMS": "sha224",
+    "SHA256SUMS": "sha256",
+    "SHA384SUMS": "sha384",
+    "SHA512SUMS": "sha512",
+    "SHA3-256SUMS": "sha3_256",
+    "B3SUMS": "blake3",
+    "BLAKE3SUMS": "blake3",
+    "XXH64SUMS": "xxh64",
+    "CRC32SUMS": "crc32",
+}
 BY_EXTENSION = {
     ".md5": "md5",
     ".sha1": "sha1",
@@ -25,6 +38,7 @@ BY_EXTENSION = {
     ".sfv": "crc32",
     ".b3": "blake3",
     ".blake3": "blake3",
+    ".xxh64": "xxh64",
 }
 BY_TAG = {
     "MD5": "md5",
@@ -167,7 +181,7 @@ def unescape(name: str, escaped: bool) -> str:
 
 def parse_sums(path: Path, text: str) -> list[tuple[str, str, str]]:
     ext = path.suffix.lower()
-    forced = BY_EXTENSION.get(ext)
+    forced = BY_EXTENSION.get(ext) or BY_NAME.get(path.name.upper())
     entries: list[tuple[str, str, str]] = []
     for line in text.splitlines():
         stripped = line.strip()
@@ -176,8 +190,8 @@ def parse_sums(path: Path, text: str) -> list[tuple[str, str, str]]:
         match = BSD.match(stripped)
         if match:
             tag, name, digest = match.group(1).upper(), match.group(2), match.group(3)
-            algorithm = BY_TAG.get(tag) or BY_LENGTH.get(len(digest))
-            if algorithm:
+            algorithm = BY_TAG.get(tag)
+            if algorithm and (algorithm == "blake3" or len(digest) == expected_length(algorithm)):
                 entries.append((name, algorithm, digest.lower()))
             continue
         if ext == ".sfv":

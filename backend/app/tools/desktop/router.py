@@ -17,6 +17,7 @@ class HostsEntry(BaseModel):
 
 class HostsBody(BaseModel):
     entries: list[HostsEntry] = Field(max_length=hosts.MAX_ENTRIES)
+    version: str | None = Field(default=None, max_length=128)
 
 
 class EnvBody(BaseModel):
@@ -32,7 +33,7 @@ async def hosts_get() -> dict:
 
 @router.post("/api/hosts")
 async def hosts_post(body: HostsBody) -> dict:
-    return await run_in_threadpool(hosts.save, [item.model_dump() for item in body.entries])
+    return await run_in_threadpool(hosts.save, [item.model_dump() for item in body.entries], body.version)
 
 
 @router.get("/api/env")

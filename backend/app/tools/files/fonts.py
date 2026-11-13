@@ -214,7 +214,7 @@ def register_windows(target: Path, title: str) -> None:
     with winreg.CreateKey(winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows NT\CurrentVersion\Fonts") as key:
         winreg.SetValueEx(key, f"{title} {kind}", 0, winreg.REG_SZ, str(target))
     ctypes.windll.gdi32.AddFontResourceW(str(target))
-    ctypes.windll.user32.SendMessageTimeoutW(0xFFFF, 0x001D, 0, 0, 2, 1000, None)
+    ctypes.windll.user32.SendMessageTimeoutW(0xFFFF, 0x001D, 0, None, 2, 1000, None)
 
 
 def install_font(raw: str) -> dict:

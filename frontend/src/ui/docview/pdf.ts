@@ -152,6 +152,11 @@ export class PdfView implements DocKind {
       this.syncCurrent();
     } catch (err) {
       if (this.seq.is(my)) {
+        this.teardown();
+        this.buildNodes(0);
+        setText(q(this.root, '.dv-pages'), '');
+        setText(q(this.root, '.dv-info'), '');
+        this.pageNo.value = '';
         const name = err instanceof Error ? err.name : '';
         setText(q(this.root, '.dv-note'), name === 'PasswordException' ? 'This PDF is protected with a password.' : errText(err));
       }
@@ -368,7 +373,7 @@ export class PdfView implements DocKind {
     } catch {
       return;
     } finally {
-      this.inflight--;
+      if (this.doc === doc) this.inflight--;
       if (task && this.tasks.get(i) === task) this.tasks.delete(i);
       this.pump();
     }
@@ -401,6 +406,7 @@ export class PdfView implements DocKind {
       return;
     } finally {
       this.thumbBusy = false;
+      if (this.doc && this.doc !== doc) void this.pumpThumbs();
     }
   }
 

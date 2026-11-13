@@ -30,7 +30,9 @@ def applescript_literal(text: str) -> str:
 
 
 def powershell_literal(text: str) -> str:
-    return "'" + text.replace("'", "''") + "'"
+    for mark in "'‘’‚‛":
+        text = text.replace(mark, mark + mark)
+    return "'" + text + "'"
 
 
 def windows_script(body: str) -> None:

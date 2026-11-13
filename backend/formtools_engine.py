@@ -42,8 +42,8 @@ def selfcheck() -> int:
 
 
 def watch_parent() -> None:
-    if os.name != "posix":
-        return
+    from app.core import runtime
+
     if not (getattr(sys, "frozen", False) or os.environ.get("FORMTOOLS_WATCH_PARENT") == "1"):
         return
     parent = os.getppid()
@@ -51,7 +51,7 @@ def watch_parent() -> None:
         return
 
     def run() -> None:
-        while os.getppid() == parent:
+        while os.getppid() == parent and runtime.alive(parent):
             time.sleep(2)
         os._exit(0)
 

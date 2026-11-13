@@ -152,7 +152,7 @@ export class BatchTool {
       try { const l = await api.list(first); first = l.entries.find((e) => e.kind === 'file' && (e.type === 'image' || e.type === 'family'))?.path ?? ''; } catch { }
     }
     if (seq !== this.previewSeq) return;
-    if (!first) { setHidden(img, true); setText(msg, 'Add files to see a preview.'); setHidden(msg, false); return; }
+    if (!first) { setHidden(img, true); setText(msg, 'Add files to see a preview.'); setHidden(msg, false); setClass(busy, 'is-on', false); return; }
     setText(q(this.root, '.ft-preview-name'), base(first));
     setClass(busy, 'is-on', true);
     try {
@@ -167,6 +167,13 @@ export class BatchTool {
         if (old) URL.revokeObjectURL(old);
         setHidden(img, false);
         setHidden(msg, true);
+        setClass(busy, 'is-on', false);
+      };
+      probe.onerror = () => {
+        URL.revokeObjectURL(url);
+        if (seq !== this.previewSeq) return;
+        setText(msg, 'The preview could not be shown.');
+        setHidden(msg, false);
         setClass(busy, 'is-on', false);
       };
       probe.src = url;

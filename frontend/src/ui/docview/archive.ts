@@ -77,6 +77,7 @@ export class ArchiveView implements DocKind {
   private view: Node[] = [];
   private selected = new Set<string>();
   private anchor = -1;
+  private focus = -1;
   private previewToken = 0;
   private previewUrl = '';
   private previewKey = '';
@@ -166,12 +167,12 @@ export class ArchiveView implements DocKind {
     if (e.key === 'Backspace') { this.up(); return true; }
     if (!inList) return false;
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-      const next = Math.max(0, Math.min(this.view.length - 1, (this.anchor < 0 ? -1 : this.anchor) + (e.key === 'ArrowDown' ? 1 : -1)));
+      const next = Math.max(0, Math.min(this.view.length - 1, (this.anchor < 0 ? -1 : this.focus) + (e.key === 'ArrowDown' ? 1 : -1)));
       if (this.view.length) { this.pick(next, false, e.shiftKey); this.reveal(next); }
       return true;
     }
     if (e.key === 'Enter') {
-      const node = this.view[this.anchor];
+      const node = this.anchor < 0 ? undefined : this.view[this.focus];
       if (node?.dir) this.enter(node);
       return true;
     }
@@ -274,6 +275,7 @@ export class ArchiveView implements DocKind {
       this.selected.add(node.path);
       this.anchor = i;
     }
+    this.focus = i;
     this.syncSelection();
     this.list.refresh();
     const only = this.selected.size === 1 ? this.view.find((n) => this.selected.has(n.path)) : undefined;

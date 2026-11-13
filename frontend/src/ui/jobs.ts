@@ -1,4 +1,4 @@
-import { api, type Job } from '../io/api';
+import { api, ApiError, type Job } from '../io/api';
 import { el, escapeHtml, patchList, q, setClass, setHidden, setStyleVar, setText } from './dom';
 import { icon } from './icons';
 import { toast } from './toast';
@@ -47,7 +47,9 @@ export class Jobs {
 
   private async poll(): Promise<void> {
     const running = [...this.known.values()].filter((j) => j.state === 'running');
-    await Promise.all(running.map((j) => api.job(j.id).then((n) => this.update(n)).catch(() => undefined)));
+    await Promise.all(running.map((j) => api.job(j.id).then((n) => this.update(n)).catch((e) => {
+      if (e instanceof ApiError && e.status === 404) this.update({ ...j, state: 'failed', errors: [{ path: '', error: 'the engine no longer knows this job; it may have restarted' }, ...j.errors], finished: Date.now() / 1000 });
+    })));
     this.schedule();
   }
 

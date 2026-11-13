@@ -27,6 +27,7 @@ const FALLBACK_SIZE: (f64, f64) = (1280.0, 820.0);
 const MIN_SIZE: (f64, f64) = (980.0, 640.0);
 const SCREEN_FRACTION: f64 = 0.9;
 const DEV_ENGINE: &str = "http://127.0.0.1:8240";
+const PORT_WAIT: Duration = Duration::from_secs(60);
 const OPEN_EVENT: &str = "open-paths";
 const TOOL_EVENT: &str = "open-tool";
 
@@ -232,7 +233,17 @@ fn start_engine(program: &std::path::Path) -> std::io::Result<(Child, tauri::asy
 
 async fn read_port(mut rx: tauri::async_runtime::Receiver<String>) -> Option<u16> {
     let pattern = regex::Regex::new(r"http://127\.0\.0\.1:(\d+)").unwrap();
-    while let Some(text) = rx.recv().await {
+    let (tick, mut timer) = tauri::async_runtime::channel::<()>(1);
+    std::thread::spawn(move || {
+        std::thread::sleep(PORT_WAIT);
+        let _ = tick.blocking_send(());
+    });
+    while let Some(text) = std::future::poll_fn(|cx| match timer.poll_recv(cx) {
+        std::task::Poll::Ready(_) => std::task::Poll::Ready(None),
+        std::task::Poll::Pending => rx.poll_recv(cx),
+    })
+    .await
+    {
         if let Some(port) = pattern.captures(&text).and_then(|found| found[1].parse::<u16>().ok()) {
             tauri::async_runtime::spawn(async move { while rx.recv().await.is_some() {} });
             return Some(port);
