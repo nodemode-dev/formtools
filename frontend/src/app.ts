@@ -4,6 +4,7 @@ import { api, type Entry } from './io/api';
 import { host, inDesktop } from './io/host';
 import { el, q, revealApp, setClass, setText } from './ui/dom';
 import { icon } from './ui/icons';
+import { brandMark } from './ui/brand';
 import { Commands } from './ui/commands';
 import { MenuBar, type MenuDef } from './ui/menu';
 import { NativeMenus, wantsNativeMenus } from './ui/native-menu';
@@ -35,6 +36,7 @@ type Page = 'home' | 'browse' | 'view' | 'tool' | 'util' | 'desk';
 const SHELL = `
   <div class="cv-app ft-app">
     <header class="cv-titlebar ft-titlebar">
+      <button class="cv-brand ft-tb-brand" type="button" data-cmd="go-home" title="Home" aria-label="Home">${brandMark(22)}</button>
       <span class="cv-tb-doc"></span>
       <span class="cv-tb-app">formtools</span>
       <div class="cv-title-tools">
@@ -292,7 +294,7 @@ export function startApp(): void {
     void menus.build().catch(() => { document.documentElement.classList.remove('has-native-menus'); });
   }
   const bar = new MenuBar(commands, MENUS, overlay);
-  header.prepend(bar.root);
+  q(header, '.ft-tb-brand').after(bar.root);
   new CaptionButtons(header, () => true);
 
   commands.bindKeys(window, (e) => anyOverlay() || (isText(e.target) && !(e.metaKey || e.ctrlKey)) || bar.isOpen);
