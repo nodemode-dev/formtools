@@ -245,9 +245,10 @@ def plan(body: dict) -> dict:
 
 def same_file(first: str, second: str) -> bool:
     try:
-        return os.path.samefile(first, second)
+        a, b = os.lstat(first), os.lstat(second)
     except OSError:
         return False
+    return (a.st_dev, a.st_ino) == (b.st_dev, b.st_ino) and first.casefold() == second.casefold()
 
 
 def read_journal() -> dict:
