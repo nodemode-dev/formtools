@@ -393,6 +393,7 @@ export class Viewer {
     if (this.crop.active) this.endCrop();
     this.setMedia(k);
     this.syncTag(e);
+    if (k !== 'image') this.restartSlides();
     if (k === 'video' || k === 'audio') {
       void this.showMedia(e, k, seq);
       return;
