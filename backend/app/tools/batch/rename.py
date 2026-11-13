@@ -206,6 +206,12 @@ def paths_from(body: dict) -> list[str]:
         if key not in seen:
             seen.add(key)
             resolved.append(target)
+    for target in resolved:
+        parent = os.path.dirname(naming.fs_key(target))
+        while parent != os.path.dirname(parent):
+            if parent in seen:
+                raise ApiError(400, f"{os.path.basename(target)} is inside a folder that is renamed too; rename the folder and the items in it separately")
+            parent = os.path.dirname(parent)
     return resolved
 
 
