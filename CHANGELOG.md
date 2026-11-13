@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.8.0 · 2026-11-13
+
+- The three demos (A photo shoot, A shelf of Form files, 3D and media bench) also open as offline browser pages, `demo/index.html`, `demos/family` and `demos/bench`, that replay recorded engine answers in the real window.
+- The formtools mark leads the title bar, as in formlit, and clicking it opens Home.
+- A long folder path in the title bar trims with an ellipsis before the centred app name instead of running underneath it.
+- `./formtools sparkle` also checks the browser demo pages.
+
 ## 0.7.0 · 2026-11-13
 
 FormTools joins the Form family standard for Home, agents and demos, in formlit's look.
