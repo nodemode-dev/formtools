@@ -11,8 +11,10 @@ const IPV4 = new RegExp(`^${OCTET}(\\.${OCTET}){3}$`);
 const LABEL = '[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?';
 const NAME = new RegExp(`^${LABEL}(\\.${LABEL})*$`);
 
-export function validAddress(a: string): boolean {
-  if (IPV4.test(a)) return true;
+export function validAddress(raw: string): boolean {
+  if (IPV4.test(raw)) return true;
+  const [a, zone, extra] = raw.split('%');
+  if (extra !== undefined || (zone !== undefined && !/^[^\s/]+$/.test(zone))) return false;
   if (!a.includes(':') || !/^[0-9A-Fa-f:.]+$/.test(a)) return false;
   try { return new URL(`http://[${a}]/`).hostname !== ''; } catch { return false; }
 }
@@ -104,7 +106,7 @@ export class HostsSection extends DeskSection {
     return entries.map((en) => {
       const sig = `${en.address}|${en.names.join(' ')}`;
       const reuse = free.get(sig)?.shift();
-      return { key: reuse?.key ?? this.key(), line: en.line, enabled: en.enabled, address: en.address, names: en.names.join(' '), comment: en.comment ?? '', touched: false };
+      return { key: reuse?.key ?? this.key(), line: en.line, enabled: en.enabled, address: en.address, names: en.names.join(' '), comment: en.comment ?? '', touched: true };
     });
   }
 
