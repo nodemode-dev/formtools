@@ -97,7 +97,7 @@ export class TextView implements DocKind {
       if (lang) {
         const hl = await highlighter();
         if (!this.seq.is(token)) return;
-        try { html = splitHighlighted(hl.highlight(data.text, { language: lang, ignoreIllegals: true }).value); } catch { html = null; }
+        try { html = splitHighlighted(hl.highlight(data.text.replace(/\r\n?/g, '\n'), { language: lang, ignoreIllegals: true }).value); } catch { html = null; }
       }
     }
     const plain = data.text.split(/\r\n|\r|\n/);
