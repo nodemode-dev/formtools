@@ -4,7 +4,7 @@ The form* family's media and file utility belt: viewers, batch image tools, 3D v
 
 ## Stage
 
-Alpha (v0.6.4): Phases 1 to 9 of the approved plan, with Phase 2b for formvis and the repository side of Phase 10. Run `./formtools agents sync` after changing a skill and `./formtools agents check` before committing. The plan of record (`DEV_PLAN.md`), `BUILD_NOTES.md` and the root `HASHOUT_LOG.md` ship in the planning sidecar zip; read them, then the in-tree logs (`frontend/`, `backend/`, `src-tauri/`, `setup/` `HASHOUT_LOG.md`), before changing anything. For changing the code route through `.claude/skills/formtools-harness`; for using the app through MCP, `.claude/skills/formtools-driving`.
+Alpha (v0.7.0): Phases 1 to 9 of the approved plan, with Phase 2b for formvis and the repository side of Phase 10. Run `./formtools agents sync` after changing a skill and `./formtools agents check` before committing. The plan of record (`DEV_PLAN.md`), `BUILD_NOTES.md` and the root `HASHOUT_LOG.md` ship in the planning sidecar zip; read them, then the in-tree logs (`frontend/`, `backend/`, `src-tauri/`, `setup/` `HASHOUT_LOG.md`), before changing anything. For changing the code route through `.claude/skills/formtools-harness`; for using the app through MCP, `.claude/skills/formtools-driving`.
 
 ## Layout notes
 
