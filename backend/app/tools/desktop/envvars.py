@@ -183,7 +183,7 @@ def windows_kind(winreg, key, name: str, value: str) -> int:
     try:
         _, kind = winreg.QueryValueEx(key, name)
         if kind in (winreg.REG_SZ, winreg.REG_EXPAND_SZ):
-            return kind
+            return winreg.REG_EXPAND_SZ if "%" in value else kind
     except OSError:
         pass
     return winreg.REG_EXPAND_SZ if "%" in value else winreg.REG_SZ
