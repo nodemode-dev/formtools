@@ -123,6 +123,15 @@ Desktop utilities: colour picker · screen ruler · text extractor · zoom and d
 
 All FormTools builds are compiled and released from [FormCompiler](https://github.com/nodemode-dev/formcompiler); this repo holds the source.
 
+## Demo
+
+[`demo/index.html`](demo/index.html) is an offline demo that opens from `file://` or any static server and runs the real FormTools window on A photo shoot, the demo folder the engine generates: browse it, open every picture in the viewer with its information, and see Find Duplicates, Clean Up, Disk Usage and Checksums on it. FormTools does its work in its engine, so the page replays answers recorded from the real engine for that folder; anything not recorded says it needs the engine. See [`demo/README.md`](demo/README.md) for what is live and what is replayed. Two more pages of the same window link to each other and to it from the status bar:
+
+- [`demos/family/index.html`](demos/family/index.html): A shelf of Form files, with a formvis project, a PDF, a database, a font, an archive, data and code, and a checksum file to verify. See [`demos/family/README.md`](demos/family/README.md).
+- [`demos/bench/index.html`](demos/bench/index.html): 3D and media bench, with a GLB scene, OBJ, STL, PLY and OFF models in the 3D viewer, a sweep and a chord to play, and a short video. See [`demos/bench/README.md`](demos/bench/README.md).
+
+The same three demos open inside the app from Home, from Help > Demos, or with the `demo-photos`, `demo-family` and `demo-bench` commands, each as a folder the engine makes on your computer.
+
 ## Run it from source
 
 Prefer it in your browser, or want to contribute? Run the web UI straight from this repo.
