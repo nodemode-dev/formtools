@@ -120,7 +120,10 @@ export class ChecksumsView {
   private save(): void {
     const algo = this.algos[0];
     if (!algo) return;
-    const text = this.items.map((i) => `${i.hashes[algo]}  ${baseName(i.path)}`).join('\n') + '\n';
+    const dirs = this.items.map((i) => i.path.split(/[\\/]/).slice(0, -1));
+    let common = dirs.length ? dirs[0].length : 0;
+    for (const d of dirs) { let k = 0; while (k < common && k < d.length && d[k] === dirs[0][k]) k += 1; common = k; }
+    const text = this.items.map((i) => `${i.hashes[algo]}  ${i.path.split(/[\\/]/).slice(common).join('/')}`).join('\n') + '\n';
     const url = URL.createObjectURL(new Blob([text], { type: 'text/plain' }));
     const a = document.createElement('a');
     a.href = url;
