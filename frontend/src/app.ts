@@ -27,6 +27,7 @@ import { addRecent, loadPrefs } from './ui/prefs';
 import { applyTheme, readChoice, setTheme, THEMES } from './ui/themes';
 import { toast } from './ui/toast';
 import { connectBridge } from './automation/bridge';
+import { TerminalDock } from './ui/terminal-dock';
 
 type Page = 'home' | 'browse' | 'view' | 'tool' | 'util' | 'desk';
 
@@ -55,6 +56,8 @@ export function startApp(): void {
   const area = q(shell, '.ft-stage-area');
   const status = new StatusBar();
   shell.appendChild(status.root);
+  const termDock = new TerminalDock();
+  shell.insertBefore(termDock.root, status.root);
 
   const commands = new Commands();
   const settings = new SettingsDialog(commands);

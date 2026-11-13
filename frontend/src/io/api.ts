@@ -136,6 +136,27 @@ export interface MediaInfo {
 
 export interface MediaStatus { ffmpeg: string | null; ffprobe: string | null; version: string | null; fetching: boolean; error: string | null }
 
+export interface TerminalInfo { id: string; title: string; cwd?: string; alive: boolean; kind: 'shell' | 'claude' | 'agent' }
+export interface ClaudeCodeStatus { installed: boolean; version: string | null; install: string; signedIn: boolean | null }
+export interface ClaudeOpen { prompt?: string; resume?: string; cols?: number; rows?: number; fresh?: boolean }
+export type AgentMode = 'ask' | 'auto-edits' | 'plan';
+export interface ClaudeStatus { installed: boolean; path: string | null; version: string | null; signedIn: boolean | null; install: string; running: boolean; state: string; mode: AgentMode; session: string | null; modes: AgentMode[] }
+export type AgentEvent =
+  | { type: 'state'; running: boolean; state: string; mode: AgentMode; session: string | null }
+  | { type: 'user'; text: string }
+  | { type: 'block'; id: string; kind: 'text' | 'thinking' }
+  | { type: 'delta'; id: string; text: string }
+  | { type: 'tool'; id: string; name: string; summary: string }
+  | { type: 'tool_result'; id: string; text: string; error: boolean }
+  | { type: 'permission'; id: string; tool: string; summary: string }
+  | { type: 'permission_done'; id: string; allowed: boolean }
+  | { type: 'result'; ok: boolean; text: string; costUsd: number | null }
+  | { type: 'notice'; text: string };
+
+export function socketTo(path: string): WebSocket {
+  return new WebSocket(`${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}/api${path}`);
+}
+
 export class ApiError extends Error {
   constructor(message: string, readonly status: number) { super(message); }
 }
@@ -204,4 +225,25 @@ export const api = {
   rawUrl: (path: string, stamp = 0) => `/api/file/raw?${qs({ path, v: stamp })}`,
   thumbUrl: (path: string, size: number, stamp = 0) => `/api/image/thumb?${qs({ path, size, v: stamp })}`,
   viewUrl: (path: string, max = 0, stamp = 0) => `/api/image/view?${qs({ path, max, v: stamp })}`,
+  terminals: async (): Promise<TerminalInfo[]> => (await request<{ terminals: TerminalInfo[] }>('/api/terminal')).terminals,
+  openTerminal: (cols: number, rows: number) => post<TerminalInfo>('/api/terminal', { cols, rows }),
+  restartTerminal: async (id: string): Promise<void> => { await post<unknown>(`/api/terminal/${encodeURIComponent(id)}/restart`, {}); },
+  closeTerminal: async (id: string): Promise<void> => { await request<unknown>(`/api/terminal/${encodeURIComponent(id)}`, { method: 'DELETE' }); },
+  openClaude: async (opts: ClaudeOpen): Promise<TerminalInfo> => {
+    const info = await post<Partial<TerminalInfo>>('/api/terminal/claude', opts);
+    if (typeof info.id !== 'string' || info.id === '') throw new ApiError('Claude Code did not start.', 502);
+    return info as TerminalInfo;
+  },
+  claudeCodeStatus: async (): Promise<ClaudeCodeStatus | null> => {
+    const now = await request<Partial<ClaudeCodeStatus>>('/api/claude-code/status').catch(() => null);
+    if (now?.installed === true) return { installed: true, version: now.version ?? null, install: '', signedIn: now.signedIn ?? null };
+    const old = await api.claudeStatus();
+    if (!now && !old) return null;
+    return { installed: now ? false : old?.installed === true, version: now?.version ?? old?.version ?? null, install: now?.install || old?.install || '', signedIn: now?.signedIn ?? old?.signedIn ?? null };
+  },
+  claudeStatus: (fresh = false): Promise<ClaudeStatus | null> => request<ClaudeStatus>(`/api/agent/claude/status${fresh ? '?fresh=true' : ''}`).catch(() => null),
+  claudeStart: async (mode: AgentMode, fresh = false): Promise<void> => { await post<unknown>('/api/agent/claude/start', { mode, fresh }); },
+  claudeSend: async (text: string): Promise<void> => { await post<unknown>('/api/agent/claude/send', { text }); },
+  claudeStop: async (): Promise<void> => { await post<unknown>('/api/agent/claude/stop', {}); },
+  claudeAllow: async (id: string, allow: boolean): Promise<void> => { await post<unknown>('/api/agent/claude/permission', { id, allow }); },
 };

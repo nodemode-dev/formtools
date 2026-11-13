@@ -31,6 +31,7 @@ Every dependency gets a row here with its name, version, licence and where it sh
 | highlight.js | 11.12.0 | BSD-3-Clause | frontend (text viewer chunk) |
 | markdown-it (with its bundled dependencies entities, linkify-it, mdurl, punycode.js, uc.micro) | 15.0.3 | MIT | frontend (Markdown chunk) |
 | pdfjs-dist (pdf.js and its worker) | 6.5.438 | Apache-2.0 | frontend (PDF chunk) |
+| xterm.js (@xterm/xterm) and its fit addon (@xterm/addon-fit) | 6.0.0, 0.11.0 | MIT | frontend (the terminal dock, View > Terminal) |
 | FastAPI | 0.141.1 | MIT | engine |
 | uvicorn[standard] | 0.53.0 | BSD-3-Clause | engine |
 | Pillow | 12.3.0 | MIT-CMU | engine |
