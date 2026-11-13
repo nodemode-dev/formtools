@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.6.3 · 2026-11-12
+
+Fixes from a full review; nothing new.
+
+- Safety: a web page on another site can no longer drive the engine's tools; only this computer's own window, and agents that send no Origin, are answered.
+- Files kept whole: rotating or flipping a multi-page TIFF is refused instead of dropping its pages; renaming a link onto the file it points at no longer destroys the file; Duplicates no longer lists a file reached through two folders as a duplicate of itself.
+- Viewer: Mod+C copies selected text instead of the file path; the PDF page box takes typed digits and page jumps land on the page; fonts whose path holds brackets or an apostrophe preview; the metadata panel no longer shows another file's tags after stepping back.
+- Tools: rows a tool hides (Resize sizes, Output quality, Rename sub-folders) stay hidden.
+- Linux: the deb's thumbnailer points at the FormTools engine folder, so thumbnails work again.
+
 ## 0.6.2 · 2026-11-03
 
 - The README follows the Form family template, with screenshots in `docs/images/`. Nothing in the app changed.
