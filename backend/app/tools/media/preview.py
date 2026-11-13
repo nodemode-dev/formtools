@@ -237,7 +237,7 @@ def snapshot(raw: str, at: float) -> dict:
         raise ApiError(400, "time is outside the video")
     ffmpeg = exe.require("ffmpeg")
     output = reserve(target.parent, f"{target.stem} {stamp(at)}", ".png")
-    args = [ffmpeg, "-v", "error", "-nostdin", "-y", "-ss", f"{at:.3f}", "-i", str(target), "-map", f"0:{video[0]['index']}", "-frames:v", "1", "-an", "-sn", str(output)]
+    args = [ffmpeg, "-v", "error", "-nostdin", "-y", "-ss", f"{at:.3f}", "-i", str(target), "-map", f"0:{video[0]['index']}", "-frames:v", "1", "-an", "-sn", "-update", "1", str(output)]
     code, _, err = exe.run_bytes(args, timeout=120)
     if code != 0 or not output.is_file() or output.stat().st_size == 0:
         output.unlink(missing_ok=True)
