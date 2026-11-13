@@ -48,6 +48,10 @@ Every dependency gets a row here with its name, version, licence and where it sh
 | Send2Trash | 2.1.0 | BSD-3-Clause | engine |
 | psutil | 7.2.2 | BSD-3-Clause | engine |
 | libarchive-c | 5.3 | CC0-1.0 | engine; it loads the system libarchive (BSD-2-Clause) where one exists and is not bundled |
+| formvis terminal and Claude Code engine files (`services/terminal.py`, `services/claude_code.py`, `routers/terminal.py`, `routers/claude_code.py`, with formlit 0.51.3's terminal environment and Claude Code folder) and formtxt's window bridge (`routers/live.py`, `services/bridge.py`, formtxt 0.30.8), ported to `backend/app`, Copyright (C) 2026 NodeAgentc, Inc. | 2.3.4 | Apache-2.0 | engine |
+| ptyprocess | 0.7.0 | ISC | engine, the pseudo-terminals behind the terminal dock on macOS and Linux |
+| pywinpty | 3.0.5 | MIT | engine, the same on Windows (ConPTY) |
+| Claude Code | the person's own install, not shipped | the person's own terms with its maker | the Claude Code tabs and the Chat tab run the `claude` program already installed on this computer as a separate process; formtools neither bundles it nor reads or stores its sign-in |
 | FFmpeg and ffprobe (LGPL build with libvpx and libopus, configured `--disable-gpl --disable-nonfree --disable-version3`) | 7.1.5 (record 7.1.5-2) | LGPL-2.1-or-later | not shipped in the app: an `ffmpeg` on PATH is used first; otherwise the frozen engine downloads the family's pinned build from `nodemode-dev/formcut-binaries`, checks every file's SHA-256, and keeps it in the per-person folder `formcut-binaries/ffmpeg-7.1.5-2` shared with formcut and formvis; the binaries are run as separate processes. Source: the offer published with formcut-binaries |
 | formvis `ffmpeg_fetch.py` and `ffmpeg_record.py`, ported to `backend/app/tools/media/fetch.py` and `record.py`, Copyright (C) 2026 NodeAgentc, Inc. | 1.98.7 | Apache-2.0 | engine |
 | PyInstaller | 6.22.3 | GPL-2.0 with the bootloader exception | build tool only; the exception covers the frozen engine |
