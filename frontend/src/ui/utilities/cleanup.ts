@@ -3,7 +3,9 @@ import { baseName, utilApi, type BrokenItem } from '../../io/util-api';
 import { el, escapeHtml, patchList, q, setChecked, setClass, setDisabled, setHidden, setText, setValue } from '../dom';
 import { icon } from '../icons';
 import { toast } from '../toast';
-import { confirmButton, progressText, track, type UtilDeps } from './common';
+import { confirmButton, progressText, track, trashAll, type UtilDeps } from './common';
+
+const SHOWN = 3000;
 
 interface Row { path: string; note: string }
 type Mode = 'empty' | 'broken';
@@ -37,7 +39,7 @@ export class CleanupView {
       const act = t?.closest<HTMLElement>('[data-cu]')?.dataset.cu;
       if (act === 'here') setValue(q<HTMLInputElement>(this.root, '.ft-cu-path'), this.deps.folder());
       else if (act === 'empty' || act === 'broken') { if (this.job) void api.cancelJob(this.job.id).catch(() => undefined); else void this.scan(act); }
-      else if (act === 'all') { const all = this.picked.size < this.rows.length; this.picked.clear(); if (all) for (const r of this.rows) this.picked.add(r.path); this.render(); }
+      else if (act === 'all') { const shown = this.rows.slice(0, SHOWN); const all = this.picked.size < shown.length; this.picked.clear(); if (all) for (const r of shown) this.picked.add(r.path); this.render(); }
       const rev = t?.closest<HTMLElement>('[data-reveal]')?.dataset.reveal;
       if (rev) this.deps.reveal(rev);
     });
@@ -88,7 +90,7 @@ export class CleanupView {
     const paths = [...this.picked].sort((a, b) => b.length - a.length);
     if (!paths.length) return;
     try {
-      const r = await utilApi.trash(paths);
+      const r = await trashAll(paths);
       const failed = new Set(r.errors.map((x) => x.path));
       const gone = paths.filter((p) => !failed.has(p));
       const under = (p: string): boolean => gone.some((g) => p === g || p.startsWith(`${g}/`) || p.startsWith(`${g}\\`));
@@ -104,7 +106,7 @@ export class CleanupView {
     const trash = q<HTMLButtonElement>(this.root, '[data-cu="trash"]');
     setDisabled(trash, this.picked.size === 0);
     setDisabled(q<HTMLButtonElement>(this.root, '[data-cu="all"]'), this.rows.length === 0);
-    setText(q(this.root, '[data-cu="all"]'), this.rows.length && this.picked.size === this.rows.length ? 'Select none' : 'Select all');
+    setText(q(this.root, '[data-cu="all"]'), this.rows.length && this.picked.size === Math.min(this.rows.length, SHOWN) ? 'Select none' : 'Select all');
     setText(q(trash, '.ft-u-btn-label'), this.picked.size ? `Move ${this.picked.size} to trash` : 'Move to trash');
   }
 
@@ -115,7 +117,7 @@ export class CleanupView {
     setHidden(empty, this.rows.length > 0);
     setText(empty, this.mode === 'empty' ? 'No empty folders here.' : 'Every picture and media file here opened.');
     const upd = (n: HTMLElement, r: Row): void => setChecked(q<HTMLInputElement>(n, 'input'), this.picked.has(r.path));
-    patchList(q(this.root, '.ft-cu-list'), this.rows.slice(0, 3000), {
+    patchList(q(this.root, '.ft-cu-list'), this.rows.slice(0, SHOWN), {
       key: (r) => `${this.mode}:${r.path}`,
       create: (r) => {
         const n = el<HTMLElement>(`<label class="ft-cu-row"><input type="checkbox" class="ft-check" data-pick="${escapeHtml(r.path)}"><span class="ft-d-text"><span class="ft-d-name"></span><span class="ft-d-dir"></span></span><span class="ft-cu-note"></span><button class="cv-tt-btn" type="button" data-reveal="${escapeHtml(r.path)}" title="Show in folder" aria-label="Show in folder">${icon('folderOpen', 14)}</button></label>`);

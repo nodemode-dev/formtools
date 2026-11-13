@@ -4,7 +4,7 @@ import { el, escapeHtml, patchList, q, setChecked, setClass, setDisabled, setHid
 import { icon } from '../icons';
 import { toast } from '../toast';
 import { InputList } from '../tools/inputs';
-import { confirmButton, progressText, RunButton, track, type UtilDeps } from './common';
+import { confirmButton, progressText, RunButton, track, trashAll, type UtilDeps } from './common';
 
 const PICTURE = /\.(jpe?g|png|webp|gif|bmp|tiff?|avif|heic|heif)$/i;
 const SHOWN = 400;
@@ -101,7 +101,7 @@ export class DupesView {
   private autoSelect(how: string): void {
     this.picked.clear();
     if (how !== 'none') {
-      for (const g of this.groups) {
+      for (const g of this.groups.slice(0, SHOWN)) {
         const files = [...g.files];
         files.sort((a, b) => how === 'newest' ? b.mtime - a.mtime : how === 'oldest' ? a.mtime - b.mtime : a.path.length - b.path.length || a.path.localeCompare(b.path));
         for (const f of files.slice(1)) this.picked.add(f.path);
@@ -114,7 +114,7 @@ export class DupesView {
     const paths = [...this.picked];
     if (!paths.length) return;
     try {
-      const r = await utilApi.trash(paths);
+      const r = await trashAll(paths);
       const failed = new Set(r.errors.map((x) => x.path));
       const gone = new Set(paths.filter((p) => !failed.has(p)));
       this.groups = this.groups.map((g) => ({ ...g, files: g.files.filter((f) => !gone.has(f.path)) })).filter((g) => g.files.length > 1);

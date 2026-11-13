@@ -1,6 +1,24 @@
 import type { Job } from '../../io/api';
 import type { Jobs } from '../jobs';
+import { utilApi } from '../../io/util-api';
 import { q, setDisabled, setText } from '../dom';
+
+export async function trashAll(paths: string[]): Promise<{ trashed: number; errors: Array<{ path: string; error: string }> }> {
+  const out = { trashed: 0, errors: [] as Array<{ path: string; error: string }> };
+  for (let i = 0; i < paths.length; i += 5000) {
+    const chunk = paths.slice(i, i + 5000);
+    try {
+      const r = await utilApi.trash(chunk);
+      out.trashed += r.trashed;
+      out.errors.push(...r.errors);
+    } catch (e) {
+      if (i === 0) throw e;
+      const error = e instanceof Error ? e.message : 'not moved';
+      out.errors.push(...chunk.map((path) => ({ path, error })));
+    }
+  }
+  return out;
+}
 
 export interface UtilDeps {
   jobs: Jobs;
