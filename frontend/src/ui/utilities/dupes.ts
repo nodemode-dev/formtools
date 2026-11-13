@@ -42,7 +42,7 @@ export class DupesView {
   private readonly list = q(this.root, '.ft-d-groups');
 
   constructor(private readonly deps: UtilDeps) {
-    this.inputs = new InputList(deps.selection);
+    this.inputs = new InputList(deps.folders);
     q(this.root, '.ft-inputs-slot').replaceWith(this.inputs.root);
     setChecked(q<HTMLInputElement>(this.inputs.root, '.ft-inputs-recursive'), true);
     this.run = new RunButton(this.root, 'Find duplicates', (id) => void api.cancelJob(id).catch(() => undefined));

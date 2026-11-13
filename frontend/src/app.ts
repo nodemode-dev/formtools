@@ -130,6 +130,10 @@ export function startApp(): void {
     const sel = browser.selection().map((e) => e.path);
     return sel.length ? sel : browser.path ? [browser.path] : [];
   };
+  const folderPaths = (): string[] => {
+    const sel = browser.selection();
+    return sel.length && sel.every((e) => e.kind === 'dir') ? sel.map((e) => e.path) : browser.path ? [browser.path] : [];
+  };
   const tools = new ToolsPage(selectionPaths, jobs, () => setPage(toolReturn), () => { if (browser.path) void browser.open(browser.path, true); });
   const openTool = (id: ToolId): void => {
     if (page !== 'tool' && page !== 'util') toolReturn = page;
@@ -142,6 +146,7 @@ export function startApp(): void {
   const utilities = new UtilitiesPage({
     jobs,
     selection: selectionPaths,
+    folders: () => folderPaths(),
     folder: () => browser.path,
     reveal: (p) => { if (inDesktop()) void host.reveal(p); else void navigator.clipboard.writeText(p).then(() => toast('Show in folder works in the desktop app. The path was copied.')).catch(() => toast('Show in folder works in the desktop app.')); },
     open: (p) => void openPath(p),
@@ -150,7 +155,7 @@ export function startApp(): void {
   const openUtil = (id: UtilId): void => {
     if (page !== 'tool' && page !== 'util') toolReturn = page;
     const fromViewer = page === 'view' && viewer.current ? [viewer.current.path] : null;
-    const inputs = fromViewer ?? (page === 'browse' ? selectionPaths() : undefined);
+    const inputs = id === 'dupes' ? (page === 'view' || page === 'browse' ? folderPaths() : undefined) : fromViewer ?? (page === 'browse' ? selectionPaths() : undefined);
     utilities.show(id, inputs);
     setPage('util');
   };

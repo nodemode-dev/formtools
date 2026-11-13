@@ -5,6 +5,7 @@ import { q, setDisabled, setText } from '../dom';
 export interface UtilDeps {
   jobs: Jobs;
   selection: () => string[];
+  folders: () => string[];
   folder: () => string;
   reveal: (path: string) => void;
   open: (path: string) => void;
