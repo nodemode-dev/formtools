@@ -1,6 +1,7 @@
 import json
 from typing import Any
 
+from anyio import from_thread
 from fastapi import APIRouter, Request, Response
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
@@ -8,11 +9,13 @@ from fastapi.responses import JSONResponse
 from app.core import config, registry
 from app.core.errors import ApiError
 from app.routers import fs
+from app.services import bridge
 
 router = APIRouter()
 
 SUPPORTED = ("2025-06-18", "2025-03-26", "2024-11-05")
 WINDOW_MESSAGE = "The window runs commands. Open formtools, then ask again."
+WINDOW_ONLY = ("terminal-toggle", "terminal-new", "claude-code", "claude-chat")
 
 PATH_SCHEMA = {"type": "object", "properties": {"path": {"type": "string", "description": "Absolute local path"}}, "required": ["path"]}
 
@@ -26,21 +29,37 @@ def command_summary(item: registry.Command) -> dict:
     return {"id": item.id, "title": item.title, "description": item.description}
 
 
+def window_summary(item: dict) -> dict:
+    return {"id": item["id"], "title": str(item.get("label") or item["id"]), "description": str(item.get("description") or "")}
+
+
 def do_list_commands(_: dict) -> Any:
-    return {"commands": [command_summary(item) for item in registry.commands()]}
+    window = [window_summary(item) for item in bridge.catalogue() if item["id"] not in WINDOW_ONLY]
+    return {"commands": [command_summary(item) for item in registry.commands()] + window, **({} if window else {"hint": WINDOW_MESSAGE})}
 
 
 def do_describe_command(args: dict) -> Any:
-    item = registry.command(str(args.get("id", "")))
-    if item is None:
+    command_id = str(args.get("id", ""))
+    item = registry.command(command_id)
+    if item is not None:
+        return {**command_summary(item), "params": item.params}
+    found = bridge.find(command_id)
+    if found is None or command_id in WINDOW_ONLY:
         raise ApiError(404, "no command has that id; call list_commands for the ids")
-    return {**command_summary(item), "params": item.params}
+    return {**window_summary(found), "group": found.get("group"), "keys": found.get("keys") or [], "params": found.get("params") or {}}
 
 
 def do_run_command(args: dict) -> Any:
-    if registry.command(str(args.get("id", ""))) is None:
+    command_id = str(args.get("id", ""))
+    if command_id in WINDOW_ONLY:
+        raise ApiError(403, f"{command_id} is only available in the formtools window, so a person runs it.")
+    if registry.command(command_id) is None and bridge.catalogue() and bridge.find(command_id) is None:
         raise ApiError(404, "no command has that id; call list_commands for the ids")
-    raise ApiError(409, WINDOW_MESSAGE)
+    params = args.get("params")
+    out = from_thread.run(bridge.call, command_id, params if isinstance(params, dict) else {})
+    if not out["ok"]:
+        raise ApiError(409, out["error"])
+    return out.get("result")
 
 
 def do_fs_list(args: dict) -> Any:
