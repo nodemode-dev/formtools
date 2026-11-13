@@ -40,6 +40,8 @@ button { font: inherit; }
 .cv-menu-item.is-checked .cv-menu-check::before { content: ''; display: block; width: 6px; height: 6px; margin: auto; border-radius: 50%; background: var(--accent-color); }
 .cv-menu-keys { color: var(--text-muted); font-family: var(--font-mono); font-size: var(--fs-11); }
 .cv-menu-sep { height: 1px; margin: 5px 6px; background: var(--line-1); }
+.cv-menu-sub .cv-menu-keys { display: inline-flex; }
+.cv-menu-sub.is-open { background: var(--accent-soft); color: var(--text-primary); }
 
 .ft-stage-area { position: relative; min-height: 0; min-width: 0; overflow: hidden; }
 .ft-page[hidden] { display: none !important; }

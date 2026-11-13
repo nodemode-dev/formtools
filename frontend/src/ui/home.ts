@@ -1,7 +1,8 @@
-import { el, escapeHtml, patchList, q, setHidden, setText } from './dom';
+import { el, escapeHtml, patchList, q, setHidden, setText, swapMedia } from './dom';
 import { icon } from './icons';
 import { loadPrefs, onPrefs } from './prefs';
 import { HomeNav } from './home/nav';
+import { DEMO_NOTE, DEMOS, demoCommand, demoCover } from '../demos';
 import { HomeDrop } from './home/drop';
 import { applyTips, COLUMNS, groupInfos, toolAttrs, type GroupInfo } from './home/model';
 
@@ -38,6 +39,7 @@ export class HomeScreen {
   private readonly hint: HTMLElement;
   private readonly title: HTMLElement;
   private readonly nav: HomeNav;
+  private coversAsked = false;
   private readonly drop: HomeDrop;
 
   constructor(private readonly deps: HomeDeps) {
@@ -78,6 +80,12 @@ export class HomeScreen {
               <button class="cv-home-action" type="button" data-cmd="go-browse" data-tip="Browse this computer">${icon('ftBrowse', 16)}<span class="cv-home-label">Browse</span><span class="ft-key"></span></button>
             </div>
           </div>
+          <section class="cv-home-section ft-home-demos" aria-label="Demos">
+            <div class="cv-home-section-head"><h2 class="cv-home-section-title">Demos</h2><p class="ft-home-note">${escapeHtml(DEMO_NOTE)}</p></div>
+            <div class="ft-demos-grid">${DEMOS.map((d) => `
+              <button class="ft-demo-card" type="button" data-cmd="${demoCommand(d.id)}"><span class="ft-demo-thumb"><img data-src="${demoCover(d.id)}" alt="" width="320" height="240" decoding="async" draggable="false"></span><span class="ft-demo-title">${escapeHtml(d.title)}</span><span class="ft-demo-line">${escapeHtml(d.line)}</span></button>`).join('')}
+            </div>
+          </section>
           <section class="cv-home-section ft-home-recent" aria-label="Recent">
             <div class="cv-home-section-head"><h2 class="cv-home-section-title">Recent</h2></div>
             <div class="ft-recent-box">
@@ -160,7 +168,15 @@ export class HomeScreen {
 
   setActive(page: string): void {
     this.nav.setActive(page);
-    if (page === 'home') setText(this.title, greeting());
+    if (page === 'home') { setText(this.title, greeting()); this.covers(); }
     else this.drop.close(false);
+  }
+
+  private covers(): void {
+    if (this.coversAsked) return;
+    this.coversAsked = true;
+    for (const img of this.root.querySelectorAll<HTMLImageElement>('.ft-demo-thumb img[data-src]')) {
+      void swapMedia(img, img.dataset.src ?? '').catch(() => { this.coversAsked = false; });
+    }
   }
 }

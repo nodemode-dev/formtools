@@ -1,6 +1,7 @@
 import { el, escapeHtml, isMac, patchList, q, setClass, setHidden, setText, setTitle } from '../dom';
 import { icon } from '../icons';
 import { brandMark } from '../brand';
+import { DEMOS, demoCommand } from '../../demos';
 import { readStore, toolAttrs, writeStore, type GroupInfo } from './model';
 
 export const NAV_MIN = 200;
@@ -11,7 +12,7 @@ const KEY_WIDTH = 'formtools.home.navW';
 const KEY_HIDDEN = 'formtools.home.rail';
 const KEY_GROUPS = 'formtools.home.groups';
 const DEFAULT_OPEN = ['view', 'batch'];
-const SECTIONS = ['agents', 'recent'];
+const SECTIONS = ['agents', 'recent', 'demos'];
 const AGENTS: ReadonlyArray<readonly [string, string, string, string]> = [
   ['terminal-toggle', 'terminal', 'Terminal', 'Show or hide the terminal'],
   ['claude-code', 'agent', 'Claude Code', 'Open Claude Code in the terminal'],
@@ -71,6 +72,8 @@ export class HomeNav {
 
     const agents = AGENTS.map(([cmd, ic, label, tip]) => `
             <button class="ft-ni" type="button" data-cmd="${cmd}" data-tip="${escapeHtml(tip)}">${icon(ic, 14)}<span class="ft-ni-name">${escapeHtml(label)}</span></button>`).join('');
+    const demos = DEMOS.map((d) => `
+            <button class="ft-ni" type="button" data-cmd="${demoCommand(d.id)}" data-tip="${escapeHtml(d.line)}">${icon(d.icon, 14)}<span class="ft-ni-name">${escapeHtml(d.title)}</span></button>`).join('');
     const groupHtml = groups.map((g) => section(g.id, g.label, this.open.has(g.id), g.tiles.map((t) => `
             <button class="ft-ni${t.off ? ' is-planned' : ''}" type="button" data-tip="${escapeHtml(t.def.name)}: ${escapeHtml(t.def.summary)}"${toolAttrs(t)}>
               ${icon(t.def.icon, 14)}<span class="ft-ni-name">${escapeHtml(t.def.name)}</span>${t.badge ? `<span class="ft-ni-badge">${escapeHtml(t.badge)}</span>` : ''}
@@ -89,6 +92,7 @@ export class HomeNav {
           <div class="ft-nav-groups">
             ${section('agents', 'Agents', this.open.has('agents'), agents)}
             ${section('recent', 'Recent', this.open.has('recent'), '<div class="ft-nav-recent" role="list"></div><p class="ft-nav-empty">Files and folders you open appear here.</p>')}
+            ${section('demos', 'Demos', this.open.has('demos'), demos)}
             ${groupHtml}
           </div>
           <div class="cv-home-nav-foot">

@@ -87,9 +87,20 @@
 
 .cv-home-section-head { display: flex; align-items: center; gap: 12px; min-height: 22px; margin-bottom: 12px; }
 .cv-home-section-title { flex: none; margin: 0; font-size: 15px; font-weight: 600; }
-.ft-home-hint { flex: 1; min-width: 0; margin: 0; overflow: hidden; color: var(--text-muted); font-size: 12px; text-align: right; text-overflow: ellipsis; white-space: nowrap; }
+.ft-home-hint, .ft-home-note { flex: 1; min-width: 0; margin: 0; overflow: hidden; color: var(--text-muted); font-size: 12px; text-align: right; text-overflow: ellipsis; white-space: nowrap; }
 .cv-hf-empty { margin: 0; color: var(--text-muted); font-size: 12px; }
 .cv-hf-empty[hidden] { display: none; }
+
+.ft-demos-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); }
+.ft-demo-card { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; padding: var(--space-2); border: 1px solid var(--line-2); border-radius: var(--radius-lg); background: var(--surface-2); color: var(--text-primary); text-align: left; cursor: pointer; font: inherit; }
+.ft-demo-card:hover { border-color: var(--accent-line); background: var(--surface-raised); }
+.ft-demo-card:focus-visible { outline: 2px solid var(--accent-color); outline-offset: 1px; }
+.ft-demo-card:disabled { cursor: default; opacity: 0.6; }
+.ft-demo-thumb { display: block; aspect-ratio: 4 / 3; overflow: hidden; border-radius: var(--radius-md); background: var(--surface-0); }
+.ft-demo-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.ft-demo-thumb img:not([src]) { visibility: hidden; }
+.ft-demo-title { margin-top: var(--space-1); min-height: calc(2 * 1.3em); font-size: var(--fs-13); font-weight: 600; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ft-demo-line { min-height: calc(3 * 1.4em); color: var(--text-secondary); font-size: var(--fs-11); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 
 .ft-recent-box { position: relative; height: 46px; }
 .ft-recent-empty { position: absolute; inset: 0; display: flex; align-items: center; padding: 0 14px; border: 1px dashed var(--line-1); border-radius: var(--radius-md); }
@@ -167,6 +178,7 @@
   .cv-home-nav, .ft-nav-rsz, .ft-nav-hide, .cv-home.is-nav-hidden .ft-nav-show { display: none; }
   .ft-home-scroll { padding: 20px 16px 40px; }
   .ft-home-narrow { display: flex; }
+  .ft-demos-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
   .cv-home-hero { grid-template-columns: minmax(0, 1fr); padding: 20px; }
   .cv-home-hero-icon { display: none; }
 }

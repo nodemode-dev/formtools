@@ -28,6 +28,7 @@ import { applyTheme, readChoice, setTheme, THEMES } from './ui/themes';
 import { toast } from './ui/toast';
 import { connectBridge } from './automation/bridge';
 import { TerminalDock } from './ui/terminal-dock';
+import { DEMOS, demoCommand, registerDemos } from './demos';
 
 type Page = 'home' | 'browse' | 'view' | 'tool' | 'util' | 'desk';
 
@@ -274,6 +275,7 @@ export function startApp(): void {
     { id: 'paste', label: 'Paste', group: 'Edit', description: 'Paste into the focused text field.', useWhen: 'Use in text fields.', keys: ['Mod+V'], enabled: () => isText(document.activeElement), run: () => document.execCommand('paste') },
     { id: 'select-all', label: 'Select All', group: 'Edit', description: 'Select all text in the focused field.', useWhen: 'Use in text fields.', keys: ['Mod+A'], enabled: () => isText(document.activeElement), run: () => document.execCommand('selectAll') },
   );
+  registerDemos(commands, (p) => openPath(p));
 
   const MENUS: MenuDef[] = [
     { label: 'File', items: ['open-files', 'open-folder', 'util-templates', '-', 'open-in', 'reveal'] },
@@ -281,6 +283,7 @@ export function startApp(): void {
     { label: 'View', items: ['go-home', 'go-browse', 'go-viewer', '-', 'previous', 'next', '-', 'palette', 'toggle-light', '-', 'terminal-toggle', 'terminal-new', 'claude-code', 'claude-chat'] },
     { label: 'Tools', items: ['tool-convert', 'tool-resize', 'tool-rename', '-', 'util-dupes', 'util-disk', 'util-hash', 'util-cleanup', 'util-locks', '-', 'select-all-files'] },
     { label: 'Desktop', items: ['desk-picker', 'desk-ruler', 'desk-text', 'desk-zoom', 'desk-draw', 'desk-timer', '-', 'desk-topmost', 'desk-awake', '-', 'desk-hosts', 'desk-env', '-', 'go-desk'] },
+    { label: 'Help', items: [{ label: 'Demos', items: DEMOS.map((d) => demoCommand(d.id)) }, '-', 'palette'] },
   ];
 
   let menus: NativeMenus | null = null;
