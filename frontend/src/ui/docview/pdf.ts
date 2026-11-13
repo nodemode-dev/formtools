@@ -4,7 +4,7 @@ import { docApi } from '../../io/doc-api';
 import { el, q, setClass, setHidden, setText } from '../dom';
 import { icon } from '../icons';
 import './icons';
-import { Seq, busy, errText, fmtInt } from './common';
+import { Seq, busy, errText, fmtInt, typeOnly } from './common';
 import type { DocDeps, DocKind } from './types';
 
 type Pdfjs = typeof import('pdfjs-dist');
@@ -181,7 +181,7 @@ export class PdfView implements DocKind {
   }
 
   key(e: KeyboardEvent): boolean {
-    if (e.metaKey || e.ctrlKey || e.altKey) return false;
+    if (typeOnly(e) || e.metaKey || e.ctrlKey || e.altKey) return false;
     switch (e.key) {
       case '+': case '=': this.act('in'); return true;
       case '-': this.act('out'); return true;
