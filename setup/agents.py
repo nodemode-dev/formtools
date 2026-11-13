@@ -5,7 +5,6 @@ import os
 import re
 import shutil
 import sys
-import tomllib
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SOURCE = os.path.join(ROOT, ".claude", "skills")
@@ -178,6 +177,8 @@ def check_server(rel, server, problems):
 
 
 def check_agent_files(problems):
+    import tomllib
+
     config = load_json(".mcp.json", problems)
     if config is not None:
         check_server(".mcp.json", (config.get("mcpServers") or {}).get(LAUNCHER), problems)
