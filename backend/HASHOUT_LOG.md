@@ -2,6 +2,22 @@
 
 Decisions, reasons and anything left out, newest first. Code carries no comments; the context lives here.
 
+## v0.6.3 (2026-11-12): review fixes
+
+Five fixes from a full review. The commit of the same subject carries the reasoning and what was run.
+
+- core/guard.py :: `HostGuard`, `origin_allowed`, `WINDOW_PORTS` · the guard also reads `Origin` and refuses one that is not this computer's own window: loopback at the engine's own port, or at 5240 and 5241 (the dev and preview windows, whose requests arrive through Vite's proxy with the page's Origin). Requests without `Origin` pass as before, since agents and the MCP bridge send none. Reason: a page on any site could POST `text/plain` JSON to `/mcp` with no preflight and run every tool, `rename_apply` and `trash_files` included; the Host check stops DNS rebinding only. Checked against a live engine: 200 with no Origin, its own origin and `http://localhost:5240`; 403 for a foreign origin, another local port and `null`.
+- tools/image/transform.py :: `run` · a file with more than one frame that is not an animated GIF, WebP or PNG is refused with 415. A multi-page TIFF fell into `still()`, which saved page one over the file and reported a lossless result.
+- tools/batch/rename.py :: `same_file` · compares the two entries with `lstat` and requires the names to differ only by case. `os.path.samefile` follows links, so renaming a symlink onto its target planned with no conflict and replaced the target with a link to itself. The function exists for case-only renames on case-insensitive disks. Removed: `return os.path.samefile(first, second)`.
+- tools/utilities/dupes.py :: `collect` · `seen` is keyed by device and inode for single-link files, path otherwise. One file reached through two roots (a folder and a link to it, `/tmp` and `/private/tmp`) was listed as its own duplicate, and trashing the extra copy removed the only one. Overlapping roots are still walked twice.
+- tools/desktop/formtools.thumbnailer · `TryExec` and `Exec` name `/usr/lib/FormTools/engine`; the bundler installs under the product name, which became FormTools in 0.6.1.
+
+Found in the same review and not changed in 0.6.3, so the next pass starts here:
+
+- tools/image/transform.py refuses JPEGs that Pillow reports as MPO (many phone and camera files); tools/media/copy.py copies a mov_text subtitle track into MKV, which always fails; tools/media/preview.py snapshots of a video named with `%d` overwrite another file (needs `-update 1`); tools/batch/rename.py renames a folder together with items inside it and then cannot undo; tools/batch/service.py probes TIFF-based RAW files at thumbnail size.
+- tools/files/hashing.py verifies its own `B3SUMS`, `SHA3-256SUMS` and `XXH64SUMS` files with the wrong algorithm; tools/model/service.py reads OBJ negative indices wrongly through trimesh and reports a missing material library for names with spaces; tools/desktop/hosts.py saves by line number with no check that the file changed; tools/utilities/walk.py follows Windows junctions and cannot see hard links there; tools/desktop/envvars.py leaves `argtypes` on the shared `SendMessageTimeoutW`, which breaks font registration afterwards, and keeps REG_SZ for a value that now holds `%`; tools/desktop/elevate.py doubles only the ASCII quote for PowerShell.
+- setup/mcp_stdio.py and the .mcpb extension cannot reach the desktop app's engine (it listens on a random port and nothing reads `engine.port`), and the bridge does not set UTF-8 stdio on Windows; formtools_engine.py watches its parent on POSIX only, so an orphaned Windows engine blocks later launches; src-tauri `read_port` waits forever for the port line; setup/agents.py imports `tomllib` at the top and fails on Python older than 3.11.
+
 ## v0.2.0 (2026-11-03): engine skeleton and image tool
 
 ### Layer 1, engine skeleton
