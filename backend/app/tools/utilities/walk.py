@@ -62,15 +62,24 @@ def folder_root(raw: str) -> str:
     return str(path)
 
 
-def folder_roots(raw: Iterable[str]) -> list[str]:
-    roots: list[str] = []
+def inside(child: str, parent: str) -> bool:
+    head = parent.rstrip(os.sep) + os.sep
+    return child.startswith(head) and not any(part.startswith(".") for part in child[len(head):].split(os.sep))
+
+
+def folder_roots(raw: Iterable[str], recursive: bool = True) -> list[str]:
+    roots: list[tuple[str, str]] = []
     for item in raw:
         text = folder_root(item)
-        if text not in roots:
-            roots.append(text)
+        real = os.path.normcase(os.path.realpath(text))
+        if any(real == other or (recursive and inside(real, other)) for _, other in roots):
+            continue
+        if recursive:
+            roots = [(kept, other) for kept, other in roots if not inside(other, real)]
+        roots.append((text, real))
     if not roots:
         raise ApiError(400, "at least one folder is needed")
-    return roots
+    return [text for text, _ in roots]
 
 
 def hidden_by_attribute(info: os.stat_result) -> bool:
