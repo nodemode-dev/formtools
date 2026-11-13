@@ -299,8 +299,7 @@ export class Stage {
 
   private countGeometry(): void {
     let t = 0, v = 0, m = 0;
-    this.root.traverse((o) => {
-      if (!o.visible) return;
+    this.root.traverseVisible((o) => {
       const mesh = o as Mesh;
       if (mesh.isMesh) {
         m++;
@@ -463,7 +462,7 @@ export class Stage {
     this.raycaster.setFromCamera(this.ndc(e), this.camera);
     this.raycaster.params.Points = { threshold: this.radius * 0.01 };
     this.raycaster.params.Line = { threshold: this.radius * 0.01 };
-    const hits = this.raycaster.intersectObject(this.root, true).filter((h) => h.object.visible);
+    const hits = this.raycaster.intersectObject(this.root, true).filter((h) => { for (let o: Object3D | null = h.object; o; o = o.parent) if (!o.visible) return false; return true; });
     return hits.length ? hits[0].point.clone() : null;
   }
 
