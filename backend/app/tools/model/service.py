@@ -121,7 +121,10 @@ def mtl_notes(target: Path) -> list[str]:
         return notes
     for line in head.splitlines():
         if line.startswith("mtllib "):
-            for name in line[7:].split():
+            names = line[7:].split()
+            if not all(name.lower().endswith(".mtl") for name in names):
+                names = [line[7:].strip()]
+            for name in names:
                 try:
                     assets.locate(target, name)
                 except ApiError:
