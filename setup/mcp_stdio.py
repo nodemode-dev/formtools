@@ -135,6 +135,9 @@ def forward(line, retry=True):
 
 def main():
     global URL
+    for stream in (sys.stdin, sys.stdout):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(prog="formtools mcp", description="formtools over MCP's stdio transport")
     parser.add_argument("--url", help="the engine's /mcp address (default " + DEFAULT_URL + ")")
     parser.add_argument("--where", action="store_true", help="print the launcher, script and URL, then exit")
