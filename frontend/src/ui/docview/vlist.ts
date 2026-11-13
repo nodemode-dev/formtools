@@ -72,7 +72,8 @@ export class VirtualList {
     }
     while (this.pool.length > need) { this.pool.pop()?.remove(); force = true; }
     const first = Math.max(0, Math.min(this.firstVisible(), Math.max(0, this.count - need)));
-    if (!force && first === this.start) return;
+    const same = !force && first === this.start;
+    if (same && !this.scaled) return;
     this.start = first;
     const st = this.scroller.scrollTop;
     for (let k = 0; k < this.pool.length; k++) {
@@ -81,8 +82,8 @@ export class VirtualList {
       const y = this.scaled ? st + k * this.rowH : i * this.rowH;
       const t = `translateY(${y}px)`;
       if (node.style.transform !== t) node.style.transform = t;
-      this.fill(node, i);
+      if (!same) this.fill(node, i);
     }
-    this.onRender?.(first, first + this.pool.length - 1);
+    if (!same) this.onRender?.(first, first + this.pool.length - 1);
   }
 }
