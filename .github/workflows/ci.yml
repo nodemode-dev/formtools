@@ -53,6 +53,8 @@ jobs:
         run: ./formtools agents check
       - name: Claude Desktop extension manifest
         run: ./formtools mcpb check
+      - name: No three-star sparkle icon
+        run: ./formtools sparkle
 
   backend:
     runs-on: ubuntu-latest

@@ -1,6 +1,6 @@
 {
   "name": "formtools",
-  "version": "0.6.4",
+  "version": "0.8.0",
   "description": "Viewers, batch image tools and file utilities for the Form family",
   "license": "Apache-2.0",
   "private": true,
@@ -13,6 +13,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
+    "demo": "vite build --config vite.demo.config.ts --mode photos && vite build --config vite.demo.config.ts --mode family && vite build --config vite.demo.config.ts --mode bench",
     "tauri": "tauri"
   },
   "dependencies": {
@@ -20,6 +21,8 @@
     "@fontsource/jetbrains-mono": "5.3.0",
     "@tauri-apps/api": "2.12.4",
     "@tauri-apps/plugin-clipboard-manager": "2.5.0",
+    "@xterm/addon-fit": "0.11.0",
+    "@xterm/xterm": "6.0.0",
     "highlight.js": "11.12.0",
     "markdown-it": "15.0.3",
     "pdfjs-dist": "6.5.438",

@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.8.0 · 2026-11-13
+
+- The three demos (A photo shoot, A shelf of Form files, 3D and media bench) also open as offline browser pages, `demo/index.html`, `demos/family` and `demos/bench`, that replay recorded engine answers in the real window.
+- The formtools mark leads the title bar, as in formlit, and clicking it opens Home.
+- A long folder path in the title bar trims with an ellipsis before the centred app name instead of running underneath it.
+- `./formtools sparkle` also checks the browser demo pages.
+
+## 0.7.0 · 2026-11-13
+
+FormTools joins the Form family standard for Home, agents and demos, in formlit's look.
+
+- Home: the side panel looks and behaves like formlit's: the formtools mark with "by nodemode.ai", then Agents, Recent, Demos and the tool groups as sections. It resizes, and a drag or the edge tab hides it. The icon rail is gone.
+- Terminal dock: Ctrl or Cmd+J opens a dock with shell tabs, Claude Code tabs that have formtools' tools attached, and a Chat with Claude tab; tabs survive a reload, and two title bar buttons light with it. Claude Code is your own install; formtools does not bundle it.
+- Agents: `run_command` now runs commands in the open window, agents see the window's command list, and `./formtools agents install` connects Claude Code, Codex and Cursor in one step. The MCP server has 35 tools.
+- Demos: three demo folders (a photo shoot, a shelf of Form files, a 3D and media bench) are generated on this computer the first time you open them, from Home, the side panel, Help > Demos or a command each.
+- Icons: `./formtools sparkle` fails if a sparkle icon is ever added; the app has none.
+
 ## 0.6.4 · 2026-11-13
 
 The second pass of fixes from the full review; nothing new.

@@ -4,7 +4,7 @@ The form* family's media and file utility belt: viewers, batch image tools, 3D v
 
 ## Stage
 
-Alpha (v0.6.4): Phases 1 to 9 of the approved plan, with Phase 2b for formvis and the repository side of Phase 10. Run `./formtools agents sync` after changing a skill and `./formtools agents check` before committing. The plan of record (`DEV_PLAN.md`), `BUILD_NOTES.md` and the root `HASHOUT_LOG.md` ship in the planning sidecar zip; read them, then the in-tree logs (`frontend/`, `backend/`, `src-tauri/`, `setup/` `HASHOUT_LOG.md`), before changing anything. For changing the code route through `.claude/skills/formtools-harness`; for using the app through MCP, `.claude/skills/formtools-driving`.
+Alpha (v0.8.0): Phases 1 to 9 of the approved plan, with Phase 2b for formvis and the repository side of Phase 10. Run `./formtools agents sync` after changing a skill and `./formtools agents check` before committing. The plan of record (`DEV_PLAN.md`), `BUILD_NOTES.md` and the root `HASHOUT_LOG.md` ship in the planning sidecar zip; read them, then the in-tree logs (`frontend/`, `backend/`, `src-tauri/`, `setup/` `HASHOUT_LOG.md`), before changing anything. For changing the code route through `.claude/skills/formtools-harness`; for using the app through MCP, `.claude/skills/formtools-driving`.
 
 ## Layout notes
 
@@ -17,6 +17,7 @@ Alpha (v0.6.4): Phases 1 to 9 of the approved plan, with Phase 2b for formvis an
 - Surgical, hand-made edits: one region per change; no sed, scripts, patches or bundles.
 - Zero DOM flash, flicker or re-render: render once, then patch in place, with space reserved.
 - Colours and z-index from tokens only; icons are inline `currentColor` SVG; no icon libraries.
+- The three-star sparkle icon is banned app-wide, under any name and in any form (SVG, glyph, CSS content), including icons ported from other Form apps; Claude Code, agents and assistants use the `agent`, `agentChat` and `terminal` icons. `./formtools sparkle` (also in CI) fails if it returns.
 - No emoji anywhere; no U+2014 em dash in Markdown (use the interpunct); near-zero comments, with context in the `HASHOUT_LOG.md` files.
 - Versions are `v*.*.*` with dots.
 - Vite `server.host` stays `false` with a pinned port.

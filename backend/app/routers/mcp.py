@@ -1,6 +1,7 @@
 import json
 from typing import Any
 
+from anyio import from_thread
 from fastapi import APIRouter, Request, Response
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
@@ -8,11 +9,13 @@ from fastapi.responses import JSONResponse
 from app.core import config, registry
 from app.core.errors import ApiError
 from app.routers import fs
+from app.services import agents, bridge
 
 router = APIRouter()
 
-SUPPORTED = ("2025-06-18", "2025-03-26", "2024-11-05")
+SUPPORTED = ("2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05")
 WINDOW_MESSAGE = "The window runs commands. Open formtools, then ask again."
+WINDOW_ONLY = ("terminal-toggle", "terminal-new", "claude-code", "claude-chat")
 
 PATH_SCHEMA = {"type": "object", "properties": {"path": {"type": "string", "description": "Absolute local path"}}, "required": ["path"]}
 
@@ -26,21 +29,37 @@ def command_summary(item: registry.Command) -> dict:
     return {"id": item.id, "title": item.title, "description": item.description}
 
 
+def window_summary(item: dict) -> dict:
+    return {"id": item["id"], "title": str(item.get("label") or item["id"]), "description": str(item.get("description") or "")}
+
+
 def do_list_commands(_: dict) -> Any:
-    return {"commands": [command_summary(item) for item in registry.commands()]}
+    window = [window_summary(item) for item in bridge.catalogue() if item["id"] not in WINDOW_ONLY]
+    return {"commands": [command_summary(item) for item in registry.commands()] + window, **({} if window else {"hint": WINDOW_MESSAGE})}
 
 
 def do_describe_command(args: dict) -> Any:
-    item = registry.command(str(args.get("id", "")))
-    if item is None:
+    command_id = str(args.get("id", ""))
+    item = registry.command(command_id)
+    if item is not None:
+        return {**command_summary(item), "params": item.params}
+    found = bridge.find(command_id)
+    if found is None or command_id in WINDOW_ONLY:
         raise ApiError(404, "no command has that id; call list_commands for the ids")
-    return {**command_summary(item), "params": item.params}
+    return {**window_summary(found), "group": found.get("group"), "keys": found.get("keys") or [], "params": found.get("params") or {}}
 
 
 def do_run_command(args: dict) -> Any:
-    if registry.command(str(args.get("id", ""))) is None:
+    command_id = str(args.get("id", ""))
+    if command_id in WINDOW_ONLY:
+        raise ApiError(403, f"{command_id} is only available in the formtools window, so a person runs it.")
+    if registry.command(command_id) is None and bridge.catalogue() and bridge.find(command_id) is None:
         raise ApiError(404, "no command has that id; call list_commands for the ids")
-    raise ApiError(409, WINDOW_MESSAGE)
+    params = args.get("params")
+    out = from_thread.run(bridge.call, command_id, params if isinstance(params, dict) else {})
+    if not out["ok"]:
+        raise ApiError(409, out["error"])
+    return out.get("result")
 
 
 def do_fs_list(args: dict) -> Any:
@@ -79,7 +98,7 @@ def rpc_error(request_id: Any, code: int, message: str) -> dict:
     return {"jsonrpc": "2.0", "id": request_id, "error": {"code": code, "message": message}}
 
 
-def dispatch(message: Any) -> dict | None:
+def dispatch(message: Any, token: str | None = None) -> dict | None:
     if not isinstance(message, dict) or message.get("jsonrpc") != "2.0":
         return rpc_error(None, -32600, "invalid request")
     method = message.get("method")
@@ -92,6 +111,7 @@ def dispatch(message: Any) -> dict | None:
     if method == "initialize":
         asked = params.get("protocolVersion") if isinstance(params, dict) else None
         version = asked if asked in SUPPORTED else SUPPORTED[0]
+        agents.note(agents.caller(token, params.get("clientInfo") if isinstance(params, dict) else None))
         result = {
             "protocolVersion": version,
             "capabilities": {"tools": {"listChanged": False}},
@@ -132,8 +152,16 @@ async def rpc(request: Request) -> Response:
         body = json.loads((await request.body()) or b"null")
     except ValueError:
         return JSONResponse(rpc_error(None, -32700, "parse error"))
+    token = request.headers.get(agents.INAPP_HEADER)
     if isinstance(body, list):
-        replies = [reply for reply in await run_in_threadpool(lambda: [dispatch(item) for item in body]) if reply is not None]
+        replies = [reply for reply in await run_in_threadpool(lambda: [dispatch(item, token) for item in body]) if reply is not None]
         return JSONResponse(replies) if replies else Response(status_code=202)
-    reply = await run_in_threadpool(dispatch, body)
+    reply = await run_in_threadpool(dispatch, body, token)
     return JSONResponse(reply) if reply is not None else Response(status_code=202)
+
+
+@router.get("/api/mcp/status")
+def status(request: Request) -> dict:
+    server = request.scope.get("server")
+    port = server[1] if server and len(server) > 1 and server[1] else config.engine_port()
+    return {"endpoint": f"http://127.0.0.1:{port}/mcp","protocolVersions": list(SUPPORTED), "tools": len(all_tools()), "window": bridge.connected(), "clients": agents.clients()}

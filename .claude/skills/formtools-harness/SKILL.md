@@ -27,6 +27,7 @@ formtools is the form* family's media and file utility belt: viewers, batch imag
 | An HTTP route, a file format, image decoding, the MCP tool list | Work in `backend/`. Keep every route behind the Host check, paths absolute and UTF-8, errors as `{"ok": false, "error": "plain sentence"}`. Check with `python backend/formtools_engine.py --selfcheck` |
 | Windows, menus, tray, native dialogs, updater, bundle | Work in `src-tauri/`. A command the page invokes needs an `allow-<name>` permission because the page is a remote origin |
 | Install, boot, freeze, packaging, doctor | Work in `setup/`. Change the `.bat` twin with the shell script. Check with `bash -n` on each shell script |
+| The terminal dock, Claude Code tabs, the Chat, the `/api/live` bridge, the in-app token | Read `sub-skills/terminal-operator/SUB-SKILL.md` next to this file first |
 | The fixed interfaces (ports, API paths, launcher commands) | Stop. These are set by the scaffold contract; changing one needs the owner |
 
 ## Fixed values

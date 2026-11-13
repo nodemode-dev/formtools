@@ -40,6 +40,12 @@ formtools runs on this computer as an engine with a window. Its MCP server, name
 - Formats the window cannot show (RAW, PSD, EXR, HDR, TIFF, OFF) are handled by the engine. Unsupported formats come back as a 415 error with a plain sentence.
 - Layered editing, transcoding, PDF editing, video and audio editing belong to sibling apps (formvis, formencoder, formpdf, formcut, formwav). Offer "Open in ..." instead of doing a worse version here.
 
+## Sub-skills
+
+Each sub-skill is `sub-skills/[name]/SUB-SKILL.md` next to this file.
+
+- `terminal`: the terminal dock, Claude Code and the Chat in the window, what an agent may do there, and what to ask the person to run.
+
 ## Troubleshooting
 
 - The tools do not appear: run `./formtools doctor`, then `./formtools boot`, and reconnect.

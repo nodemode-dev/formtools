@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <img alt="version 0.6.4" src="https://img.shields.io/badge/version-0.6.4-eef0f4?style=flat-square">
+  <img alt="version 0.8.0" src="https://img.shields.io/badge/version-0.8.0-eef0f4?style=flat-square">
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-Vite-3178c6?style=flat-square&logo=typescript&logoColor=white">
   <img alt="Python FastAPI engine" src="https://img.shields.io/badge/Python-FastAPI-009688?style=flat-square">
   <img alt="macOS, Windows, Linux" src="https://img.shields.io/badge/macOS%20%C2%B7%20Windows%20%C2%B7%20Linux-native-2f7bf5?style=flat-square">
@@ -48,7 +48,7 @@
     <td width="25%" valign="top"><h3>View anything</h3>Open RAW, HDR, EXR, PSD, video, audio, 3D models, fonts, PDFs, databases and archives in one app.</td>
     <td width="25%" valign="top"><h3>Batch images</h3>Convert, resize and rename whole folders with an ordered action pipeline, a live preview and shared presets.</td>
     <td width="25%" valign="top"><h3>Desktop utilities</h3>Colour picker, screen ruler, text extractor, zoom and draw, break timer and more, on global shortcuts.</td>
-    <td width="25%" valign="top"><h3>Agent-ready</h3>The same engine from the window, the CLI and an MCP server with 34 tools.</td>
+    <td width="25%" valign="top"><h3>Agent-ready</h3>The same engine from the window, the CLI and an MCP server with 35 tools.</td>
   </tr>
 </table>
 
@@ -88,16 +88,21 @@ Desktop utilities: colour picker · screen ruler · text extractor · zoom and d
 
 ## Built for agents
 
-34 MCP tools, one engine; the window, the CLI and the MCP server call the same code.
+35 MCP tools, one engine; the window, the CLI and the MCP server call the same code.
 
 ```sh
 ./formtools cli convert --format webp --out ~/Pictures/web ~/Pictures/trip   # batch convert
 ./formtools cli resize --longest 2048 ~/Pictures/trip                        # resize
 ./formtools cli rename --find IMG --replace trip --counter ~/Pictures/trip/* # print the plan; add --apply
 ./formtools mcp                                                              # MCP server on stdio for Claude Code, Codex and Cursor
+./formtools agents install                                                   # connect Claude Code, Codex and Cursor for your user account
 ```
 
 `.mcp.json`, `.codex/config.toml` and `.cursor/mcp.json` are already wired in this repo. See [`AGENTS.md`](AGENTS.md).
+
+**Terminal.** A dock above the status bar holds real terminals run by the engine: your login shell in as many tabs as you like, kept running while the dock is hidden. Open it with the Terminal button in the title bar or View > Terminal (Mod+J).
+
+**Claude Code.** If Claude Code is installed, a Claude Code tab (Mod+Shift+J) starts your own `claude` with formtools' MCP tools already attached, and the Chat tab (Mod+Alt+J) talks to it in a chat with Allow and Deny cards for each step, then hands the conversation to a Claude Code tab when you want the full terminal. formtools does not bundle Claude Code and never reads or stores its sign-in; if it is missing, the dock shows the one-line install. Agents cannot open terminals or Claude Code through MCP: those stay yours.
 
 ## Under the hood
 
@@ -117,6 +122,15 @@ Desktop utilities: colour picker · screen ruler · text extractor · zoom and d
 | Linux | [Download FormTools for Linux](https://formai.studio/get/formtools/linux) | [FormTools releases on FormCompiler](https://github.com/nodemode-dev/formcompiler/releases?q=formtools-v&expanded=true) |
 
 All FormTools builds are compiled and released from [FormCompiler](https://github.com/nodemode-dev/formcompiler); this repo holds the source.
+
+## Demo
+
+[`demo/index.html`](demo/index.html) is an offline demo that opens from `file://` or any static server and runs the real FormTools window on A photo shoot, the demo folder the engine generates: browse it, open every picture in the viewer with its information, and see Find Duplicates, Clean Up, Disk Usage and Checksums on it. FormTools does its work in its engine, so the page replays answers recorded from the real engine for that folder; anything not recorded says it needs the engine. See [`demo/README.md`](demo/README.md) for what is live and what is replayed. Two more pages of the same window link to each other and to it from the status bar:
+
+- [`demos/family/index.html`](demos/family/index.html): A shelf of Form files, with a formvis project, a PDF, a database, a font, an archive, data and code, and a checksum file to verify. See [`demos/family/README.md`](demos/family/README.md).
+- [`demos/bench/index.html`](demos/bench/index.html): 3D and media bench, with a GLB scene, OBJ, STL, PLY and OFF models in the 3D viewer, a sweep and a chord to play, and a short video. See [`demos/bench/README.md`](demos/bench/README.md).
+
+The same three demos open inside the app from Home, from Help > Demos, or with the `demo-photos`, `demo-family` and `demo-bench` commands, each as a folder the engine makes on your computer.
 
 ## Run it from source
 

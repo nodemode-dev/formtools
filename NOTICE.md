@@ -31,6 +31,7 @@ Every dependency gets a row here with its name, version, licence and where it sh
 | highlight.js | 11.12.0 | BSD-3-Clause | frontend (text viewer chunk) |
 | markdown-it (with its bundled dependencies entities, linkify-it, mdurl, punycode.js, uc.micro) | 15.0.3 | MIT | frontend (Markdown chunk) |
 | pdfjs-dist (pdf.js and its worker) | 6.5.438 | Apache-2.0 | frontend (PDF chunk) |
+| xterm.js (@xterm/xterm) and its fit addon (@xterm/addon-fit) | 6.0.0, 0.11.0 | MIT | frontend (the terminal dock, View > Terminal) |
 | FastAPI | 0.141.1 | MIT | engine |
 | uvicorn[standard] | 0.53.0 | BSD-3-Clause | engine |
 | Pillow | 12.3.0 | MIT-CMU | engine |
@@ -47,10 +48,15 @@ Every dependency gets a row here with its name, version, licence and where it sh
 | Send2Trash | 2.1.0 | BSD-3-Clause | engine |
 | psutil | 7.2.2 | BSD-3-Clause | engine |
 | libarchive-c | 5.3 | CC0-1.0 | engine; it loads the system libarchive (BSD-2-Clause) where one exists and is not bundled |
+| formvis terminal and Claude Code engine files (`services/terminal.py`, `services/claude_code.py`, `routers/terminal.py`, `routers/claude_code.py`, with formlit 0.51.3's terminal environment and Claude Code folder) and formtxt's window bridge (`routers/live.py`, `services/bridge.py`, formtxt 0.30.8), ported to `backend/app`, Copyright (C) 2026 NodeAgentc, Inc. | 2.3.4 | Apache-2.0 | engine |
+| ptyprocess | 0.7.0 | ISC | engine, the pseudo-terminals behind the terminal dock on macOS and Linux |
+| pywinpty | 3.0.5 | MIT | engine, the same on Windows (ConPTY) |
+| Claude Code | the person's own install, not shipped | the person's own terms with its maker | the Claude Code tabs and the Chat tab run the `claude` program already installed on this computer as a separate process; formtools neither bundles it nor reads or stores its sign-in |
 | FFmpeg and ffprobe (LGPL build with libvpx and libopus, configured `--disable-gpl --disable-nonfree --disable-version3`) | 7.1.5 (record 7.1.5-2) | LGPL-2.1-or-later | not shipped in the app: an `ffmpeg` on PATH is used first; otherwise the frozen engine downloads the family's pinned build from `nodemode-dev/formcut-binaries`, checks every file's SHA-256, and keeps it in the per-person folder `formcut-binaries/ffmpeg-7.1.5-2` shared with formcut and formvis; the binaries are run as separate processes. Source: the offer published with formcut-binaries |
 | formvis `ffmpeg_fetch.py` and `ffmpeg_record.py`, ported to `backend/app/tools/media/fetch.py` and `record.py`, Copyright (C) 2026 NodeAgentc, Inc. | 1.98.7 | Apache-2.0 | engine |
 | PyInstaller | 6.22.3 | GPL-2.0 with the bootloader exception | build tool only; the exception covers the frozen engine |
 | TypeScript, Vite, @tauri-apps/cli | 7.0.2, 8.3.5, 2.12.4 | Apache-2.0, MIT, Apache-2.0 OR MIT | build tools only |
+| The three demo folders (pictures, documents, 3D models, sounds and the Demo Pixel font) | generated | Apache-2.0, own work | made on the person's computer by `backend/app/tools/demos`; nothing is bundled in the app and no third-party picture or font is used. The browser demo pages (`demo/`, `demos/family/`, `demos/bench/`) carry the engine's recorded answers for these folders in `assets/recording.js`, made by `scripts/demo-record.py` |
 
 ## Trademarks
 

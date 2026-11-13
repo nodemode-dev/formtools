@@ -47,6 +47,7 @@ export class NativeMenus {
     const items: typeof this.items = [];
     const make = async (spec: MenuItem): Promise<unknown> => {
       if (spec === '-') return api.PredefinedMenuItem.new({ item: 'Separator' });
+      if (typeof spec === 'object') return api.Submenu.new({ text: spec.label, items: (await Promise.all(spec.items.map(make))).filter(Boolean) as never[] });
       const cmd = this.commands.get(spec);
       if (!cmd) return null;
       const acc = accelerator(cmd.keys?.[0]);
