@@ -2,6 +2,10 @@
 
 Decisions, reasons and anything left out, newest first. Code carries no comments; the context lives here.
 
+## v0.8.0 (2026-11-13): no engine change; the sparkle check reads the demo pages
+
+- setup/sparkle.py · `SCANNED` gains `demo` and `demos`, so `./formtools sparkle` also reads the browser demo pages. The engine process has no change in this release; `scripts/demo-record.py` (frontend log) only calls it over HTTP.
+
 ## v0.7.0 (2026-11-13): the window bridge, terminals and Claude Code, agents install, demos
 
 - services/bridge.py :: `attach`, `detach`, `resolve`, `call`, `mirror`, `catalogue`, `find`; routers/live.py :: `live`, `mirror` · `/api/live` ported from formtxt (same message format, without its `versions.agent_mark`) and `POST /api/commands/catalogue`, which keeps the window's commands in memory. routers/mcp.py :: `do_run_command` now awaits the window through `anyio.from_thread.run(bridge.call, ...)`; `list_commands` and `describe_command` include the window's commands. Removed: `raise ApiError(409, WINDOW_MESSAGE)`. `WINDOW_ONLY` refuses `terminal-toggle`, `terminal-new`, `claude-code`, `claude-chat` to agents.
