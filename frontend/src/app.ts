@@ -24,7 +24,7 @@ import { DeskPrefs } from './ui/desk/prefs';
 import { ContextMenuPanel } from './ui/osmenu';
 import { desk, type DeskCaps } from './io/desk';
 import { addRecent, loadPrefs } from './ui/prefs';
-import { applyTheme, readChoice, setTheme } from './ui/themes';
+import { applyTheme, readChoice, setTheme, THEMES } from './ui/themes';
 import { toast } from './ui/toast';
 
 type Page = 'home' | 'browse' | 'view' | 'tool' | 'util' | 'desk';
@@ -238,7 +238,7 @@ export function startApp(): void {
     { id: 'next', label: 'Next Item', group: 'View', description: 'Show the next file in the folder.', useWhen: 'Use when stepping forward through images.', enabled: () => page === 'view', run: () => viewer.step(1) },
     { id: 'previous', label: 'Previous Item', group: 'View', description: 'Show the previous file in the folder.', useWhen: 'Use when stepping back through images.', enabled: () => page === 'view', run: () => viewer.step(-1) },
     { id: 'palette', label: 'Commands...', group: 'View', description: 'Search every command.', useWhen: 'Use when the person does not know where a command lives.', keys: ['Mod+K'], run: () => palette.open() },
-    { id: 'toggle-light', label: 'Light or Dark', group: 'View', description: 'Switch between the dark and light themes.', useWhen: 'Use when the person asks for light or dark mode.', keys: ['Mod+Shift+L'], run: () => setTheme(readChoice().theme === 'light' ? 'studio' : 'light') },
+    { id: 'toggle-light', label: 'Light or Dark', group: 'View', description: 'Switch between the dark and light themes.', useWhen: 'Use when the person asks for light or dark mode.', keys: ['Mod+Shift+L'], run: () => { const p = loadPrefs(); setTheme(THEMES[readChoice().theme]?.light ? p.themeDark : p.themeLight); } },
     { id: 'settings', label: 'Preferences...', group: 'formtools', description: 'Open Preferences.', useWhen: 'Use when the person wants to change a setting.', keys: ['Mod+,'], run: () => settings.open() },
     { id: 'undo', label: 'Undo', group: 'Edit', description: 'Undo in the focused text field.', useWhen: 'Use in text fields.', keys: ['Mod+Z'], enabled: () => isText(document.activeElement), run: () => document.execCommand('undo') },
     { id: 'redo', label: 'Redo', group: 'Edit', description: 'Redo in the focused text field.', useWhen: 'Use in text fields.', keys: ['Mod+Shift+Z'], enabled: () => isText(document.activeElement), run: () => document.execCommand('redo') },
