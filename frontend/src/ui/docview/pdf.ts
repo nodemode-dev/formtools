@@ -373,7 +373,7 @@ export class PdfView implements DocKind {
     } catch {
       return;
     } finally {
-      this.inflight--;
+      if (this.doc === doc) this.inflight--;
       if (task && this.tasks.get(i) === task) this.tasks.delete(i);
       this.pump();
     }
@@ -406,6 +406,7 @@ export class PdfView implements DocKind {
       return;
     } finally {
       this.thumbBusy = false;
+      if (this.doc && this.doc !== doc) void this.pumpThumbs();
     }
   }
 
