@@ -95,9 +95,14 @@ Desktop utilities: colour picker · screen ruler · text extractor · zoom and d
 ./formtools cli resize --longest 2048 ~/Pictures/trip                        # resize
 ./formtools cli rename --find IMG --replace trip --counter ~/Pictures/trip/* # print the plan; add --apply
 ./formtools mcp                                                              # MCP server on stdio for Claude Code, Codex and Cursor
+./formtools agents install                                                   # connect Claude Code, Codex and Cursor for your user account
 ```
 
 `.mcp.json`, `.codex/config.toml` and `.cursor/mcp.json` are already wired in this repo. See [`AGENTS.md`](AGENTS.md).
+
+**Terminal.** A dock above the status bar holds real terminals run by the engine: your login shell in as many tabs as you like, kept running while the dock is hidden. Open it with the Terminal button in the title bar or View > Terminal (Mod+J).
+
+**Claude Code.** If Claude Code is installed, a Claude Code tab (Mod+Shift+J) starts your own `claude` with formtools' MCP tools already attached, and the Chat tab (Mod+Alt+J) talks to it in a chat with Allow and Deny cards for each step, then hands the conversation to a Claude Code tab when you want the full terminal. formtools does not bundle Claude Code and never reads or stores its sign-in; if it is missing, the dock shows the one-line install. Agents cannot open terminals or Claude Code through MCP: those stay yours.
 
 ## Under the hood
 
