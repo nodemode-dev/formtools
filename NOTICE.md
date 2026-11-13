@@ -56,6 +56,7 @@ Every dependency gets a row here with its name, version, licence and where it sh
 | formvis `ffmpeg_fetch.py` and `ffmpeg_record.py`, ported to `backend/app/tools/media/fetch.py` and `record.py`, Copyright (C) 2026 NodeAgentc, Inc. | 1.98.7 | Apache-2.0 | engine |
 | PyInstaller | 6.22.3 | GPL-2.0 with the bootloader exception | build tool only; the exception covers the frozen engine |
 | TypeScript, Vite, @tauri-apps/cli | 7.0.2, 8.3.5, 2.12.4 | Apache-2.0, MIT, Apache-2.0 OR MIT | build tools only |
+| The three demo folders (pictures, documents, 3D models, sounds and the Demo Pixel font) | generated | Apache-2.0, own work | made on the person's computer by `backend/app/tools/demos`; nothing is bundled and no third-party picture or font is used |
 
 ## Trademarks
 

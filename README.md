@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <img alt="version 0.6.4" src="https://img.shields.io/badge/version-0.6.4-eef0f4?style=flat-square">
+  <img alt="version 0.7.0" src="https://img.shields.io/badge/version-0.7.0-eef0f4?style=flat-square">
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-Vite-3178c6?style=flat-square&logo=typescript&logoColor=white">
   <img alt="Python FastAPI engine" src="https://img.shields.io/badge/Python-FastAPI-009688?style=flat-square">
   <img alt="macOS, Windows, Linux" src="https://img.shields.io/badge/macOS%20%C2%B7%20Windows%20%C2%B7%20Linux-native-2f7bf5?style=flat-square">
@@ -48,7 +48,7 @@
     <td width="25%" valign="top"><h3>View anything</h3>Open RAW, HDR, EXR, PSD, video, audio, 3D models, fonts, PDFs, databases and archives in one app.</td>
     <td width="25%" valign="top"><h3>Batch images</h3>Convert, resize and rename whole folders with an ordered action pipeline, a live preview and shared presets.</td>
     <td width="25%" valign="top"><h3>Desktop utilities</h3>Colour picker, screen ruler, text extractor, zoom and draw, break timer and more, on global shortcuts.</td>
-    <td width="25%" valign="top"><h3>Agent-ready</h3>The same engine from the window, the CLI and an MCP server with 34 tools.</td>
+    <td width="25%" valign="top"><h3>Agent-ready</h3>The same engine from the window, the CLI and an MCP server with 35 tools.</td>
   </tr>
 </table>
 
@@ -88,7 +88,7 @@ Desktop utilities: colour picker · screen ruler · text extractor · zoom and d
 
 ## Built for agents
 
-34 MCP tools, one engine; the window, the CLI and the MCP server call the same code.
+35 MCP tools, one engine; the window, the CLI and the MCP server call the same code.
 
 ```sh
 ./formtools cli convert --format webp --out ~/Pictures/web ~/Pictures/trip   # batch convert
