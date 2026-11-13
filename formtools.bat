@@ -66,5 +66,5 @@ exit /b 0
 :usage
 echo formtools.bat [command]
 echo   boot ^| install [--lite] ^| install-desktop ^| backend ^| frontend ^| build ^| serve ^| freeze
-echo   desktop dev ^| desktop build [--config F] [--target T] ^| mcp ^| cli ^| agents sync^|check ^| mcpb check^|build DIR ^| doctor ^| clean [--all] ^| version ^| help
+echo   desktop dev ^| desktop build [--config F] [--target T] ^| mcp ^| cli ^| agents install^|sync^|check ^| mcpb check^|build DIR ^| doctor ^| clean [--all] ^| version ^| help
 exit /b 0

@@ -4,7 +4,9 @@ import json
 import os
 import re
 import shutil
+import subprocess
 import sys
+import time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SOURCE = os.path.join(ROOT, ".claude", "skills")
@@ -220,10 +222,137 @@ def check():
     return 0
 
 
+def launch():
+    if os.name == "nt":
+        return sys.executable, [os.path.join(ROOT, "setup", "mcp_stdio.py")]
+    return os.path.join(ROOT, LAUNCHER), ["mcp"]
+
+
+def user_skills():
+    try:
+        with open(os.path.join(ROOT, ".claude-plugin", "plugin.json"), encoding="utf-8") as f:
+            listed = json.load(f).get("skills") or []
+    except (OSError, ValueError):
+        listed = []
+    names = [os.path.basename(os.path.normpath(str(entry))) for entry in listed]
+    return [name for name in names if os.path.isfile(os.path.join(SOURCE, name, "SKILL.md"))]
+
+
+def same_tree(first, second):
+    one, two = files_under(first), files_under(second)
+    return one.keys() == two.keys() and all(read_bytes(one[rel]) == read_bytes(two[rel]) for rel in one)
+
+
+def backup(path, dry):
+    if os.path.exists(path) and not dry:
+        shutil.copy2(path, path + ".bak-" + time.strftime("%Y%m%d-%H%M%S"))
+
+
+def copy_skills(root, dry, said):
+    for name in user_skills():
+        to = os.path.join(root, name)
+        if os.path.isdir(to) and same_tree(to, os.path.join(SOURCE, name)):
+            said.append(f"  skill already at {to}")
+            continue
+        said.append(f"  skill -> {to}")
+        if not dry:
+            shutil.rmtree(to, ignore_errors=True)
+            os.makedirs(root, exist_ok=True)
+            shutil.copytree(os.path.join(SOURCE, name), to)
+
+
+def install_claude(home, dry, said):
+    command, args = launch()
+    line = subprocess.list2cmdline([command, *args])
+    said.append("Claude Code:")
+    claude = shutil.which("claude")
+    if claude:
+        have = subprocess.run([claude, "mcp", "get", LAUNCHER], capture_output=True, text=True)
+        if have.returncode == 0 and command in have.stdout:
+            said.append(f"  MCP server {LAUNCHER} already set (user scope)")
+        else:
+            said.append(f"  claude mcp add --scope user {LAUNCHER} -- {line}")
+            if not dry:
+                if have.returncode == 0:
+                    subprocess.run([claude, "mcp", "remove", LAUNCHER, "--scope", "user"], capture_output=True)
+                subprocess.run([claude, "mcp", "add", "--scope", "user", LAUNCHER, "--", command, *args], check=True, capture_output=True)
+    else:
+        said.append(f"  the claude command is not installed here; once it is, run: claude mcp add --scope user {LAUNCHER} -- {line}")
+    copy_skills(os.path.join(home, ".claude", "skills"), dry, said)
+
+
+def install_codex(home, dry, said):
+    command, args = launch()
+    said.append("Codex:")
+    cfg = os.path.join(os.environ.get("CODEX_HOME") or os.path.join(home, ".codex"), "config.toml")
+    block = f"[mcp_servers.{LAUNCHER}]\ncommand = {json.dumps(command, ensure_ascii=False)}\nargs = {json.dumps(args, ensure_ascii=False)}\nstartup_timeout_sec = 90\ntool_timeout_sec = 600\n"
+    text = open(cfg, encoding="utf-8").read() if os.path.isfile(cfg) else ""
+    found = re.search(rf"(?ms)^\[mcp_servers\.{LAUNCHER}\]\n.*?(?=^\[|\Z)", text)
+    if found and found.group(0).strip() == block.strip():
+        said.append(f"  MCP server {LAUNCHER} already in {cfg}")
+    else:
+        said.append(f"  MCP server {LAUNCHER} -> {cfg}")
+        if not dry:
+            backup(cfg, dry)
+            os.makedirs(os.path.dirname(cfg), exist_ok=True)
+            new = text[:found.start()] + block + "\n" + text[found.end():] if found else (text.rstrip("\n") + "\n\n" if text.strip() else "") + block
+            with open(cfg, "w", encoding="utf-8") as f:
+                f.write(new)
+    copy_skills(os.path.join(home, ".agents", "skills"), dry, said)
+
+
+def install_cursor(home, dry, said):
+    command, args = launch()
+    said.append("Cursor:")
+    cfg = os.path.join(home, ".cursor", "mcp.json")
+    text = open(cfg, encoding="utf-8").read() if os.path.isfile(cfg) else ""
+    try:
+        data = json.loads(text) if text.strip() else {}
+    except ValueError:
+        said.append(f"  {cfg} is not valid JSON; fix it, then run this again")
+        return
+    entry = {"command": command, "args": args}
+    if (data.get("mcpServers") or {}).get(LAUNCHER) == entry:
+        said.append(f"  MCP server {LAUNCHER} already in {cfg}")
+    else:
+        said.append(f"  MCP server {LAUNCHER} -> {cfg}")
+        if not dry:
+            backup(cfg, dry)
+            data.setdefault("mcpServers", {})[LAUNCHER] = entry
+            os.makedirs(os.path.dirname(cfg), exist_ok=True)
+            with open(cfg, "w", encoding="utf-8") as f:
+                f.write(json.dumps(data, indent=2) + "\n")
+    copy_skills(os.path.join(home, ".agents", "skills"), dry, said)
+
+
+CLIENTS = {"claude": install_claude, "codex": install_codex, "cursor": install_cursor}
+
+
+def install(which, dry):
+    bad = [w for w in which if w not in CLIENTS]
+    if bad:
+        print(f"[agents] unknown client {', '.join(bad)} (claude, codex or cursor)", file=sys.stderr)
+        return 2
+    home, said = os.environ.get("HOME") or os.path.expanduser("~"), []
+    for w in which or list(CLIENTS):
+        CLIENTS[w](home, dry, said)
+    print(("Would do (dry run):\n" if dry else "") + "\n".join(said))
+    if not dry:
+        print("\nRestart the clients so they read the new settings.")
+    return 0
+
+
 def main():
     parser = argparse.ArgumentParser(prog="formtools agents", description="the agents kit")
-    parser.add_argument("action", choices=["sync", "check"])
+    parser.add_argument("action", choices=["install", "sync", "check"])
+    parser.add_argument("clients", nargs="*", help="install only: claude, codex or cursor (all by default)")
+    parser.add_argument("--dry-run", action="store_true", help="install only: say what would change and change nothing")
+    parser.add_argument("--user", action="store_true", help="install only: for this user account (the default)")
     args = parser.parse_args()
+    if args.action == "install":
+        return install(args.clients, args.dry_run)
+    if args.clients:
+        parser.error(f"{args.action} takes no client names")
     return sync() if args.action == "sync" else check()
 
 

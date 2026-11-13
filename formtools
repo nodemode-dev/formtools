@@ -26,6 +26,7 @@ usage: ./formtools [command] [options]
   desktop build [--config F] [--target T]  bundle the desktop app (arguments go to tauri build)
   mcp [--where] [--version] [--url URL]  formtools over MCP's stdio transport, for Claude Desktop and other MCP clients
   cli info PATH | list DIR | version  small command line over the engine
+  agents install [--dry-run] [claude|codex|cursor]  set up the MCP server and the driving skill for this user account
   agents sync | check  mirror .claude/skills into .agents/skills; check the mirror, the skills and the MCP configs
   mcpb check | build DIR  validate the Claude Desktop extension manifest; write formtools.mcpb into DIR
   doctor              check the toolchain, installs and ports
