@@ -91,13 +91,14 @@ export function loadPrefs(): Prefs {
   if (cache) return cache;
   let raw: Partial<Prefs> = {};
   try { raw = JSON.parse(localStorage.getItem(KEY) || '{}') as Partial<Prefs>; } catch { raw = {}; }
+  if (!raw || typeof raw !== 'object') raw = {};
   cache = clean(raw);
   return cache;
 }
 
 export function updatePrefs(change: Partial<Prefs>): Prefs {
   cache = clean({ ...loadPrefs(), ...change });
-  try { localStorage.setItem(KEY, JSON.stringify(cache)); } catch { return cache; }
+  try { localStorage.setItem(KEY, JSON.stringify(cache)); } catch { }
   for (const l of listeners) l(cache);
   return cache;
 }
