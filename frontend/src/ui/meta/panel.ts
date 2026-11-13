@@ -297,7 +297,7 @@ export class MetaPanel {
     const entry = this.entry;
     if (!entry || !this.open) return;
     const key = keyOf(entry);
-    if (this.shownKey === key && this.mode === 'ready') return;
+    if (this.shownKey === key && this.mode === 'ready') { this.settle(); return; }
     const seq = ++this.seq;
     this.abort?.abort();
     this.abort = null;

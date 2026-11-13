@@ -9,6 +9,7 @@
 .ft-sec { padding-bottom: var(--space-4); border-bottom: 1px solid var(--line-0); }
 .ft-sec h3 { margin: var(--space-4) 0 var(--space-3); font-size: 14px; font-weight: 600; }
 .ft-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--space-4); min-height: 40px; color: var(--text-secondary); font-size: 13px; }
+.ft-row[hidden] { display: none; }
 .ft-row-col { grid-template-columns: minmax(0, 1fr); align-items: start; padding: var(--space-2) 0; }
 .ft-row .cv-hf-sort { min-width: 180px; }
 .ft-check { width: 16px; height: 16px; accent-color: var(--accent-color); }

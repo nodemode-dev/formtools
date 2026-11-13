@@ -2,6 +2,18 @@
 
 Context for the frontend code, kept here instead of in comments.
 
+## v0.6.3 · 2026-11-12 · Review fixes
+
+Five fixes from a full review; `tsc` passes, none was run in a browser here (the reviewers reproduced the faults in headless Chrome before the change).
+
+- `app.ts` :: the `copy` command · defers to the native copy when the page has a text selection, not only when a form field has focus. Mod+C with code selected in the document viewer copied the file path and cancelled the real copy.
+- `styles/dialogs.css` :: `.ft-row[hidden]` · `.ft-row` sets `display: grid`, which beats the `hidden` attribute, so rows a tool hides (Resize's size rows, Output's Quality, Rename's sub-folder switch) stayed visible.
+- `ui/docview/pdf.ts` :: `PdfView.key` · returns early for keys from text fields (`typeOnly`), like the other document panels, so the page box takes 0, 1, 9, plus and minus. `styles/docview.css` :: `.dv-pdf-main`, `.dv-pdf-thumbs` are `position: relative`, so `offsetTop` is measured from the scroller and page jumps no longer land 40 px high.
+- `ui/docview/font.ts` · the `FontFace` source is a quoted `url("...")`; brackets and apostrophes in a path made the unquoted form invalid.
+- `ui/meta/panel.ts` :: `load` · the early return for a file that is already shown settles the read in flight first; A, then B, then back to A left B's tags on A.
+
+Found in the same review and not changed in 0.6.3: a document that fails to open leaves the previous file's content under the new name (pdf, sqlite, font, markdown, json views); the busy indicator and the slideshow stall when stepping onto a non-image; highlighted text with CR-only line endings lands on line 1; hidden groups still count and pick in the 3D scene; Duplicates started from dropped files sends files where folders are needed; the hosts editor cannot save when a scoped IPv6 entry is present; saved sums files use bare names; SaveDialog saves on Enter from Cancel and can save twice; a job the engine no longer knows is polled forever; bulk selection in Duplicates and Clean up picks rows that are not shown; Light or Dark only toggles from the theme named light; a stored `null` in prefs blanks the window; raw colour literals remain outside the tokens file.
+
 ## v0.6.0 · 2026-11-03 · Home redesign
 
 Home is now `ui/home.ts` (template and orchestration) plus `ui/home/` (`model.ts` group data and storage helpers, `nav.ts` the side panel, `drop.ts` the drop zone and suggestions sheet, `suggest.ts` the type-to-tools table). Styles are all in `styles/home.css`.

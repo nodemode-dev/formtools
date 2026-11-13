@@ -28,9 +28,9 @@ def read_version():
         pass
     try:
         with open(os.path.join(ROOT, "frontend", "package.json"), encoding="utf-8") as f:
-            return json.load(f).get("version") or "0.6.2"
+            return json.load(f).get("version") or "0.6.3"
     except (OSError, ValueError):
-        return "0.6.2"
+        return "0.6.3"
 
 
 def base():

@@ -123,12 +123,12 @@
 .dv-side-n { color: var(--text-muted); font-size: 11px; font-variant-numeric: tabular-nums; }
 
 .dv-pdf-body { display: flex; flex: 1 1 0; min-height: 0; }
-.dv-pdf-thumbs { display: flex; flex: none; flex-direction: column; align-items: center; gap: var(--space-2); width: 132px; padding: var(--space-2); overflow-y: auto; border-right: 1px solid var(--line-0); background: var(--surface-0); }
+.dv-pdf-thumbs { position: relative; display: flex; flex: none; flex-direction: column; align-items: center; gap: var(--space-2); width: 132px; padding: var(--space-2); overflow-y: auto; border-right: 1px solid var(--line-0); background: var(--surface-0); }
 .dv-pdf-thumb { display: flex; flex: none; flex-direction: column; align-items: center; gap: 4px; padding: 4px; border: 2px solid transparent; border-radius: var(--radius-md); background: transparent; color: var(--text-muted); font-size: 11px; cursor: pointer; }
 .dv-pdf-thumb:hover { background: var(--bg-hover); }
 .dv-pdf-thumb.is-on { border-color: var(--accent-color); color: var(--text-primary); }
 .dv-pdf-thumb-box { display: block; width: 96px; background: #fff; box-shadow: var(--shadow-sm); }
-.dv-pdf-main { flex: 1 1 0; min-width: 0; overflow: auto; scrollbar-gutter: stable; outline: none; background: var(--canvas-bg); overflow-anchor: none; }
+.dv-pdf-main { position: relative; flex: 1 1 0; min-width: 0; overflow: auto; scrollbar-gutter: stable; outline: none; background: var(--canvas-bg); overflow-anchor: none; }
 .dv-pdf-pages { display: flex; flex-direction: column; align-items: center; gap: 12px; min-width: max-content; padding: 16px; }
 .dv-pdf-page { position: relative; flex: none; background: #fff; box-shadow: var(--shadow-md); }
 .dv-pdf-canvas { display: block; width: 100%; height: 100%; }

@@ -1,4 +1,5 @@
 LOOPBACK_NAMES = ("127.0.0.1", "localhost")
+WINDOW_PORTS = (5240, 5241)
 
 REFUSAL = b'{"ok":false,"error":"formtools answers this computer\'s own window and agents only"}'
 
@@ -10,6 +11,16 @@ def host_allowed(host: str, port: int | None) -> bool:
     return port is not None and int(number) == port
 
 
+def origin_allowed(origin: str, port: int | None) -> bool:
+    scheme, sep, rest = origin.strip().lower().partition("://")
+    if not sep or scheme != "http":
+        return False
+    name, sep, number = rest.rpartition(":")
+    if not sep or name not in LOOPBACK_NAMES or not number.isdigit():
+        return False
+    return int(number) in WINDOW_PORTS or (port is not None and int(number) == port)
+
+
 class HostGuard:
     def __init__(self, app) -> None:
         self.app = app
@@ -19,13 +30,15 @@ class HostGuard:
             await self.app(scope, receive, send)
             return
         host = ""
+        origin = None
         for key, value in scope.get("headers", []):
-            if key == b"host":
+            if key == b"host" and not host:
                 host = value.decode("latin-1")
-                break
+            elif key == b"origin" and origin is None:
+                origin = value.decode("latin-1")
         server = scope.get("server")
         port = server[1] if server and len(server) > 1 else None
-        if host_allowed(host, port):
+        if host_allowed(host, port) and (origin is None or origin_allowed(origin, port)):
             await self.app(scope, receive, send)
             return
         if scope["type"] == "websocket":

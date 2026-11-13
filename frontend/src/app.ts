@@ -239,7 +239,7 @@ export function startApp(): void {
     { id: 'redo', label: 'Redo', group: 'Edit', description: 'Redo in the focused text field.', useWhen: 'Use in text fields.', keys: ['Mod+Shift+Z'], enabled: () => isText(document.activeElement), run: () => document.execCommand('redo') },
     { id: 'cut', label: 'Cut', group: 'Edit', description: 'Cut the selected text.', useWhen: 'Use in text fields.', keys: ['Mod+X'], enabled: () => isText(document.activeElement), run: () => document.execCommand('cut') },
     { id: 'copy', label: 'Copy', group: 'Edit', description: 'Copy the selected text, or the current file path in the viewer.', useWhen: 'Use to copy text or a path.', keys: ['Mod+C'], run: () => {
-      if (isText(document.activeElement)) { document.execCommand('copy'); return; }
+      if (isText(document.activeElement) || (window.getSelection()?.toString() ?? '') !== '') { document.execCommand('copy'); return; }
       const c = viewer.current;
       if (page === 'view' && c) void navigator.clipboard.writeText(c.path).then(() => toast('Path copied.')).catch(() => undefined);
     } },

@@ -122,7 +122,7 @@ export class FontView implements DocKind {
       if (info.format === 'collection' || entry.ext === 'ttc' || entry.ext === 'otc') note = 'A font collection cannot be previewed here; its details are shown.';
       else {
         try {
-          face = new FontFace(family, `url(${docApi.rawUrl(entry.path, entry.mtime)})`);
+          face = new FontFace(family, `url("${docApi.rawUrl(entry.path, entry.mtime)}")`);
           await face.load();
         } catch {
           face = null;

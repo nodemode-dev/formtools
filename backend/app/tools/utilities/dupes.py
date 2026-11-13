@@ -34,13 +34,14 @@ def is_picture(path: str) -> bool:
 
 def collect(job: Job, params: dict, progress: walk.Progress, tally: walk.Tally, pictures: bool) -> list[Item]:
     items: list[Item] = []
-    seen: set[str] = set()
+    seen: set = set()
     for root in params["roots"]:
         for path, info in walk.walk(root, params["recursive"], params["include_hidden"], tally):
             job.check()
-            if path in seen:
+            key = (info.st_dev, info.st_ino) if info.st_ino and info.st_nlink == 1 else path
+            if key in seen:
                 continue
-            seen.add(path)
+            seen.add(key)
             progress.grow()
             progress.tick(path)
             if info.st_size < params["min_size"]:

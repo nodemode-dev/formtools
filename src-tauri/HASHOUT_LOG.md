@@ -1,5 +1,9 @@
 # src-tauri HASHOUT_LOG
 
+## 2026-11-12 · v0.6.3 · the deb's engine folder is /usr/lib/FormTools
+
+The bundler puts resources under `usr/lib/<productName>`, and the product name became `FormTools` in 0.6.1, so the engine installs to `/usr/lib/FormTools/engine`. Earlier entries below that say `/usr/lib/formtools` describe the layout before the rename. The thumbnailer entry (`backend/app/tools/desktop/formtools.thumbnailer`) now names the new folder. The main binary is still `/usr/bin/formtools`, because the binary name comes from the Cargo package name.
+
 ## 2026-11-03, v0.2.0, desktop shell scaffold
 
 Ported from formvis (Apache-2.0) `src-tauri`, re-read from the v1.98.7 source rather than the v1.96.4 maps. No code comments are kept in the Rust files; the context lives here.

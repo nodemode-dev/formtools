@@ -237,6 +237,8 @@ def run(raw: str, operation: str, lossless: bool) -> dict:
             used = transform_jpeg(target, operation, lossless)
         elif getattr(opened, "n_frames", 1) > 1 and fmt in ("GIF", "WEBP", "PNG"):
             used = animated(target, opened, fmt, operation)
+        elif getattr(opened, "n_frames", 1) > 1:
+            raise ApiError(415, "that file holds more than one page, so formtools leaves it alone")
         else:
             used = still(target, opened, fmt, operation)
     except ApiError:
