@@ -1,3 +1,4 @@
+import { ApiError } from '../../io/api';
 import { desktopApi, type HostEntry } from '../../io/desktop-api';
 import { el, patchList, q, setChecked, setClass, setDisabled, setText, setTitle, setValue } from '../dom';
 import { icon } from '../icons';
@@ -233,6 +234,13 @@ export class HostsSection extends DeskSection {
       const t = e instanceof Error ? e.message : 'The hosts file was not saved.';
       setText(err, t);
       toast(t, 'error');
+      if (e instanceof ApiError && e.status === 409) {
+        this.saving = false;
+        this.loaded = false;
+        await this.load();
+        setText(err, t);
+        return;
+      }
     }
     this.saving = false;
     this.sync();
