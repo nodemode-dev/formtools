@@ -33,7 +33,7 @@ formtools is the form* family's media and file utility belt: viewers, batch imag
 
 - Vite port 5240 with `server.host: false` and `strictPort: true`; engine port 8240 from `FORMTOOLS_PORT`; `FORMTOOLS_PORT=0` in the desktop app picks a free port.
 - Data lives in `FORMTOOLS_DATA_DIR` or the OS app-data folder, never beside the install.
-- Frozen engine: PyInstaller from `backend/formtools_engine.py`, one folder on macOS (`src-tauri/engine`), one file elsewhere (`src-tauri/binaries/formtools-engine-<triple>`), `frontend/dist` bundled as `ui`.
+- Frozen engine: PyInstaller from `backend/formtools_engine.py`, one folder on every OS (`src-tauri/engine`, program `formtools-engine` or `formtools-engine.exe` plus `_internal/`), `frontend/dist` bundled as `ui`.
 - The release contract uses only `./formtools install`, `./formtools install-desktop` and `./formtools desktop build [--config F] [--target T]`.
 
 ## Rules
@@ -44,7 +44,7 @@ formtools is the form* family's media and file utility belt: viewers, batch imag
 4. No emoji anywhere. No U+2014 in Markdown; use the interpunct.
 5. Near-zero comments in code. Context goes in the nearest `HASHOUT_LOG.md`.
 6. A new dependency is checked against `docs/encyclopedia/engines/engine-licensing-matrix.md` first and gets a `NOTICE.md` row in the same commit. Pin exact versions. GPL stays out of the distributed app, AGPL is used nowhere.
-7. Versions are `v*.*.*` with dots. The version sites are `frontend/package.json`, its lock file, `frontend/src/version.ts`, `backend/app/__init__.py`, `src-tauri/Cargo.toml`, `src-tauri/Cargo.lock`, `src-tauri/tauri.conf.json` and the README badge; bump them together.
+7. Versions are `v*.*.*` with dots. The version sites are `frontend/package.json`, its lock file, `frontend/src/version.ts`, `backend/app/__init__.py`, `src-tauri/Cargo.toml`, `src-tauri/Cargo.lock`, `src-tauri/tauri.conf.json`, `setup/mcpb/manifest.json`, the fallback version strings in `setup/cli.py` and `setup/mcp_stdio.py`, and the README badge; bump them together.
 8. Do not duplicate a sibling app's job (transcoding, libraries, layered editing, PDF, video, audio, sculpting, boards, launching, installing). Hand off with "Open in ...".
 9. Never edit `.claude/settings.json`; it keeps Claude Code attribution off.
 
