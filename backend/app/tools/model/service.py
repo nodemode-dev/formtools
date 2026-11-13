@@ -64,10 +64,41 @@ def readable_model(raw: str) -> tuple[Path, str]:
     return target, ext
 
 
+OBJ_RELATIVE = re.compile(rb"(?m)^[ \t]*[fpl][ \t][^\n]*[ \t/]-\d")
+
+
+def absolute_obj(data: bytes) -> bytes:
+    kinds = (b"v", b"vt", b"vn")
+    counts = dict.fromkeys(kinds, 0)
+    lines = data.split(b"\n")
+    for number, line in enumerate(lines):
+        parts = line.split()
+        if not parts:
+            continue
+        if parts[0] in counts:
+            counts[parts[0]] += 1
+        elif parts[0] in (b"f", b"p", b"l") and b"-" in line:
+            tokens = [parts[0]]
+            for token in parts[1:]:
+                fields = token.split(b"/")
+                for index, field in enumerate(fields[:3]):
+                    if field.startswith(b"-") and field[1:].isdigit():
+                        fields[index] = str(counts[kinds[index]] + int(field) + 1).encode()
+                tokens.append(b"/".join(fields))
+            lines[number] = b" ".join(tokens)
+    return b"\n".join(lines)
+
+
 def load(target: Path, ext: str, merge: bool) -> trimesh.Scene:
     try:
         with SLOTS:
-            scene = trimesh.load_scene(str(target), file_type=ext, process=merge, resolver=DecodingResolver(str(target)))
+            source = str(target)
+            if ext == "obj":
+                data = target.read_bytes()
+                if OBJ_RELATIVE.search(data):
+                    source = trimesh.util.wrap_as_stream(absolute_obj(data))
+                del data
+            scene = trimesh.load_scene(source, file_type=ext, process=merge, resolver=DecodingResolver(str(target)))
     except ApiError:
         raise
     except Exception as exc:
