@@ -26,6 +26,7 @@ import { desk, type DeskCaps } from './io/desk';
 import { addRecent, loadPrefs } from './ui/prefs';
 import { applyTheme, readChoice, setTheme, THEMES } from './ui/themes';
 import { toast } from './ui/toast';
+import { connectBridge } from './automation/bridge';
 
 type Page = 'home' | 'browse' | 'view' | 'tool' | 'util' | 'desk';
 
@@ -274,6 +275,7 @@ export function startApp(): void {
     const cmd = (e.target instanceof Element ? e.target.closest<HTMLElement>('[data-cmd]') : null)?.dataset.cmd;
     if (cmd) commands.run(cmd);
   });
+  connectBridge(commands);
 
   const dropTarget = (paths: string[]): void => { if (paths.length) void openPath(paths[0]); };
   if (inDesktop()) {
