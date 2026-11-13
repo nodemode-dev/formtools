@@ -6,7 +6,7 @@ import subprocess
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SCANNED = ["frontend/src", "frontend/public", "frontend/index.html", "frontend/overlay.html", "backend/app", "src-tauri/src"]
+SCANNED = ["frontend/src", "frontend/public", "frontend/index.html", "frontend/overlay.html", "backend/app", "src-tauri/src", "demo", "demos"]
 SUFFIXES = (".ts", ".js", ".mjs", ".py", ".rs", ".css", ".html", ".svg")
 BANNED = re.compile(
     "\\bsparkles?\\s*:\\s*[`'\"]?\\s*<svg|\\bsparkles?\\s*:\\s*\\w+\\(|icon\\(\\s*['\"]sparkles?['\"]|"
