@@ -9,11 +9,11 @@ from fastapi.responses import JSONResponse
 from app.core import config, registry
 from app.core.errors import ApiError
 from app.routers import fs
-from app.services import bridge
+from app.services import agents, bridge
 
 router = APIRouter()
 
-SUPPORTED = ("2025-06-18", "2025-03-26", "2024-11-05")
+SUPPORTED = ("2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05")
 WINDOW_MESSAGE = "The window runs commands. Open formtools, then ask again."
 WINDOW_ONLY = ("terminal-toggle", "terminal-new", "claude-code", "claude-chat")
 
@@ -98,7 +98,7 @@ def rpc_error(request_id: Any, code: int, message: str) -> dict:
     return {"jsonrpc": "2.0", "id": request_id, "error": {"code": code, "message": message}}
 
 
-def dispatch(message: Any) -> dict | None:
+def dispatch(message: Any, token: str | None = None) -> dict | None:
     if not isinstance(message, dict) or message.get("jsonrpc") != "2.0":
         return rpc_error(None, -32600, "invalid request")
     method = message.get("method")
@@ -111,6 +111,7 @@ def dispatch(message: Any) -> dict | None:
     if method == "initialize":
         asked = params.get("protocolVersion") if isinstance(params, dict) else None
         version = asked if asked in SUPPORTED else SUPPORTED[0]
+        agents.note(agents.caller(token, params.get("clientInfo") if isinstance(params, dict) else None))
         result = {
             "protocolVersion": version,
             "capabilities": {"tools": {"listChanged": False}},
@@ -151,8 +152,16 @@ async def rpc(request: Request) -> Response:
         body = json.loads((await request.body()) or b"null")
     except ValueError:
         return JSONResponse(rpc_error(None, -32700, "parse error"))
+    token = request.headers.get(agents.INAPP_HEADER)
     if isinstance(body, list):
-        replies = [reply for reply in await run_in_threadpool(lambda: [dispatch(item) for item in body]) if reply is not None]
+        replies = [reply for reply in await run_in_threadpool(lambda: [dispatch(item, token) for item in body]) if reply is not None]
         return JSONResponse(replies) if replies else Response(status_code=202)
-    reply = await run_in_threadpool(dispatch, body)
+    reply = await run_in_threadpool(dispatch, body, token)
     return JSONResponse(reply) if reply is not None else Response(status_code=202)
+
+
+@router.get("/api/mcp/status")
+def status(request: Request) -> dict:
+    server = request.scope.get("server")
+    port = server[1] if server and len(server) > 1 and server[1] else config.engine_port()
+    return {"endpoint": f"http://127.0.0.1:{port}/mcp","protocolVersions": list(SUPPORTED), "tools": len(all_tools()), "window": bridge.connected(), "clients": agents.clients()}
