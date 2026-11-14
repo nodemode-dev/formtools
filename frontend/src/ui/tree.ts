@@ -63,6 +63,7 @@ export class FolderTree {
         const r = await api.dirs(path, loadPrefs().showHidden);
         const depth = Number(node.style.getPropertyValue('--depth') || 0) + 1;
         this.fill(kids, r.dirs, depth);
+        setClass(node, 'has-children', r.dirs.length > 0);
         st.loaded = true;
       } catch {
         return;
