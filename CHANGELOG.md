@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.1 · 2026-11-14
+
+- macOS: the app starts again. In 0.8.0 the desktop app stopped at "The formtools engine failed to start" because macOS refused the code signature of the engine's Python library; the build now signs that library so the signature stays valid inside the app, and stops if it would not. If you have 0.8.0, update to this version.
+- macOS: opening a demo, or any folder under Home, no longer asks for access to Desktop, Documents, Downloads and other folders you did not open. The folder tree used to look inside every folder it listed to decide whether to draw an arrow beside it.
+
 ## 0.8.0 · 2026-11-13
 
 - The three demos (A photo shoot, A shelf of Form files, 3D and media bench) also open as offline browser pages, `demo/index.html`, `demos/family` and `demos/bench`, that replay recorded engine answers in the real window.
