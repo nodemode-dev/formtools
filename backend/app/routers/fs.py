@@ -139,7 +139,9 @@ def list_dir(raw: str, hidden: bool = False) -> dict:
     return {"path": str(path), "parent": None if parent == path else str(parent), "entries": entries}
 
 
-def has_child_dir(path: str, hidden: bool) -> bool:
+def has_child_dir(path: str, hidden: bool, info: os.stat_result | None = None) -> bool:
+    if sys.platform == "darwin" and info is not None:
+        return info.st_nlink != 2
     try:
         with os.scandir(path) as scan:
             for entry in scan:
@@ -174,7 +176,7 @@ def list_folders(raw: str, hidden: bool = False) -> dict:
                     continue
                 if not hidden and is_hidden(entry, info):
                     continue
-                dirs.append({"name": entry.name, "path": entry.path, "has_children": has_child_dir(entry.path, hidden)})
+                dirs.append({"name": entry.name, "path": entry.path, "has_children": has_child_dir(entry.path, hidden, info)})
     except PermissionError:
         raise ApiError(400, "formtools is not allowed to read that folder")
     except OSError as exc:

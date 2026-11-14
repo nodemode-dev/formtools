@@ -2,6 +2,12 @@
 
 Decisions, reasons and anything left out, newest first. Code carries no comments; the context lives here.
 
+## v0.8.1 (2026-11-14): the folder tree no longer opens folders nobody asked for
+
+- app/routers/fs.py :: `has_child_dir`, `list_folders` · Opening a demo, or any folder under Home, made macOS ask for access to Desktop, Documents, Downloads and more. The tree reveals a path by listing each ancestor through `/api/fs/dirs`, and for every folder in such a listing `has_child_dir` opened that folder to see whether it holds a subfolder, so listing Home opened every folder in it. macOS asks for consent when a protected folder is opened, not when its own entry is read. On macOS `has_child_dir` now answers from the entry's `lstat`, the `info` that `list_folders` already holds: a directory's link count there is its number of entries plus two, so `st_nlink != 2` means it is not empty. No folder is opened but the one being listed. The answer is wider than before: a folder with only files, or only hidden subfolders, counts as having children, and so does a symlink or a volume that reports a link count of 1. The window drops the twisty once such a folder has been expanded and had none (frontend log). Other platforms keep the scan.
+- Checked on Linux: the scan path answers as before, and with `sys.platform` set to `darwin` only the listed folder goes through `os.scandir`. Not run on macOS: that listing Home no longer asks for consent, and the link count rule on APFS and on external volumes.
+- Not changed: the photo demo's `IMG_0424.jpg` is cut short on purpose (`tools/demos/photos.py` :: `build`, the `broken` picture, 40 percent of its bytes) so that Clean Up has a broken file to find. It is not a fault in the demo.
+
 ## v0.8.0 (2026-11-13): no engine change; the sparkle check reads the demo pages
 
 - setup/sparkle.py · `SCANNED` gains `demo` and `demos`, so `./formtools sparkle` also reads the browser demo pages. The engine process has no change in this release; `scripts/demo-record.py` (frontend log) only calls it over HTTP.

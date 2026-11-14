@@ -2,6 +2,10 @@
 
 Context for the frontend code, kept here instead of in comments.
 
+## v0.8.1 · 2026-11-14 · the tree drops the twisty of a folder with no subfolders
+
+- `src/ui/tree.ts` :: `expand` · After the first load of a node's children, `setClass(node, 'has-children', r.dirs.length > 0)`. On macOS the engine no longer opens a folder to learn whether it has subfolders (backend log), so `has_children` can be true for a folder that holds only files; the twisty goes once that folder has been expanded and had none. It is one class on the node the person just clicked, and `.ft-tree-twisty` keeps its 14 px box through `visibility`, so nothing moves. Checked: `tsc --noEmit`. Not verified in a browser, throttled or not. The three browser demo pages were not rebuilt or re-recorded, so they still carry 0.8.0.
+
 ## v0.8.0 · 2026-11-13 · the mark in the title bar, the title path, browser demo pages
 
 - `src/app.ts` :: `SHELL` · The title bar starts with `button.cv-brand.ft-tb-brand[data-cmd=go-home]` holding `brandMark(22)`, formlit's title bar size and place, and it opens Home as the mark does in formvis and formdeck. It is in the shell template, built before the reveal, so it is there on the first frame. `startApp` places the menu bar after it (`q(header, '.ft-tb-brand').after(bar.root)`); removed: `header.prepend(bar.root);`. `brandMark` returns the PNG icon in an `<img>` with its size set inline: the repo has no SVG of the current icon (the old `assets/formtools-icon.svg` was deleted with the v3 icons, and `public/favicon.svg` is an older design), so no inline SVG mark exists to draw and none was invented.

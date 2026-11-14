@@ -7,8 +7,9 @@ if [ -n "${FORMTOOLS_HIDDEN_IMPORTS:-}" ]; then
 fi
 sign_engine() {
   local ent="$FORMTOOLS_ROOT/src-tauri/entitlements.plist" f info signed=0 kept=0
-  local files=() sign_args=()
+  local files=() sign_args=() work link
   [ -f "$ent" ] && sign_args+=(--entitlements "$ent")
+  work="$(mktemp -d)"
   while IFS= read -r f; do
     if file -b "$f" | grep -Eq 'Mach-O.*(executable|shared library|bundle)'; then files+=("$f"); fi
   done < <(find "$1" -type f | awk -F/ '{print NF "\t" $0}' | sort -rn | cut -f2-)
@@ -17,14 +18,30 @@ sign_engine() {
     if printf '%s\n' "$info" | grep -q '^Timestamp=' \
       && printf '%s\n' "$info" | grep -Eq '^CodeDirectory .*flags=[^ ]*runtime' \
       && ! printf '%s\n' "$info" | grep -q '^Signature=adhoc' \
-      && codesign -d --entitlements - "$f" 2>/dev/null | grep -q 'com.apple.security.cs.disable-library-validation'; then
+      && [ "${f#*.framework/}" = "$f" ] \
+      && { [ "$f" != "$1/formtools-engine" ] || codesign -d --entitlements - "$f" 2>/dev/null | grep -q 'com.apple.security.cs.disable-library-validation'; }; then
       kept=$((kept + 1))
       continue
     fi
-    codesign --force --timestamp --options runtime "${sign_args[@]}" --sign "$APPLE_SIGNING_IDENTITY" "$f"
+    if [ "${f#*.framework/}" = "$f" ]; then
+      codesign --force --timestamp --options runtime "${sign_args[@]}" --sign "$APPLE_SIGNING_IDENTITY" "$f"
+    else
+      cp -p "$f" "$work/${f##*/}"
+      codesign --force --timestamp --options runtime "${sign_args[@]}" --sign "$APPLE_SIGNING_IDENTITY" "$work/${f##*/}"
+      mv -f "$work/${f##*/}" "$f"
+    fi
     signed=$((signed + 1))
   done
-  for f in "${files[@]}"; do codesign --verify "$f" || ft_die "engine file failed its signature check: $f"; done
+  for f in "${files[@]}"; do
+    [ "${f#*.framework/}" = "$f" ] || continue
+    codesign --verify "$f" || ft_die "engine file failed its signature check: $f"
+  done
+  while IFS= read -r link; do
+    file -bL "$link" | grep -Eq 'Mach-O.*(executable|shared library|bundle)' || continue
+    cp -L "$link" "$work/${link##*/}"
+    codesign --verify --strict "$work/${link##*/}" || ft_die "this engine library loses its signature when it is copied as a plain file, which is how the app bundle carries it: $link"
+  done < <(find "$1" -type l)
+  rm -rf "$work"
   ft_say "engine signed: ${#files[@]} Mach-O files, $signed signed here, $kept already signed by PyInstaller"
 }
 ft_rust_env
