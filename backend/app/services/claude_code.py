@@ -10,7 +10,7 @@ import time
 from pathlib import Path
 
 from app.core import config
-from app.routers.mcp import pre_approved_names
+from app.routers.mcp import pre_approved_names, refused_inside
 from app.services import agents, terminal
 
 KEEP_ENV = {"CLAUDE_CODE_OAUTH_TOKEN", "CLAUDE_CODE_USE_BEDROCK", "CLAUDE_CODE_USE_VERTEX", "CLAUDE_CONFIG_DIR"}
@@ -176,7 +176,10 @@ def _decide(request_id: str, req: dict, gen: int) -> None:
         return _respond(request_id, {"behavior": "deny", "message": "Plan mode is on in formtools: describe the plan and the person will switch modes to carry it out."})
     if name == "AskUserQuestion":
         return _respond(request_id, {"behavior": "deny", "message": "Questions cannot be shown here: ask in your reply instead."})
-    gate = {"event": threading.Event(), "allow": False}
+    blocked = refused_inside(name)
+    if blocked:
+        return _respond(request_id, {"behavior": "deny", "message": blocked})
+    gate ={"event": threading.Event(), "allow": False}
     AGENT.waiting[request_id] = gate
     publish({"type": "permission", "id": request_id, "tool": name, "summary": summary(name, inp)})
     gate["event"].wait(PERMISSION_WAIT)

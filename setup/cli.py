@@ -67,7 +67,7 @@ def call(method, route, body, **query):
 
 
 def tool(name, arguments):
-    reply = call("POST", "/mcp", {"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {"name": name, "arguments": arguments}})
+    reply = call("POST", "/mcp", {"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {"name": name, "arguments": arguments, "_meta": {"io.modelcontextprotocol/clientInfo": {"name": "the formtools command line"}}}})
     if reply.get("error"):
         print(f"formtools: {reply['error'].get('message')}", file=sys.stderr)
         sys.exit(1)

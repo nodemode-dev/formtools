@@ -13,7 +13,10 @@ INAPP_CLIENT = "Claude Code in formtools"
 INAPP_HEADER = "x-formtools-inapp"
 TOKEN_FOLDER = "AgentTokens"
 MAX_SEEN = 40
+MAX_SESSIONS = 200
+UNNAMED = "an outside agent"
 
+SESSIONS: dict[str, str] = {}
 TOKENS: dict[str, Path] = {}
 _seen: dict[str, dict] = {}
 _lock = threading.Lock()
@@ -73,7 +76,21 @@ def caller(token: str | None, info: object) -> str:
     name = str(info.get("title") or info.get("name") or "").strip()[:80] if isinstance(info, dict) else ""
     if name == INAPP_CLIENT:
         return f"{name} (outside)"
-    return name or "an outside agent"
+    return name or UNNAMED
+
+
+def open_session(name: str) -> str:
+    session = secrets.token_urlsafe(18)
+    with _lock:
+        while len(SESSIONS) >= MAX_SESSIONS:
+            SESSIONS.pop(next(iter(SESSIONS)))
+        SESSIONS[session] = name
+    return session
+
+
+def session_name(session: str | None) -> str:
+    with _lock:
+        return SESSIONS.get(session, "") if isinstance(session, str) else ""
 
 
 def note(client: str) -> None:

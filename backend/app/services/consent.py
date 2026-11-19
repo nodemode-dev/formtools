@@ -8,7 +8,7 @@ from anyio import from_thread
 
 from app.core import config, seal
 from app.core.errors import ApiError
-from app.services import bridge
+from app.services import agents, bridge
 
 MODES = ("ask", "allowed", "blocked")
 FILE = "settings.json"
@@ -16,6 +16,8 @@ WAIT = 120.0
 SLICE = 0.5
 WHERE = "formtools, Settings, Integration, Outside agents"
 BLOCKED = f"Outside agents are blocked in {WHERE}, so this call was refused. Tell the person where to change it and stop; do not retry."
+BLOCKED_INSIDE = f"Agents are blocked in {WHERE}, and that includes this tab, so this call was refused. Tell the person where to change it and stop; do not retry."
+PUBLIC = ("id", "tool", "title", "effect", "at", "agent", "agentNamed", "what", "answers", "alwaysScope", "expires")
 DENIED = "The person did not allow this in the formtools window, so it was refused. Do not retry unless they ask you to."
 NO_WINDOW = f"formtools asks the person before an outside agent changes anything, and no formtools window is open to ask. Ask them to open formtools, or to choose Allowed in {WHERE}."
 TIMED_OUT = "Nobody answered in the formtools window in time, so this call was refused. Ask the person to look at the formtools window, then retry."
@@ -76,12 +78,19 @@ def set_access(value: str) -> dict:
 def pending() -> list[dict]:
     with _lock:
         items = sorted(_pending.values(), key=lambda r: r["at"])
-        return [{k: r[k] for k in ("id", "tool", "title", "effect", "at")} for r in items if r["answer"] is None]
+        return [{k: r[k] for k in PUBLIC} for r in items if r["answer"] is None]
 
 
-def _tell(kind: str) -> None:
+def what(tool, arguments) -> str:
+    command = arguments.get("id") if tool.name == "run_command" and isinstance(arguments, dict) else None
+    if isinstance(command, str) and command.strip():
+        return "run the command " + "".join(ch for ch in command.strip() if ch.isprintable())[:80]
+    return f"run {tool.name}"
+
+
+def _tell(kind: str, **fields) -> None:
     try:
-        from_thread.run(bridge.notify, {"t": kind})
+        from_thread.run(bridge.notify, {"t": kind, **fields})
     except Exception:
         return
 
@@ -104,20 +113,23 @@ def answer(request_id: str, choice: str) -> dict:
     return {"ok": True, "access": access(), "kept": kept}
 
 
-def check(tool, inapp: bool) -> str | None:
-    if inapp or not gated(tool):
+def check(tool, inapp: bool, agent: str = "", arguments: dict | None = None) -> str | None:
+    if not gated(tool):
         return None
     mode = access()
-    if mode == "allowed":
-        return None
     if mode == "blocked":
-        return BLOCKED
+        return BLOCKED_INSIDE if inapp else BLOCKED
+    if inapp or mode == "allowed":
+        return None
     if not bridge.connected():
         return NO_WINDOW
-    item = {"id": secrets.token_urlsafe(12), "tool": tool.name, "title": tool.description, "effect": tool.effect, "at": time.time(), "answer": None, "done": threading.Event()}
+    now = time.time()
+    item = {"id": secrets.token_urlsafe(12), "tool": tool.name, "title": tool.description, "effect": tool.effect, "at": now, "answer": None, "done": threading.Event(),
+            "agent": agent or agents.UNNAMED, "agentNamed": bool(agent) and agent != agents.UNNAMED, "what": what(tool, arguments),
+            "answers": ["deny", "once", "always"] if seal.available() else ["deny", "once"], "alwaysScope": "all", "expires": now + WAIT}
     with _lock:
         _pending[item["id"]] = item
-    _tell("ask")
+    _tell("ask", id=item["id"], request={k: item[k] for k in PUBLIC})
     lost = False
     try:
         until = time.monotonic() + WAIT
@@ -132,7 +144,7 @@ def check(tool, inapp: bool) -> str | None:
     finally:
         with _lock:
             _pending.pop(item["id"], None)
-        _tell("answered")
+        _tell("answered", id=item["id"], reason="answered" if item["answer"] else "lost" if lost else "expired", answer=item["answer"])
     if item["answer"] in ("once", "always"):
         return None
     if item["answer"] == "deny":

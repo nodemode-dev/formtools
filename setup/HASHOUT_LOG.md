@@ -1,5 +1,9 @@
 # setup HASHOUT_LOG
 
+## 2026-11-19 · Unreleased · the command line says who it is
+
+- `setup/cli.py` :: `tool` · Each `tools/call` the command line makes now carries its name ("the formtools command line") in `_meta` under `io.modelcontextprotocol/clientInfo`, so the question in the window names it instead of "an outside agent". It is still an outside agent and is asked or refused like one. Ran `./formtools cli resize` against an engine on 33901 with a stand-in window: the request's `agent` was that name; with no window it was refused at once as before, and `list` still read.
+
 ## 2026-11-19 · Unreleased · the shared dock is checked against its manifest
 
 - `setup/agents.py` :: `dock_problems`, `DOCK_DIR`, `DOCK_VERSION`, `check` · `agents check` (and `agents sync --check`) now also fails when a file in `frontend/src/dock/` does not match the SHA-256 in that folder's `MANIFEST.json`, when a file is added or missing there, or when the manifest is not the dock module `1.0.0-stage1`, naming each file. The folder is FormVis's, copied whole; sync never writes into it (FormVis's own sync writes that manifest because FormVis is the source; here it is only checked). A new module version is a new copy plus a new `DOCK_VERSION`.

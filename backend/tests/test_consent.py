@@ -181,6 +181,94 @@ def test_the_agents_inside_formtools_are_not_asked(keychain):
         agents.revoke(token)
 
 
+def test_blocked_stops_a_tab_of_the_app_too_and_its_reads_still_work(keychain):
+    from app.services import agents, consent
+
+    token, path = agents.issue(8240)
+    try:
+        consent.set_access("blocked")
+        error, text = result(dispatch(CALL, token))
+        assert error and text == consent.BLOCKED_INSIDE
+        assert result(dispatch(READ, token))[0] is False
+        consent.set_access("allowed")
+        assert result(dispatch(CALL, token))[0] is False
+    finally:
+        agents.revoke(token)
+
+
+def test_the_chat_shows_no_card_for_a_tool_that_blocked_refuses(keychain, monkeypatch):
+    from app.services import claude_code, consent
+
+    sent, shown = [], []
+    monkeypatch.setattr(claude_code, "_write", lambda obj: sent.append(obj) or True)
+    monkeypatch.setattr(claude_code, "publish", lambda msg, keep=True: shown.append(msg))
+    monkeypatch.setattr(claude_code.AGENT, "mode", "ask")
+    consent.set_access("blocked")
+    claude_code._decide("r1", {"tool_name": "mcp__formtools__trash_files", "input": {}}, claude_code.AGENT.gen)
+    assert sent[0]["response"]["response"] == {"behavior": "deny", "message": consent.BLOCKED_INSIDE}
+    assert shown == []
+
+
+def test_a_request_says_who_asks_for_what_and_until_when(keychain, window):
+    from app.routers import mcp
+    from app.services import agents, consent
+
+    thread, seen = answer_when_asked("once")
+    assert result(mcp.dispatch(CALL, None, agents.open_session("probe-agent")))[0] is False
+    thread.join()
+    asked = seen[0]
+    assert asked["agent"] == "probe-agent" and asked["agentNamed"] is True and asked["what"] == "run trash_files"
+    assert asked["answers"] == ["deny", "once", "always"] and asked["alwaysScope"] == "all"
+    assert asked["expires"] == pytest.approx(asked["at"] + consent.WAIT)
+    thread, seen = answer_when_asked("deny")
+    named = {"name": "run_command", "arguments": {"id": "rename-apply"}, "_meta": {"io.modelcontextprotocol/clientInfo": {"name": "the formtools command line"}}}
+    assert result(mcp.dispatch({**CALL, "params": named}))[0] is True
+    thread.join()
+    assert seen[0]["agent"] == "the formtools command line" and seen[0]["what"] == "run the command rename-apply"
+
+
+def test_a_caller_with_no_name_and_a_computer_with_no_keychain(nokeychain, window):
+    thread, seen = answer_when_asked("once")
+    assert result(dispatch(CALL))[0] is False
+    thread.join()
+    assert seen[0]["agent"] == "an outside agent" and seen[0]["agentNamed"] is False
+    assert seen[0]["answers"] == ["deny", "once"]
+
+
+def test_initialize_hands_out_a_session_that_names_the_caller(bare, keychain, window):
+    hello = {"jsonrpc": "2.0", "id": 0, "method": "initialize", "params": {"protocolVersion": "2025-06-18", "clientInfo": {"name": "Desk Client"}}}
+    session = bare.post("/mcp", json=hello).headers["mcp-session-id"]
+    thread, seen = answer_when_asked("deny")
+    reply = bare.post("/mcp", json=CALL, headers={"Mcp-Session-Id": session}).json()
+    thread.join()
+    assert result(reply)[0] is True and seen[0]["agent"] == "Desk Client"
+    assert "mcp-session-id" not in bare.post("/mcp", json=READ).headers
+
+
+@pytest.mark.parametrize("choice,wait,reason", [("once", 5.0, "answered"), (None, 0.4, "expired")])
+def test_every_window_is_told_when_a_request_is_asked_and_when_it_is_over(client, keychain, monkeypatch, choice, wait, reason):
+    from app.core import window_key
+    from app.services import consent
+
+    monkeypatch.setattr(consent, "WAIT", wait)
+    local = {"host": "127.0.0.1:80"}
+    with client.websocket_connect("/api/live", headers=local) as first, client.websocket_connect("/api/live", headers=local) as second:
+        for ws in (first, second):
+            ws.send_json({"t": "hello", "key": window_key.KEY})
+        deadline = time.monotonic() + 3
+        while not consent.bridge.connected() and time.monotonic() < deadline:
+            time.sleep(0.02)
+        caller = threading.Thread(target=lambda: client.post("/mcp", json=CALL))
+        caller.start()
+        asked = [ws.receive_json() for ws in (first, second)]
+        assert all(m["t"] == "ask" and m["id"] == asked[0]["id"] and m["request"]["tool"] == "trash_files" for m in asked)
+        if choice:
+            assert client.post(f"/api/agents/requests/{asked[0]['id']}", json={"answer": choice}).json()["ok"]
+        over = [ws.receive_json() for ws in (first, second)]
+        caller.join()
+        assert all(m == {"t": "answered", "id": asked[0]["id"], "reason": reason, "answer": choice} for m in over)
+
+
 def test_a_hand_edit_to_allowed_reads_as_ask_and_says_so(keychain):
     from app.core import config
     from app.services import consent

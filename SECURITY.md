@@ -36,7 +36,8 @@ something outside it could get in:
   A program outside formtools (an AI agent, the command line, a stdio bridge) is
   asked about in the formtools window before any tool that is not read-only runs,
   unless you chose Allowed in Settings, Integration, Outside agents; under Blocked
-  those tools are refused. Only the window can change that choice. Anything that
+  those tools are refused for every agent, the Chat and agent tabs inside formtools
+  included. Only the window can change that choice. Anything that
   runs such a tool without your answer, or changes the choice from outside the
   window, counts.
 - **Files**: reading, extracting or converting a file or archive in a way that writes
