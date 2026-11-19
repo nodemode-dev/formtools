@@ -137,7 +137,7 @@ def test_each_tab_gets_its_own_token_in_a_private_file_until_revoked():
         assert agents.is_inapp(first) and agents.is_inapp(second)
         if os.name != "nt":
             assert stat.S_IMODE(os.stat(first_file).st_mode) == 0o600
-        assert json.loads(open(first_file, encoding="utf-8").read())["mcpServers"]["formtools"]["headers"]["x-formtools-inapp"] == first
+        assert json.loads(open(first_file, encoding="utf-8").read())["mcpServers"]["formtools_tab"]["headers"]["x-formtools-inapp"] == first
         agents.revoke(first)
         assert not os.path.exists(first_file)
         assert not agents.is_inapp(first)
