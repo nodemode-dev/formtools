@@ -1340,6 +1340,7 @@ dependencies = [
  "tauri-plugin-single-instance",
  "tauri-plugin-updater",
  "windows",
+ "windows-sys 0.61.2",
  "x11rb 0.14.0",
  "xcap",
 ]
