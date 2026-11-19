@@ -28,7 +28,7 @@ Inside the formtools repository `.mcp.json`, `.cursor/mcp.json` and `.codex/conf
 ## Reconnect checklist
 
 1. Call `fs_list` on the home folder. If it answers, the connection is fine.
-2. `run_command` says no formtools window is open: ask the person to open formtools; the file tools still work without it.
+2. `run_command` says no formtools window is open: ask the person to open formtools. The tools that only read still work without it; the others need the window open so the person can answer, unless they chose Allowed in Settings, Integration, Outside agents.
 3. No formtools tools at all: the server is not registered in this client. Ask the person to run `./formtools agents install`, then restart the client.
 4. The window did not answer in time: it is busy; wait and retry once.
 

@@ -28,6 +28,7 @@ formtools is the form* family's media and file utility belt: viewers, batch imag
 | Windows, menus, tray, native dialogs, updater, bundle | Work in `src-tauri/`. A command the page invokes needs an `allow-<name>` permission because the page is a remote origin |
 | Install, boot, freeze, packaging, doctor | Work in `setup/`. Change the `.bat` twin with the shell script. Check with `bash -n` on each shell script |
 | The terminal dock, Claude Code tabs, the Chat, the `/api/live` bridge, the in-app token | Read `sub-skills/terminal-operator/SUB-SKILL.md` next to this file first |
+| The outside agents question (Ask each time, Allowed, Blocked), its Allow dialog, a tool's declared effect | `backend/app/services/consent.py` holds the choice and the wait, `core/seal.py` the keychain seal, `routers/agents.py` the routes only the window may call, `frontend/src/ui/agent-access.ts` the dialog and the Settings row. `routers/mcp.py` applies the choice to every tool whose effect is not `reads`, for every caller without an in-app token, which includes `./formtools cli` and `./formtools mcp`. Never add a way to change the choice from outside the window. After adding, renaming or re-annotating a tool run `./formtools agents sync` (it writes `agents/manifest.json`) |
 | The fixed interfaces (ports, API paths, launcher commands) | Stop. These are set by the scaffold contract; changing one needs the owner |
 
 ## Fixed values
