@@ -28,6 +28,7 @@ const MIN_SIZE: (f64, f64) = (980.0, 640.0);
 const SCREEN_FRACTION: f64 = 0.9;
 const DEV_ENGINE: &str = "http://127.0.0.1:8240";
 const PORT_WAIT: Duration = Duration::from_secs(60);
+const KEY_WAIT: Duration = Duration::from_secs(10);
 const OPEN_EVENT: &str = "open-paths";
 const TOOL_EVENT: &str = "open-tool";
 
@@ -236,6 +237,7 @@ async fn read_port(mut rx: tauri::async_runtime::Receiver<String>) -> Option<(u1
     let pattern = regex::Regex::new(r"http://127\.0\.0\.1:(\d+)").unwrap();
     let key_pattern = regex::Regex::new(r"formtools-window-key: ([A-Za-z0-9_-]{32,})").unwrap();
     let mut key: Option<String> = None;
+    let mut port: Option<u16> = None;
     let (tick, mut timer) = tauri::async_runtime::channel::<()>(1);
     std::thread::spawn(move || {
         std::thread::sleep(PORT_WAIT);
@@ -250,9 +252,20 @@ async fn read_port(mut rx: tauri::async_runtime::Receiver<String>) -> Option<(u1
         if key.is_none() {
             key = key_pattern.captures(&text).map(|found| found[1].to_string());
         }
-        if let Some(port) = pattern.captures(&text).and_then(|found| found[1].parse::<u16>().ok()) {
+        if port.is_none() {
+            port = pattern.captures(&text).and_then(|found| found[1].parse::<u16>().ok());
+            if port.is_some() && key.is_none() {
+                let (key_tick, key_timer) = tauri::async_runtime::channel::<()>(1);
+                std::thread::spawn(move || {
+                    std::thread::sleep(KEY_WAIT);
+                    let _ = key_tick.blocking_send(());
+                });
+                timer = key_timer;
+            }
+        }
+        if let (Some(found), true) = (port, key.is_some()) {
             tauri::async_runtime::spawn(async move { while rx.recv().await.is_some() {} });
-            return Some((port, key));
+            return Some((found, key));
         }
     }
     None
