@@ -13,7 +13,7 @@
 // Never call applyTheme() from a component's first render; that is a second
 // paint and the user sees both.
 
-export interface ThemeProfile { label: string; vars: Record<string, string>; light?: boolean; css?: string }
+export interface ThemeProfile { label: string; vars: Record<string, string>; light?: boolean; oled?: boolean; css?: string }
 
 export const THEMES: Record<string, ThemeProfile> = {
   // The target look (Phase 21, UI_SPEC.md): surfaces, text and the pasteboard measured from the owner's screenshots;
@@ -48,6 +48,7 @@ export const THEMES: Record<string, ThemeProfile> = {
   'breeze-dark': { label: 'Breeze Dark', vars: { '--bg-primary': '#232629', '--bg-secondary': '#31363b', '--bg-tertiary': '#3b4045', '--border-color': '#4d5359', '--border-light': '#828c94', '--text-primary': '#eff0f1', '--text-secondary': '#c5cacd', '--text-muted': '#a4adb3', '--canvas-bg': '#1b1e20', '--grid-color': 'rgba(239,240,241,0.06)' } },
   'soft-light': { label: 'Soft Light', light: true, vars: { '--bg-primary': '#e8ebef', '--bg-secondary': '#f4f6f8', '--bg-tertiary': '#dce0e6', '--border-color': '#c3c9d2', '--border-light': '#777d89', '--text-primary': '#2b323c', '--text-secondary': '#454d59', '--text-muted': '#5b6370', '--canvas-bg': '#dfe3e8', '--grid-color': 'rgba(43,50,60,0.08)' } },
   'soft-dark': { label: 'Soft Dark', vars: { '--bg-primary': '#22262b', '--bg-secondary': '#2b3036', '--bg-tertiary': '#353b43', '--border-color': '#454c56', '--border-light': '#7c8693', '--text-primary': '#e1e6ec', '--text-secondary': '#b9c1cb', '--text-muted': '#9ca6b2', '--canvas-bg': '#1b1e22', '--grid-color': 'rgba(225,230,236,0.06)' } },
+  'amoled': { label: 'AMOLED Black', oled: true, vars: { '--bg-primary': '#000000', '--bg-secondary': '#000000', '--bg-tertiary': '#141414', '--bg-node': '#000000', '--border-color': '#262626', '--border-light': '#3a3a3a', '--text-primary': '#ededed', '--text-secondary': '#a6a6a6', '--text-muted': '#858585', '--canvas-bg': '#000000', '--grid-color': '#262626' } },
 };
 
 export const DEFAULT_THEME = 'studio';
@@ -106,6 +107,7 @@ export function applyTheme(choice: ThemeChoice = readChoice()): void {
   const theme = THEMES[choice.theme] || THEMES[DEFAULT_THEME];
   for (const [k, v] of Object.entries(theme.vars)) root.style.setProperty(k, v);
   document.body.classList.toggle('theme-light', !!theme.light);
+  if (theme.oled) { if (!root.hasAttribute('data-oled')) root.setAttribute('data-oled', ''); } else if (root.hasAttribute('data-oled')) root.removeAttribute('data-oled');
   root.style.setProperty('--bg-node', theme.vars['--bg-node'] || theme.vars['--bg-secondary']);
   root.style.setProperty('--shadow-lg', theme.light
     ? '0 4px 14px rgba(96, 90, 70, 0.16)'
