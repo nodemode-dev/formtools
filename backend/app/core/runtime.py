@@ -1,10 +1,11 @@
 import json
 import logging
 import os
-import sys
 import time
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
+
+from app.core import startup
 
 LOG_NAME = "formtools-engine.log"
 LOCK_NAME = "engine.lock"
@@ -16,15 +17,20 @@ LOGGERS = ("formtools", "uvicorn", "uvicorn.error", "uvicorn.access")
 FORMAT = "%(asctime)s %(levelname)s %(name)s %(message)s"
 
 
-class AlreadyRunning(RuntimeError):
-    pass
+AlreadyRunning = startup.Busy
 
 
 def start_logging(data: Path) -> Path:
-    stop_logging()
     folder = data / "Logs"
     folder.mkdir(parents=True, exist_ok=True)
     path = folder / LOG_NAME
+    for held in logging.getLogger("formtools").handlers:
+        if held.get_name() == "formtools-file" and getattr(held, "baseFilename", "") == os.path.abspath(path):
+            for name in LOGGERS:
+                if held not in logging.getLogger(name).handlers:
+                    logging.getLogger(name).addHandler(held)
+            return path
+    stop_logging()
     handler = RotatingFileHandler(path, maxBytes=LOG_BYTES, backupCount=LOG_KEEP, encoding="utf-8")
     handler.setFormatter(logging.Formatter(FORMAT))
     handler.set_name("formtools-file")
@@ -47,37 +53,13 @@ def stop_logging() -> None:
 
 
 def alive(pid: int) -> bool:
-    if pid <= 0:
-        return False
-    if sys.platform == "win32":
-        import ctypes
-
-        handle = ctypes.windll.kernel32.OpenProcess(0x1000, False, pid)
-        if handle:
-            ctypes.windll.kernel32.CloseHandle(handle)
-        return bool(handle)
-    try:
-        os.kill(pid, 0)
-    except ProcessLookupError:
-        return False
-    except PermissionError:
-        return True
-    try:
-        with open(f"/proc/{pid}/stat") as stat:
-            return stat.read().rpartition(")")[2].split()[0] != "Z"
-    except (OSError, IndexError):
-        return True
+    return startup.alive(pid)
 
 
 def claim(data: Path) -> Path:
-    lock = data / LOCK_NAME
-    try:
-        held = int(json.loads(lock.read_text()).get("pid", 0))
-    except (OSError, ValueError, AttributeError):
-        held = 0
-    if held and held != os.getpid() and alive(held):
-        raise AlreadyRunning(f"formtools is already running on {data} (engine process {held}).")
-    lock.write_text(json.dumps({"pid": os.getpid(), "started": int(STARTED)}))
+    lock, replaced = startup.claim(data, startup.shell_pid())
+    if replaced:
+        logging.getLogger("formtools").warning("an engine left running without its app was stopped (process %s)", replaced)
     return lock
 
 
