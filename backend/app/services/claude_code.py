@@ -10,6 +10,7 @@ import time
 from pathlib import Path
 
 from app.core import config
+from app.routers.mcp import pre_approved_names
 from app.services import agents, terminal
 
 KEEP_ENV = {"CLAUDE_CODE_OAUTH_TOKEN", "CLAUDE_CODE_USE_BEDROCK", "CLAUDE_CODE_USE_VERTEX", "CLAUDE_CONFIG_DIR"}
@@ -303,6 +304,10 @@ def _drain(proc: subprocess.Popen, gen: int) -> None:
         del AGENT.stderr_tail[:-20]
 
 
+def allowed_tools() -> str:
+    return ",".join(pre_approved_names())
+
+
 def start(mode: str = "ask", fresh: bool = False, port: int = config.BACKEND_PORT) -> dict:
     if mode not in MODES:
         raise ValueError("The mode is ask, auto-edits or plan.")
@@ -386,7 +391,7 @@ def program() -> str | None:
 
 
 def terminal_argv(path: str, mcp_file: str, prompt: str | None, resume: str | None) -> list[str]:
-    cmd = [path, "--mcp-config", mcp_file, "--allowedTools", "mcp__formtools", "--append-system-prompt", TERMINAL_NOTE]
+    cmd = [path, "--mcp-config", mcp_file, "--allowedTools", allowed_tools(), "--append-system-prompt", TERMINAL_NOTE]
     if resume:
         cmd += ["--strict-mcp-config", "--resume", resume]
     if prompt:

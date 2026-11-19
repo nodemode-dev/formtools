@@ -1,5 +1,5 @@
 from app.core import registry
-from app.core.registry import McpTool, Tool
+from app.core.registry import ALTERS, McpTool, Tool
 from app.tools.demos import service
 from app.tools.demos.router import router
 
@@ -25,6 +25,7 @@ registry.register(
                 "Make one of the three demo folders (generated pictures, files and models, nothing of the person's is touched) if it is not made yet, and return its path to browse or run tools on.",
                 DEMO_SCHEMA,
                 demo_open_tool,
+                effect=ALTERS,
             ),
         ),
     )

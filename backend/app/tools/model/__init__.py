@@ -1,5 +1,5 @@
 from app.core import registry
-from app.core.registry import McpTool, Tool
+from app.core.registry import ADDS, READS, McpTool, Tool
 from app.tools.model import service
 from app.tools.model.router import router
 
@@ -39,8 +39,8 @@ registry.register(
         routers=(router,),
         formats=formats,
         mcp=(
-            McpTool("model_info", "Read counts (meshes, vertices, triangles, materials, textures, animations, nodes), the bounding box and notes of a 3D model without rendering it.", INFO_SCHEMA, model_info_tool),
-            McpTool("model_convert", "Start a job that converts a 3D model to glb, obj, stl, ply or off beside the source, never overwriting. Returns the job; poll it with job_status.", CONVERT_SCHEMA, model_convert_tool),
+            McpTool("model_info", "Read counts (meshes, vertices, triangles, materials, textures, animations, nodes), the bounding box and notes of a 3D model without rendering it.", INFO_SCHEMA, model_info_tool, effect=READS),
+            McpTool("model_convert", "Start a job that converts a 3D model to glb, obj, stl, ply or off beside the source, never overwriting. Returns the job; poll it with job_status.", CONVERT_SCHEMA, model_convert_tool, effect=ADDS),
         ),
         startup=service.prune,
     )

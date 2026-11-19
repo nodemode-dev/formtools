@@ -68,30 +68,37 @@ def do_fs_list(args: dict) -> Any:
 
 def core_tools() -> list[registry.McpTool]:
     return [
-        registry.McpTool("list_commands", "List the commands the formtools window can run.", {"type": "object", "properties": {}}, do_list_commands),
+        registry.McpTool("list_commands", "List the commands the formtools window can run.", {"type": "object", "properties": {}}, do_list_commands, effect=registry.READS),
         registry.McpTool(
             "describe_command",
             "Describe one command and its parameters.",
             {"type": "object", "properties": {"id": {"type": "string"}}, "required": ["id"]},
             do_describe_command,
+            effect=registry.READS,
         ),
         registry.McpTool(
             "run_command",
             "Run a command in the open formtools window.",
             {"type": "object", "properties": {"id": {"type": "string"}, "params": {"type": "object"}}, "required": ["id"]},
             do_run_command,
+            effect=registry.ALTERS,
         ),
         registry.McpTool(
             "fs_list",
             "List a folder: entries with name, path, kind, ext, size, mtime and type.",
             {"type": "object", "properties": {"path": {"type": "string"}, "hidden": {"type": "boolean"}}, "required": ["path"]},
             do_fs_list,
+            effect=registry.READS,
         ),
     ]
 
 
 def all_tools() -> list[registry.McpTool]:
     return core_tools() + registry.mcp_tools()
+
+
+def pre_approved_names() -> list[str]:
+    return [f"mcp__{agents.SERVER}__{item.name}" for item in all_tools() if item.pre_approved]
 
 
 def rpc_error(request_id: Any, code: int, message: str) -> dict:
@@ -121,7 +128,7 @@ def dispatch(message: Any, token: str | None = None) -> dict | None:
     if method == "ping":
         return {"jsonrpc": "2.0", "id": request_id, "result": {}}
     if method == "tools/list":
-        listing = [{"name": item.name, "description": item.description, "inputSchema": item.schema} for item in all_tools()]
+        listing = [{"name": item.name, "description": item.description, "inputSchema": item.schema, "annotations": item.annotations()} for item in all_tools()]
         return {"jsonrpc": "2.0", "id": request_id, "result": {"tools": listing}}
     if method == "tools/call":
         name = params.get("name") if isinstance(params, dict) else None

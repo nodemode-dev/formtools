@@ -1,6 +1,6 @@
 from app.core import registry
 from app.core.errors import ApiError
-from app.core.registry import McpTool, Tool
+from app.core.registry import ADDS, ALTERS, READS, McpTool, Tool
 from app.tools.utilities import service, templates, trash
 from app.tools.utilities.router import router
 
@@ -90,31 +90,36 @@ registry.register(
                 "Start a job that finds duplicate files (exact content) or similar pictures. Returns the job; poll it with job_status and read groups and wasted bytes from its result. Nothing is deleted.",
                 DUPES_SCHEMA,
                 dupes_scan_tool,
+                effect=READS,
             ),
             McpTool(
                 "disk_usage",
                 "Start a job that measures a folder and returns a size tree (the 60 largest children per folder, the rest folded into an Other node). Poll it with job_status.",
                 DISK_SCHEMA,
                 disk_usage_tool,
+                effect=READS,
             ),
             McpTool(
                 "trash_files",
                 "Move files or folders to the system trash (recoverable from there, never deleted permanently). Returns how many were moved and any errors.",
                 TRASH_SCHEMA,
                 trash_files_tool,
+                effect=ALTERS,
             ),
             McpTool(
                 "empty_folders",
                 "Start a job that lists folders holding no files anywhere beneath them. Poll it with job_status. Nothing is removed.",
                 EMPTY_SCHEMA,
                 empty_folders_tool,
+                effect=READS,
             ),
-            McpTool("templates_list", "List the New from template items (files and folders) in the templates folder.", {"type": "object", "properties": {}}, templates_list_tool),
+            McpTool("templates_list", "List the New from template items (files and folders) in the templates folder.", {"type": "object", "properties": {}}, templates_list_tool, effect=READS),
             McpTool(
                 "template_create",
                 "Create a new file or folder from a template inside a folder. Never overwrites: a taken name gets a number.",
                 TEMPLATE_SCHEMA,
                 template_create_tool,
+                effect=ADDS,
             ),
         ),
     )

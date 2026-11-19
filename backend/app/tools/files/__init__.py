@@ -1,5 +1,5 @@
 from app.core import registry
-from app.core.registry import McpTool, Tool
+from app.core.registry import ADDS, READS, McpTool, Tool
 from app.routers.fs import absolute
 from app.tools.files import archive, extract, fonts, hashing, text
 from app.tools.files.router import router
@@ -74,12 +74,12 @@ registry.register(
         title="Files, data, archives and checksums",
         routers=(router,),
         mcp=(
-            McpTool("archive_list", "List the entries of an archive (zip, tar family, single compressed files; 7z, rar, iso and more when libarchive is installed). Reports the engine used.", LIST_SCHEMA, archive_list_tool),
-            McpTool("archive_extract", "Start a safe extraction job (no path traversal, no links, no overwriting, size and ratio limits). Returns the job; poll it with job_status.", EXTRACT_SCHEMA, archive_extract_tool),
-            McpTool("hash_files", "Start a hash job over files or folders with md5, sha1, sha256, sha512, sha3_256, blake3, xxh64 or crc32. Returns the job; poll it with job_status.", HASH_SCHEMA, hash_files_tool),
-            McpTool("hash_verify", "Start a job that verifies every entry of a checksum file against the files beside it. Returns the job; poll it with job_status.", VERIFY_SCHEMA, hash_verify_tool),
-            McpTool("text_read", "Read a text file with its detected encoding, BOM, line endings, line count and highlight language; never returns more than max bytes of text.", TEXT_SCHEMA, text_read_tool),
-            McpTool("font_info", "Read a font file: names, license, glyph count, variation axes, OpenType features, scripts and Unicode block coverage.", PATH_SCHEMA, font_info_tool),
+            McpTool("archive_list", "List the entries of an archive (zip, tar family, single compressed files; 7z, rar, iso and more when libarchive is installed). Reports the engine used.", LIST_SCHEMA, archive_list_tool, effect=READS),
+            McpTool("archive_extract", "Start a safe extraction job (no path traversal, no links, no overwriting, size and ratio limits). Returns the job; poll it with job_status.", EXTRACT_SCHEMA, archive_extract_tool, effect=ADDS),
+            McpTool("hash_files", "Start a hash job over files or folders with md5, sha1, sha256, sha512, sha3_256, blake3, xxh64 or crc32. Returns the job; poll it with job_status.", HASH_SCHEMA, hash_files_tool, effect=READS),
+            McpTool("hash_verify", "Start a job that verifies every entry of a checksum file against the files beside it. Returns the job; poll it with job_status.", VERIFY_SCHEMA, hash_verify_tool, effect=READS),
+            McpTool("text_read", "Read a text file with its detected encoding, BOM, line endings, line count and highlight language; never returns more than max bytes of text.", TEXT_SCHEMA, text_read_tool, effect=READS),
+            McpTool("font_info", "Read a font file: names, license, glyph count, variation axes, OpenType features, scripts and Unicode block coverage.", PATH_SCHEMA, font_info_tool, effect=READS),
         ),
     )
 )

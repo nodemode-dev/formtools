@@ -1,5 +1,5 @@
 from app.core import registry
-from app.core.registry import Command, McpTool, Tool
+from app.core.registry import ALTERS, READS, Command, McpTool, Tool
 from app.core.errors import ApiError
 from app.tools.image import edit, info, libs, meta, service
 from app.tools.image.router import meta_router, router
@@ -81,9 +81,9 @@ registry.register(
             for name, title, text in OPERATIONS
         ),
         mcp=(
-            McpTool("image_info", "Read a picture's size, format, colour profile, EXIF, GPS, IPTC and XMP without decoding all of it.", PATH_PARAM, image_info_tool),
-            McpTool("image_meta_write", "Set a picture's star rating and colour label in its XMP sidecar; the picture file is never changed.", META_WRITE_SCHEMA, meta_write_tool),
-            McpTool("image_edit", "Crop, resize, rotate or flip a picture and save it as a new file (JPEG, PNG, WebP, AVIF or TIFF); the original is kept unless overwrite is set.", EDIT_SCHEMA, edit_tool),
+            McpTool("image_info", "Read a picture's size, format, colour profile, EXIF, GPS, IPTC and XMP without decoding all of it.", PATH_PARAM, image_info_tool, effect=READS),
+            McpTool("image_meta_write", "Set a picture's star rating and colour label in its XMP sidecar; the picture file is never changed.", META_WRITE_SCHEMA, meta_write_tool, effect=ALTERS),
+            McpTool("image_edit", "Crop, resize, rotate or flip a picture and save it as a new file (JPEG, PNG, WebP, AVIF or TIFF); the original is kept unless overwrite is set.", EDIT_SCHEMA, edit_tool, effect=ALTERS),
         ),
         startup=service.prune,
     )
