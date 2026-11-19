@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.9.1 · 2026-11-19
+
+The Mac build of 0.9.0 was never released: Apple's notary refused it. This release is 0.9.0 with that fixed.
+
+- macOS: the app is built so that Apple's notary accepts it. The engine now carries its Python library once, as a plain file, signed for that place; before, a second copy inside a framework folder carried a signature that was wrong where it sat.
+- The build stops early, with the reason, if a library in the engine would not pass the notary where it sits.
+
 ## 0.9.0 · 2026-11-19
 
 FormTools takes the Form family's shared terminal panel and its rules for agents: only the app's own window changes things, and a program outside it asks first.
