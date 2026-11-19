@@ -18,7 +18,9 @@ formtools has a terminal dock with shell, Claude Code and Chat tabs, ported from
 | `backend/app/services/bridge.py`, `routers/live.py` | The window attaches to `/api/live`; `run_command` sends `{"t": "run", "id", "command", "params"}` and waits up to 60 seconds for `{"t": "result", "id", "ok", "result" or "error"}`. `POST /api/commands/catalogue` holds the window's mirrored commands for `list_commands` and `describe_command` |
 | `backend/app/routers/mcp.py` | `WINDOW_ONLY`: `terminal-toggle`, `terminal-new`, `claude-code`, `claude-chat` are refused to every agent; `frontend/src/automation/bridge.ts` refuses the same set |
 | `backend/app/main.py` | Binds the event loop for the PTY pumps at start; stops the Chat and closes every terminal at shutdown |
-| `frontend/src/ui/terminal-dock.ts`, `ui/chat-pane.ts`, `io/api.ts` | The dock, its tabs and the Chat pane, speaking the routes above |
+| `frontend/src/dock/` | The family's shared dock module (tabs, Chat, side switch, More agents), copied whole from FormVis; never edited here, `./formtools agents check` fails when a file differs from its `MANIFEST.json` |
+| `frontend/src/dock-adapter.ts`, `styles/dock-tokens.css`, `io/api.ts` | What the module knows about formtools: the routes above, the window key, host classes, storage key `formtools.dock`, and the `--dock-*` token map |
+| `backend/app/services/agent_programs.py` | Codex and Cursor tabs (`POST /api/terminal/agent`) when `codex` or `cursor-agent` is found, each with its own in-app token in the child's environment |
 
 ## Rules for terminal and process code
 

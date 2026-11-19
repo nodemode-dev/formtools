@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -20,7 +21,10 @@ LAUNCHER = "formtools"
 MANIFEST = os.path.join(ROOT, "agents", "manifest.json")
 MANIFEST_REL = "agents/manifest.json"
 APP = "formtools"
-DOCK = {"present": True, "positions": ["bottom"], "tabs": ["chat", "claude", "shell"]}
+DOCK = {"present": True, "positions": ["bottom", "right"], "tabs": ["chat", "shell", "claude", "codex", "cursor"]}
+DOCK_DIR = os.path.join(ROOT, "frontend", "src", "dock")
+DOCK_REL = "frontend/src/dock"
+DOCK_VERSION = "1.0.0-stage1"
 ENGINE_FACTS = """
 import json
 from app.main import app
@@ -153,6 +157,18 @@ def check_manifest(problems):
             problems.append(f"{MANIFEST_REL} is not what ./formtools agents sync writes; run ./formtools agents sync")
     except RuntimeError as exc:
         problems.append(f"{MANIFEST_REL} could not be checked: {exc}")
+
+
+def dock_problems():
+    try:
+        kept = json.loads(read_bytes(os.path.join(DOCK_DIR, "MANIFEST.json")).decode("utf-8"))
+    except (OSError, ValueError):
+        return [f"{DOCK_REL}/MANIFEST.json is missing or not JSON"]
+    if kept.get("module") != "dock" or kept.get("version") != DOCK_VERSION:
+        return [f"{DOCK_REL}/MANIFEST.json is not the dock module {DOCK_VERSION}"]
+    files = kept.get("files") or {}
+    now = {name: hashlib.sha256(read_bytes(os.path.join(DOCK_DIR, name))).hexdigest() for name in sorted(os.listdir(DOCK_DIR)) if name != "MANIFEST.json" and os.path.isfile(os.path.join(DOCK_DIR, name))}
+    return [f"{DOCK_REL}/{name} does not match MANIFEST.json; the shared dock module is copied whole from FormVis, never edited here" for name in sorted(set(files) | set(now)) if files.get(name) != now.get(name)]
 
 
 def sync():
@@ -312,6 +328,7 @@ def check():
     check_skill_format(problems)
     check_agent_files(problems)
     check_manifest(problems)
+    problems.extend(dock_problems())
     if problems:
         for line in problems:
             print(f"[agents] {line}", file=sys.stderr)
