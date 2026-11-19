@@ -5,10 +5,31 @@ FT_EXTRA_HIDDEN_IMPORTS=()
 if [ -n "${FORMTOOLS_HIDDEN_IMPORTS:-}" ]; then
   for m in $FORMTOOLS_HIDDEN_IMPORTS; do FT_EXTRA_HIDDEN_IMPORTS+=("$m"); done
 fi
+plain_framework_libraries() {
+  local root link dest fw gone=()
+  root="$(cd "$1" && pwd -P)"
+  while IFS= read -r link; do
+    case "$link" in *.framework/*) continue ;; esac
+    dest="$( { cd "$(dirname "$link")" && cd "$(dirname "$(readlink "$link")")" && pwd -P; } 2>/dev/null || true)/$(basename "$(readlink "$link")")"
+    case "$dest" in "$root"/*.framework/*) ;; *) continue ;; esac
+    file -b "$dest" | grep -Eq 'Mach-O.*(executable|shared library|bundle)' || continue
+    cp -p "$dest" "$link.plain"
+    rm -f "$link"
+    mv "$link.plain" "$link"
+    codesign --remove-signature "$link"
+    fw="${dest%%.framework/*}.framework"
+    gone+=("$fw")
+  done < <(find "$root" -type l)
+  for fw in ${gone[@]+"${gone[@]}"}; do
+    case "$fw" in "$root"/*.framework) rm -rf "$fw" ;; esac
+  done
+  [ "${#gone[@]}" = 0 ] || ft_say "engine: framework libraries kept as plain files, their framework folders removed: ${#gone[@]}"
+}
 sign_engine() {
   local ent="$FORMTOOLS_ROOT/src-tauri/entitlements.plist" f info signed=0 kept=0
   local files=() sign_args=() work link
   [ -f "$ent" ] && sign_args+=(--entitlements "$ent")
+  plain_framework_libraries "$1"
   work="$(mktemp -d)"
   while IFS= read -r f; do
     if file -b "$f" | grep -Eq 'Mach-O.*(executable|shared library|bundle)'; then files+=("$f"); fi
@@ -33,8 +54,11 @@ sign_engine() {
     signed=$((signed + 1))
   done
   for f in "${files[@]}"; do
-    [ "${f#*.framework/}" = "$f" ] || continue
-    codesign --verify "$f" || ft_die "engine file failed its signature check: $f"
+    if [ "${f#*.framework/}" = "$f" ]; then
+      codesign --verify "$f" || ft_die "engine file failed its signature check: $f"
+    else
+      codesign --verify --strict "$f" || ft_die "this library sits in a framework folder that nothing links to from outside, and its signature does not hold there; Apple's notary would refuse the app: $f"
+    fi
   done
   while IFS= read -r link; do
     file -bL "$link" | grep -Eq 'Mach-O.*(executable|shared library|bundle)' || continue
