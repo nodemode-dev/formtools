@@ -33,6 +33,12 @@ something outside it could get in:
 - **The terminal dock and Claude Code tabs**: anything that lets a web page, a file or
   an MCP client open or drive a terminal, which only you are meant to do.
 - **MCP tools**: anything that lets an agent reach further than the tools describe.
+  A program outside formtools (an AI agent, the command line, a stdio bridge) is
+  asked about in the formtools window before any tool that is not read-only runs,
+  unless you chose Allowed in Settings, Integration, Outside agents; under Blocked
+  those tools are refused. Only the window can change that choice. Anything that
+  runs such a tool without your answer, or changes the choice from outside the
+  window, counts.
 - **Files**: reading, extracting or converting a file or archive in a way that writes
   outside where it should, and moving to the trash anything it should refuse.
 - **Desktop utilities** that change system settings, such as the hosts file and
