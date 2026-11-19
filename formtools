@@ -27,7 +27,7 @@ usage: ./formtools [command] [options]
   mcp [--where] [--version] [--url URL]  formtools over MCP's stdio transport, for Claude Desktop and other MCP clients
   cli info PATH | list DIR | version  small command line over the engine
   agents install [--dry-run] [claude|codex|cursor]  set up the MCP server and the driving skill for this user account
-  agents sync | check  mirror .claude/skills into .agents/skills; check the mirror, the skills and the MCP configs
+  agents sync | check  write agents/manifest.json and mirror .claude/skills into .agents/skills; check the manifest, the mirror, the skills and the MCP configs (needs the backend venv)
   mcpb check | build DIR  validate the Claude Desktop extension manifest; write formtools.mcpb into DIR
   sparkle             fail if the banned three-star sparkle icon is back in the app
   doctor              check the toolchain, installs and ports

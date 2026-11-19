@@ -1,0 +1,113 @@
+{
+  "format": "form-agent-manifest",
+  "version": 1,
+  "app": "formtools",
+  "mcp": {
+    "tools": [
+      "list_commands",
+      "describe_command",
+      "run_command",
+      "fs_list",
+      "image_info",
+      "image_meta_write",
+      "image_edit",
+      "batch_actions",
+      "batch_plan",
+      "batch_run",
+      "job_status",
+      "rename_plan",
+      "rename_apply",
+      "rename_undo",
+      "media_info",
+      "media_copy",
+      "media_snapshot",
+      "demo_open",
+      "hosts_read",
+      "env_read",
+      "exif_read",
+      "archive_list",
+      "archive_extract",
+      "hash_files",
+      "hash_verify",
+      "text_read",
+      "font_info",
+      "model_info",
+      "model_convert",
+      "dupes_scan",
+      "disk_usage",
+      "trash_files",
+      "empty_folders",
+      "templates_list",
+      "template_create"
+    ],
+    "read_only": [
+      "list_commands",
+      "describe_command",
+      "fs_list",
+      "image_info",
+      "batch_actions",
+      "batch_plan",
+      "job_status",
+      "rename_plan",
+      "media_info",
+      "hosts_read",
+      "env_read",
+      "exif_read",
+      "archive_list",
+      "hash_files",
+      "hash_verify",
+      "text_read",
+      "font_info",
+      "model_info",
+      "dupes_scan",
+      "disk_usage",
+      "empty_folders",
+      "templates_list"
+    ],
+    "approval_gated": [
+      "run_command",
+      "image_meta_write",
+      "image_edit",
+      "batch_run",
+      "rename_apply",
+      "rename_undo",
+      "media_copy",
+      "media_snapshot",
+      "demo_open",
+      "archive_extract",
+      "model_convert",
+      "trash_files",
+      "template_create"
+    ],
+    "transports": [
+      "stdio",
+      "http"
+    ]
+  },
+  "skills": [
+    {
+      "name": "formtools-driving",
+      "sub_skills": [
+        "terminal"
+      ]
+    },
+    {
+      "name": "formtools-harness",
+      "sub_skills": [
+        "terminal-operator"
+      ]
+    }
+  ],
+  "dock": {
+    "present": true,
+    "positions": [
+      "bottom"
+    ],
+    "tabs": [
+      "chat",
+      "claude",
+      "shell"
+    ]
+  },
+  "extensions": null
+}

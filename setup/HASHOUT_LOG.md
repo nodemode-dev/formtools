@@ -1,5 +1,12 @@
 # setup HASHOUT_LOG
 
+## 2026-11-18 · Unreleased · agents/manifest.json
+
+- `setup/agents.py` :: `ENGINE_FACTS`, `engine_facts`, `skill_entries`, `manifest_text`, `write_manifest`, `check_manifest`, `DOCK` · `agents sync` now also writes `agents/manifest.json` (format `form-agent-manifest`, version 1, app `formtools`, the file name of the entry in formcompiler `apps/`), and `agents check` (also `agents sync --check`, which changes nothing) fails with `agents/manifest.json is not what ./formtools agents sync writes` when the committed file differs. Every field is read, not typed: a child process imports `app.main` from the backend venv (`backend/venv` when present, else the running Python) with a scratch data folder and lists the tools from `routers/mcp.py :: all_tools`, the read-only ones from the same `readOnlyHint` `tools/list` sends, and the approval-gated ones from `consent.gated`, the gate's own rule (every tool that is not read-only); it refuses to write if a tool package failed to load. Transports: `stdio` because `setup/mcp_stdio.py` exists, `http` because the engine has `POST /mcp`. Skills: the folders of `.claude/skills` with their `sub-skills` that hold a `SUB-SKILL.md`. Extensions: `null`, formtools hosts no form.ext extensions.
+- The dock is the one declared value, `DOCK`: present, position `bottom` only, tabs `chat`, `claude`, `shell`. The truth lives in `frontend/src/ui/terminal-dock.ts` (`DockKind`, the Chat tab, the shell and Claude Code tabs) and `frontend/src/styles/terminal.css` (`.ft-dock`, one dock under the page, resized by its grip). It will change in a later session; update `DOCK` with it.
+- `.github/workflows/ci.yml` · the lint job installs `backend/requirements.txt` before `./formtools agents check`, because the manifest is read from the engine code. The agents script itself still needs nothing but the standard library; it asks the backend venv to read the registry.
+- Counts today: 35 tools, 22 read-only, 13 approval-gated, 2 skills (1 sub-skill each).
+
 ## 2026-11-18 · Unreleased · the engine bundle carries keyring
 
 - `setup/freeze_backend`, `setup/freeze_backend.bat` · `--collect-submodules keyring --copy-metadata keyring` so the frozen engine can find a system keychain backend (the seal on the outside agents choice). keyring is imported lazily by the engine; if the frozen build cannot load a backend the engine still starts and reports the seal as unavailable. Not frozen here: no PyInstaller run on this machine for this change.

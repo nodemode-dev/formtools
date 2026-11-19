@@ -2,6 +2,11 @@
 
 Decisions, reasons and anything left out, newest first. Code carries no comments; the context lives here.
 
+## Unreleased (2026-11-18): the agent manifest reads the gate
+
+- app/services/consent.py :: `gated`, `check(tool, inapp)` · The gate decides for itself whether a tool waits: `gated` is `not tool.read_only`, and `dispatch` now hands every tool to `check`, which returns at once for a read-only tool or an in-app tab. `agents/manifest.json` takes `approval_gated` from `gated`, so the manifest and the gate cannot disagree: 13 tools wait for the person (the 5 that add files and the 8 that can alter them), 22 are read-only.
+- tests/test_agent_manifest.py · the committed manifest is what `setup/agents.py` would write, a drifted manifest makes `check` name `agents/manifest.json`, and the manifest equals what `tools/list` answers. The tool order in a running engine depends on which package imported first, so the test compares sorted names; the manifest itself is written from a fresh start of `app.main`, the same order the engine has.
+
 ## Unreleased (2026-11-18): outside agents ask first
 
 - app/services/consent.py :: `state`, `access`, `set_access`, `pending`, `answer`, `check` · The stored choice `agentAccess` (ask, allowed, blocked; absent reads as ask) lives in `<data>/settings.json`, written through a temp file and `os.replace`. `check` runs in `routers/mcp.py :: dispatch` before every `tools/call` whose tool is not `read_only` (`McpTool.read_only`, the same declaration that sends `readOnlyHint`), so `/mcp`, the command line and the stdio bridge, which all end at `/mcp`, meet it. Blocked refuses; Allowed runs; Ask refuses at once when no window is attached to `/api/live`, otherwise queues a request, tells the window over that socket (`{"t": "ask"}`, `{"t": "answered"}`, sent with `anyio.from_thread.run(bridge.notify, ...)` from the worker thread) and waits up to `WAIT` (120 s) in half-second slices; a window that disconnects mid-wait ends it at once with the no-window sentence, and a wait that runs out refuses with the timed-out sentence. A call that carries a live in-app tab token (`agents.is_inapp`) is not asked: those tabs have their own prompts and are the person's own agent.

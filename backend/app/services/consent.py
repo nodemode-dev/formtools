@@ -44,6 +44,10 @@ def _write(values: dict) -> None:
     os.replace(temp, path)
 
 
+def gated(tool) -> bool:
+    return not tool.read_only
+
+
 def state() -> dict:
     effective = seal.effective(_read())
     value = effective.get("agentAccess")
@@ -100,8 +104,8 @@ def answer(request_id: str, choice: str) -> dict:
     return {"ok": True, "access": access(), "kept": kept}
 
 
-def check(tool: str, title: str, effect: str, inapp: bool) -> str | None:
-    if inapp:
+def check(tool, inapp: bool) -> str | None:
+    if inapp or not gated(tool):
         return None
     mode = access()
     if mode == "allowed":
@@ -110,7 +114,7 @@ def check(tool: str, title: str, effect: str, inapp: bool) -> str | None:
         return BLOCKED
     if not bridge.connected():
         return NO_WINDOW
-    item = {"id": secrets.token_urlsafe(12), "tool": tool, "title": title, "effect": effect, "at": time.time(), "answer": None, "done": threading.Event()}
+    item = {"id": secrets.token_urlsafe(12), "tool": tool.name, "title": tool.description, "effect": tool.effect, "at": time.time(), "answer": None, "done": threading.Event()}
     with _lock:
         _pending[item["id"]] = item
     _tell("ask")

@@ -49,6 +49,8 @@ jobs:
         working-directory: frontend
       - name: Byte-compile the engine and the setup scripts
         run: python -m compileall -q backend setup
+      - name: Engine dependencies, for the agent manifest
+        run: pip install -r backend/requirements.txt
       - name: Agents kit
         run: ./formtools agents check
       - name: Claude Desktop extension manifest
