@@ -181,8 +181,15 @@ const post = <T>(path: string, body: unknown, method = 'POST'): Promise<T> => re
 const qs = (params: Record<string, string | number>): string =>
   Object.entries(params).map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`).join('&');
 
+export type AgentAccess = 'ask' | 'allowed' | 'blocked';
+export interface AgentRequest { id: string; tool: string; title: string; effect: 'reads' | 'adds' | 'alters'; at: number }
+export interface AgentState { access: AgentAccess; seal: 'ok' | 'unsealed' | 'unavailable' | 'broken'; sealBroken: boolean; notice: string; requests: AgentRequest[] }
+
 export const api = {
   health: () => request<{ ok: boolean; app: string; version: string }>('/api/health'),
+  agentState: () => request<AgentState>('/api/agents/requests'),
+  agentSetAccess: (access: AgentAccess) => post<{ access: AgentAccess }>('/api/agents/access', { access }, 'PUT'),
+  agentAnswer: (id: string, answer: 'deny' | 'once' | 'always') => post<{ access: AgentAccess; kept: boolean }>(`/api/agents/requests/${encodeURIComponent(id)}`, { answer }),
   capabilities: () => request<Capabilities>('/api/capabilities'),
   home: () => request<Home>('/api/fs/home'),
   list: (path: string, hidden = false) => request<Listing>(`/api/fs/list?${qs({ path, hidden: hidden ? 1 : 0 })}`),

@@ -1,5 +1,10 @@
 # setup HASHOUT_LOG
 
+## 2026-11-18 · Unreleased · the engine bundle carries keyring
+
+- `setup/freeze_backend`, `setup/freeze_backend.bat` · `--collect-submodules keyring --copy-metadata keyring` so the frozen engine can find a system keychain backend (the seal on the outside agents choice). keyring is imported lazily by the engine; if the frozen build cannot load a backend the engine still starts and reports the seal as unavailable. Not frozen here: no PyInstaller run on this machine for this change.
+- `setup/cli.py`, `setup/mcp_stdio.py` unchanged: both already end at `/mcp`, so they follow the stored outside agents choice and cannot change it. With no window open under Ask a write command prints `formtools: <the refusal sentence>` and exits 1.
+
 ## 2026-11-19 · Unreleased · the command line and the recorder after the window key
 
 - `setup/cli.py` :: `tool` · `info`, `list`, `convert`, `resize` and `rename` now call the MCP tools (`image_info`, `fs_list`, `batch_run`, `rename_plan`, `rename_apply`) through `/mcp`, as an outside agent does, because the engine's write routes now answer only the window. It holds no key and cannot ask for one. Reads that stay GET (preset list, job polling) are unchanged. Ctrl+C while waiting for a job no longer cancels it (there is no MCP tool to cancel a job); it stops waiting and prints the job id.

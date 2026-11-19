@@ -8,7 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from app.core import config, errors, registry, runtime
 from app.core.guard import HostGuard
 from app.core.window_key import WindowKeyGuard
-from app.routers import claude_code, fs, jobs, live, mcp, system, terminal
+from app.routers import agents as agents_router, claude_code, fs, jobs, live, mcp, system, terminal
 from app.services import agents, claude_code as claude_service, terminal as terminal_service
 
 log = logging.getLogger("formtools")
@@ -38,6 +38,7 @@ def build() -> FastAPI:
     app.include_router(fs.router)
     app.include_router(mcp.router)
     app.include_router(live.router)
+    app.include_router(agents_router.router)
     app.include_router(terminal.router)
     app.include_router(claude_code.router)
     app.include_router(claude_code.window_router)

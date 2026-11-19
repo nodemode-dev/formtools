@@ -90,6 +90,8 @@ Desktop utilities: colour picker · screen ruler · text extractor · zoom and d
 
 35 MCP tools, one engine; the window, the CLI and the MCP server call the same code.
 
+**Outside agents ask first.** A program outside formtools, whether an AI agent, the command line or a stdio bridge, is asked about in the formtools window before any tool that is not read-only runs. Settings, Integration, Outside agents is Ask each time (the default), Allowed or Blocked. Under Ask the window shows Deny, Allow once and Always allow, and a call nobody answers within two minutes is refused. Reading always works. Only the window can change the choice; it is sealed with a key in the system keychain, and a choice changed outside the app turns back into Ask, which the app says once. With no system keychain Allowed is not kept and formtools asks each time. The Claude Code and Chat tabs inside formtools are not asked.
+
 ```sh
 ./formtools cli convert --format webp --out ~/Pictures/web ~/Pictures/trip   # batch convert
 ./formtools cli resize --longest 2048 ~/Pictures/trip                        # resize

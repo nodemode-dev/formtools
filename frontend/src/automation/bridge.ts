@@ -21,7 +21,7 @@ async function runOne(commands: Commands, id: string, params: Record<string, unk
   return await out.result;
 }
 
-export function connectBridge(commands: Commands): void {
+export function connectBridge(commands: Commands, onConsent: () => void = () => undefined): void {
   let delay = 500;
   const open = (): void => {
     const proto = location.protocol === 'https:' ? 'wss' : 'ws';
@@ -30,10 +30,12 @@ export function connectBridge(commands: Commands): void {
       ws.send(JSON.stringify({ t: 'hello', key: windowKey() }));
       delay = 500;
       void mirrorCatalogue(commands).catch(() => undefined);
+      onConsent();
     };
     ws.onmessage = async (ev) => {
       let msg: { t?: string; id?: string; command?: string; params?: Record<string, unknown> };
       try { msg = JSON.parse(String(ev.data)); } catch { return; }
+      if (msg.t === 'ask' || msg.t === 'answered') { onConsent(); return; }
       if (msg.t !== 'run' || !msg.id || !msg.command) return;
       try {
         const result = await asAgent(() => runOne(commands, msg.command!, msg.params ?? {}));

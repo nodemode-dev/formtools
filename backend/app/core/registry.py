@@ -38,6 +38,10 @@ class McpTool:
             raise ValueError(f"tool {self.name} must declare its effect as one of {', '.join(EFFECTS)}")
 
     @property
+    def read_only(self) -> bool:
+        return self.effect == READS
+
+    @property
     def pre_approved(self) -> bool:
         return self.effect != ALTERS
 

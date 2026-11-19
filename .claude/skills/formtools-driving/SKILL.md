@@ -37,6 +37,7 @@ formtools runs on this computer as an engine with a window. Its MCP server, name
 
 - Nothing deletes permanently. `trash_files` moves to the system trash and refuses drive roots and the home folder. Show the person the list and get a yes before calling it.
 - `tools/list` marks each tool: `readOnlyHint` for tools that only read, and `destructiveHint` for tools that can delete, move or overwrite files. In a Claude Code tab opened by formtools the destructive ones ask in Claude Code's own prompt; the Chat tab asks for every call.
+- You are an outside agent. Every tool that is not read-only waits for the person in the formtools window (Deny, Allow once, Always allow, up to two minutes) unless they chose Allowed in Settings, Integration, Outside agents. A refusal says why and where to change it; tell the person and stop, do not retry. With no window open under Ask, those tools are refused at once. You cannot change the choice.
 - New files never replace old ones: extraction, conversion, templates and edits add " (2)" and so on.
 - Extraction refuses parent and absolute paths, skips links and stops on archives that expand too far; say so when it reports skipped members.
 - Formats the window cannot show (RAW, PSD, EXR, HDR, TIFF, OFF) are handled by the engine. Unsupported formats come back as a 415 error with a plain sentence.

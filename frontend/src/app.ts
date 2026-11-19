@@ -17,6 +17,7 @@ import { SettingsDialog } from './ui/settings';
 import { Palette } from './ui/palette';
 import { Jobs } from './ui/jobs';
 import { SaveDialog } from './ui/save-dialog';
+import { ConsentDialog, refreshAgentState } from './ui/agent-access';
 import { ToolsPage, type ToolId } from './ui/tools/page';
 import { UtilitiesPage, type UtilId } from './ui/utilities/page';
 import './ui/desk/icons';
@@ -82,7 +83,8 @@ export function startApp(): void {
   const palette = new Palette(commands);
   const jobs = new Jobs();
   const saveDialog = new SaveDialog();
-  overlay.append(settings.root, palette.root, jobs.panel, saveDialog.root);
+  const consent = new ConsentDialog();
+  overlay.append(settings.root, palette.root, jobs.panel, saveDialog.root, consent.root);
   status.mount(jobs.button);
 
   let page: Page = 'home';
@@ -304,7 +306,7 @@ export function startApp(): void {
     const cmd = (e.target instanceof Element ? e.target.closest<HTMLElement>('[data-cmd]') : null)?.dataset.cmd;
     if (cmd) commands.run(cmd);
   });
-  connectBridge(commands);
+  connectBridge(commands, () => void refreshAgentState());
 
   const dropTarget = (paths: string[]): void => { if (paths.length) void openPath(paths[0]); };
   if (inDesktop()) {

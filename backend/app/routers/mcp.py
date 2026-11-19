@@ -9,7 +9,7 @@ from fastapi.responses import JSONResponse
 from app.core import config, registry
 from app.core.errors import ApiError
 from app.routers import fs
-from app.services import agents, bridge
+from app.services import agents, bridge, consent
 
 router = APIRouter()
 
@@ -136,6 +136,9 @@ def dispatch(message: Any, token: str | None = None) -> dict | None:
         match = next((item for item in all_tools() if item.name == name), None)
         if match is None:
             return rpc_error(request_id, -32602, f"unknown tool {name}")
+        refusal = None if match.read_only else consent.check(match.name, match.description, match.effect, agents.is_inapp(token))
+        if refusal:
+            return {"jsonrpc": "2.0", "id": request_id, "result": text_result(refusal, True)}
         try:
             outcome = text_result(match.handler(arguments if isinstance(arguments, dict) else {}))
         except ApiError as exc:
