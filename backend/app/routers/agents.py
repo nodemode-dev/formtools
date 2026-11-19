@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request
 from pydantic import BaseModel
 
 from app.core import window_key
-from app.services import consent
+from app.services import agent_programs, consent
 
 router = APIRouter(prefix="/api/agents", tags=["agents"])
 
@@ -19,6 +19,12 @@ class Answer(BaseModel):
 def list_requests(request: Request) -> dict:
     window_key.require(request)
     return {**consent.state(), "requests": consent.pending()}
+
+
+@router.get("/status")
+def agent_status(request: Request, fresh: bool = False) -> dict:
+    window_key.require(request)
+    return agent_programs.programs(fresh)
 
 
 @router.put("/access")

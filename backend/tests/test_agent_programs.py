@@ -88,3 +88,55 @@ def test_the_port_reaches_the_tab(client, stand_ins):
         assert terminal.get(tab["id"]).env["FORMTOOLS_MCP_URL"] == f"http://127.0.0.1:{PORT}/mcp"
     finally:
         client.delete(f"/api/terminal/{tab['id']}")
+
+
+ANSWERS = {
+    "claude": 'case "$*" in "--version") echo "9.8.7 (Claude Code)";; "auth status") echo \'{"loggedIn": true}\';; esac',
+    "codex": 'case "$*" in "--version") echo "codex-cli 0.55.1";; "login status") echo "Not logged in"; exit 1;; esac',
+    "cursor-agent": 'case "$*" in "--version") echo "2026.11.02-abc123";; "status") echo "Logged in as someone@example.com";; esac',
+}
+
+
+@pytest.fixture
+def answering(tmp_path, monkeypatch):
+    from app.services import agent_programs, claude_code
+
+    folder = tmp_path / "answering"
+    folder.mkdir()
+    for name, body in ANSWERS.items():
+        script = folder / name
+        script.write_text(f"#!/bin/sh\n{body}\n", encoding="utf-8")
+        script.chmod(script.stat().st_mode | stat.S_IXUSR)
+    monkeypatch.setenv("PATH", str(folder) + os.pathsep + os.environ.get("PATH", ""))
+    monkeypatch.setenv("FORMTOOLS_CLAUDE_BIN", str(folder / "claude"))
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("CLAUDE_CODE_OAUTH_TOKEN", raising=False)
+    monkeypatch.setitem(agent_programs._cache, "value", None)
+    monkeypatch.setitem(claude_code._cache, "value", None)
+    return folder
+
+
+@pytest.mark.skipif(os.name == "nt", reason="the stand-in programs are shell scripts")
+def test_one_call_reports_the_three_programs_with_version_and_sign_in(client, answering):
+    found = client.get("/api/agents/status", params={"fresh": "true"}).json()
+    assert set(found) == {"claude", "codex", "cursor"}
+    assert (found["claude"]["installed"], found["claude"]["version"], found["claude"]["signedIn"]) == (True, "9.8.7", True)
+    assert (found["codex"]["installed"], found["codex"]["version"], found["codex"]["signedIn"]) == (True, "0.55.1", False)
+    assert (found["cursor"]["installed"], found["cursor"]["version"], found["cursor"]["signedIn"]) == (True, "2026.11.02-abc123", True)
+    assert all(found[kind]["install"] and found[kind]["title"] for kind in found)
+
+
+def test_one_call_reports_missing_programs_with_their_install_lines(client, no_programs, monkeypatch):
+    from app.services import agent_programs, claude_code
+
+    monkeypatch.setattr(claude_code, "cli", lambda: None)
+    monkeypatch.setitem(agent_programs._cache, "value", None)
+    monkeypatch.setitem(claude_code._cache, "value", None)
+    found = client.get("/api/agents/status", params={"fresh": "true"}).json()
+    for kind in ("claude", "codex", "cursor"):
+        assert found[kind]["installed"] is False and found[kind]["version"] is None and found[kind]["signedIn"] is None
+        assert found[kind]["install"]
+
+
+def test_the_status_call_needs_the_window_key(bare):
+    assert bare.get("/api/agents/status").status_code == 403

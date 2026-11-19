@@ -2,11 +2,15 @@ import os
 import shlex
 import shutil
 import subprocess
+import time
+from concurrent.futures import ThreadPoolExecutor
 
 from app.services import agents, claude_code, terminal
 
 TOKEN_VAR = "FORMTOOLS_INAPP_TOKEN"
 CONFIG_VAR = "FORMTOOLS_MCP_CONFIG"
+SIGN_IN = {"codex": ["login", "status"], "cursor": ["status"]}
+_cache: dict = {"at": 0.0, "value": None}
 PROGRAMS = {
     "codex": {"bin": "codex", "title": "Codex", "install": "npm install -g @openai/codex"},
     "cursor": {"bin": "cursor-agent", "title": "Cursor", "install": "curl https://cursor.com/install -fsS | bash"},
@@ -33,6 +37,50 @@ def status() -> dict:
         path = find(kind)
         out[kind] = {"installed": path is not None, "path": path, "version": None, "signedIn": None, "install": "" if path else p["install"], "title": p["title"]}
     return out
+
+
+def _ask(path: str, args: list[str]) -> subprocess.CompletedProcess | None:
+    try:
+        return subprocess.run([path, *args], capture_output=True, text=True, timeout=10, env=claude_code.child_env(), stdin=subprocess.DEVNULL)
+    except (OSError, subprocess.SubprocessError):
+        return None
+
+
+def _version(path: str) -> str | None:
+    out = _ask(path, ["--version"])
+    words = out.stdout.split() if out is not None and out.returncode == 0 else []
+    return next((word for word in words if word[:1].isdigit()), None)
+
+
+def _signed_in(path: str, kind: str) -> bool | None:
+    out = _ask(path, SIGN_IN[kind])
+    said = (out.stdout + out.stderr).lower() if out is not None else ""
+    if "not logged in" in said or "not authenticated" in said:
+        return False
+    if out is not None and out.returncode == 0 and ("logged in" in said or "authenticated" in said):
+        return True
+    return None
+
+
+def _describe(kind: str) -> dict:
+    p = PROGRAMS[kind]
+    path = find(kind)
+    found = {"installed": path is not None, "path": path, "version": None, "signedIn": None, "install": p["install"], "title": p["title"]}
+    if path is not None:
+        found["version"] = _version(path)
+        found["signedIn"] = _signed_in(path, kind)
+    return found
+
+
+def programs(fresh: bool = False) -> dict:
+    if not fresh and _cache["value"] is not None and time.time() - _cache["at"] < 60:
+        return _cache["value"]
+    with ThreadPoolExecutor(max_workers=len(PROGRAMS) + 1) as pool:
+        claude = pool.submit(claude_code.info, fresh)
+        others = {kind: pool.submit(_describe, kind) for kind in PROGRAMS}
+        value = {"claude": claude.result() | {"title": "Claude Code"}} | {kind: job.result() for kind, job in others.items()}
+    _cache["value"], _cache["at"] = value, time.time()
+    return value
 
 
 def open_terminal(kind: str, port: int, cols: int = 100, rows: int = 30) -> dict:

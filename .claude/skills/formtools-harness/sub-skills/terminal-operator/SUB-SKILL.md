@@ -20,7 +20,7 @@ formtools has a terminal dock with shell, Claude Code and Chat tabs, ported from
 | `backend/app/main.py` | Binds the event loop for the PTY pumps at start; stops the Chat and closes every terminal at shutdown |
 | `frontend/src/dock/` | The family's shared dock module (tabs, Chat, side switch, More agents), copied whole from FormVis; never edited here, `./formtools agents check` fails when a file differs from its `MANIFEST.json` |
 | `frontend/src/dock-adapter.ts`, `styles/dock-tokens.css`, `io/api.ts` | What the module knows about formtools: the routes above, the window key, host classes, storage key `formtools.dock`, and the `--dock-*` token map |
-| `backend/app/services/agent_programs.py` | Codex and Cursor tabs (`POST /api/terminal/agent`) when `codex` or `cursor-agent` is found, each with its own in-app token in the child's environment |
+| `backend/app/services/agent_programs.py` | Codex and Cursor tabs (`POST /api/terminal/agent`) when `codex` or `cursor-agent` is found, each with its own in-app token in the child's environment. `programs` answers `GET /api/agents/status`: Claude Code, Codex and Cursor in one call, each with installed, version, signed in (true, false, or null when the program does not say) and its install line; it runs the programs' own version and sign-in commands, is kept for a minute, and is never called by the engine itself. Under Blocked a tab's token is refused like any other caller |
 
 ## Rules for terminal and process code
 
