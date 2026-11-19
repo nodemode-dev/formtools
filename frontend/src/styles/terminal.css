@@ -8,7 +8,5 @@
 :root[data-ft-dock-side="right"] .cv-app > .ft-dock { grid-area: 2 / 2; }
 :root[data-ft-dock-side="right"] .cv-app > .cv-status { grid-area: 4 / 1 / 5 / -1; }
 
-:root .ft-dock-stage { padding: 0; }
-:root .ft-term { position: absolute; inset: 6px 4px 0 10px; height: auto; }
 :root .ft-chat-tool { border-color: var(--line-1); }
 :root .ft-chat-ask-sum { color: var(--text-secondary); }

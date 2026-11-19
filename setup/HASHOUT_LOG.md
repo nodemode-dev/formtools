@@ -1,5 +1,9 @@
 # setup HASHOUT_LOG
 
+## 2026-11-19 · Unreleased · the shared dock is module 2.1.0
+
+- `setup/agents.py` :: `DOCK_VERSION` · `2.1.0`, was `2.0.1`. The check is unchanged and passes against the new `MANIFEST.json` (fifteen files, the same names). `agents sync` has nothing to write: the adapter offers the same five tabs and two positions.
+
 ## 2026-11-19 · Unreleased · the shared dock is module 2.0.1
 
 - `setup/agents.py` :: `DOCK_VERSION` · `2.0.1`, was `1.0.0-stage1`. The check itself is unchanged: it reads the file names and hashes from `frontend/src/dock/MANIFEST.json`, hashes every file in the folder and names any that differs, is missing or is extra; the folder now holds fifteen files, `CONTRACT.md` among them, and the manifest lists that one too. `DOCK` (the manifest's dock block) is unchanged, because the adapter offers the same five tabs and the same two positions, so `agents sync` left `agents/manifest.json` as it was.

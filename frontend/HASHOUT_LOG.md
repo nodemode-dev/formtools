@@ -2,6 +2,14 @@
 
 Context for the frontend code, kept here instead of in comments.
 
+## Unreleased · 2026-11-19 · the family dock, module 2.1.0
+
+- `src/dock/` · Module 2.1.0, copied whole from FormVis at 8bbdf61b (the same fifteen file names; eleven changed: `CONTRACT.md`, `MANIFEST.json`, `adapter.ts`, `chat.ts`, `consent.ts`, `dock.css`, `dock.ts`, `keys.ts`, `placement.ts`, `state.ts`, `tour.ts`), byte for byte, never edited here. The open problem of the 2.0.1 entry below is closed by the module: `placement.ts` no longer holds a field that is written and never read, so `tsc --noEmit` under this app's `noUnusedLocals` is clean and `npm run build` gets past its type check. Nothing here had been bent around that error (no flag dropped, no exclude), so there was nothing of ours to remove for it.
+- `src/dock-adapter.ts` :: `formtoolsDock` · `placement.storage.legacy` is `jsonLegacy(['formtools.terminal'], true)`, imported from `./dock/state`. Removed: `legacy: ['formtools.terminal']`. The plain list moved the old layout but left it without `seen`, so a person who had used the dock for months got the first-run guide on the next open. The module's reader with `true` writes `seen: true` into `formtools.dock` when it moves `formtools.terminal`, and the guide stays away; a person with neither key still gets it once.
+- `src/styles/terminal.css` · Removed, quoted whole: `:root .ft-dock-stage { padding: 0; }` and `:root .ft-term { position: absolute; inset: 6px 4px 0 10px; height: auto; }`. They reached into the module to inset the terminal. `src/styles/dock-tokens.css` now says the same with the module's token, `--dock-stage-pad: 6px 4px 0 10px;`. The terminal's box is where it was (10, 613, 1426 by 219 at 1440 by 900 with the dock 300 high); Chat is absolutely placed over the whole stage by the module, so the padding does not move it.
+- Kept, and still reaching into the module because 2.1.0 has no token for them and neither class is in `DOCK_PUBLIC`: `:root .ft-chat-tool { border-color: var(--line-1); }` and `:root .ft-chat-ask-sum { color: var(--text-secondary); }`. Deleting them would turn the chips' border to `--line-0` and the ask summary to `--text-muted`. The owner decides: accept that change, or ask the module for `--dock-chip-border` and `--dock-ask-text`.
+- Not used, because formtools has no such code: `chat.ask` and the pane callbacks (the app has no Chat pane of its own; the module's Chat and its ask line are used as they are), `dock.keeps` (no capture-phase listener of the app asks whether an event belongs to the dock), `dock.sendChat` (never called here).
+
 ## Unreleased · 2026-11-19 · the family dock, module 2.0.1
 
 - `src/dock/` · Module 2.0.1, copied whole from FormVis at 1ee307fc (fifteen files: the nine of 1.0.0-stage1 plus `CONTRACT.md`, `consent.ts`, `keys.ts`, `placement.ts`, `terminal.ts`, `tour.ts`), byte for byte against its `MANIFEST.json`, never edited here.

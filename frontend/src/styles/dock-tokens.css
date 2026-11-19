@@ -36,6 +36,7 @@
   --dock-tab-text: var(--text-muted);
   --dock-chat-bar-h: 30px;
   --dock-ctl-h: 24px;
+  --dock-stage-pad: 6px 4px 0 10px;
   --dock-fs-md: var(--fs-14);
   --dock-scrim: var(--bg-scrim);
   --dock-outline: var(--line-3);

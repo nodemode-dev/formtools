@@ -1,4 +1,5 @@
 import type { ConsentChoice, ConsentRequest, DockAdapter, DockAgentStatus, DockChannel, DockChatEvent, DockProgramStatus, DockTerminal, StoredChoice, StoredChoiceState } from './dock/adapter';
+import { jsonLegacy } from './dock/state';
 import { api, ApiError, socketTo, type AgentRequest } from './io/api';
 import { keyed, windowKey } from './io/window-key';
 import { refreshAgentState } from './ui/agent-access';
@@ -119,7 +120,7 @@ export function formtoolsDock(openSettings: () => void): DockAdapter {
     },
     placement: {
       mode: 'own',
-      storage: { key: 'formtools.dock', legacy: ['formtools.terminal'] },
+      storage: { key: 'formtools.dock', legacy: jsonLegacy(['formtools.terminal'], true) },
       sizes: { minHeight: 120, maxHeightShare: 0.7, defaultHeight: 280, minWidth: 320, maxWidthShare: 0.6, defaultWidth: 440 },
     },
     isDockChord: (e) => platformMod(e) && !e.shiftKey && !e.altKey,

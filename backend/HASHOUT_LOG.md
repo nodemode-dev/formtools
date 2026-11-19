@@ -2,6 +2,11 @@
 
 Decisions, reasons and anything left out, newest first. Code carries no comments; the context lives here.
 
+## Unreleased (2026-11-19): the dock tests expect module 2.1.0
+
+- `tests/test_dock_manifest.py` :: `test_the_shared_dock_files_match_their_manifest` expects version `2.1.0` (was `2.0.1`).
+- `tests/test_dock_manifest.py` :: `test_the_old_dock_key_is_moved_once_into_the_new_one` reads the adapter's new line, `legacy: jsonLegacy(['formtools.terminal'], true)` (was `legacy: ['formtools.terminal']`), moves the old key through the module's `jsonLegacy` reader in place of the plain list, and now also asserts that the moved state carries `seen: true`, that `readSeen` says true for it and false for an empty store. Changed after the behaviour was seen in a browser: with only `formtools.terminal` stored, the guide did not start; with nothing stored, it did. No engine code changed.
+
 ## Unreleased (2026-11-19): a tab's MCP entry is named formtools_tab
 
 - app/services/agents.py :: `SERVER` · The MCP entry the engine writes into a tab's 0600 config file (Claude Code, Codex, Cursor tabs and the Chat) is now `formtools_tab`, was `formtools`. The entry an outside agent sets up for itself (`./formtools agents install`, the `.mcp.json` files) keeps the name `formtools`, so the two can no longer be mistaken for each other in a client that has both. The tab's tool names follow (`mcp__formtools_tab__fs_list`): the pre-approved list given to Claude Code and the Chat's Blocked check are both built from `agents.SERVER` (routers/mcp.py :: `pre_approved_names`, `refused_inside`), so nothing else changed. Removed text: `SERVER = "formtools"`.
