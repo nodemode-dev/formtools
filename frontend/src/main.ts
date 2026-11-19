@@ -1,3 +1,4 @@
 import { startApp } from './app';
+import { loadWindowKey } from './io/window-key';
 
-startApp();
+void loadWindowKey().then(startApp);

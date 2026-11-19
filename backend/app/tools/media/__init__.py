@@ -1,6 +1,6 @@
 from app.core import registry
 from app.core.filetypes import AUDIO, VIDEO
-from app.core.registry import McpTool, Tool
+from app.core.registry import ADDS, READS, McpTool, Tool
 from app.tools.media import copy, exe, fetch, preview, probe
 from app.tools.media.router import router
 
@@ -56,9 +56,9 @@ registry.register(
         routers=(router,),
         formats=formats,
         mcp=(
-            McpTool("media_info", "Read the container, streams, chapters and playability of a video or audio file with ffprobe.", INFO_SCHEMA, media_info_tool),
-            McpTool("media_copy", "Start a stream-copy job (remux, trim or extract-audio) that writes a new file beside the source without re-encoding. Returns the job; poll it with job_status.", COPY_SCHEMA, media_copy_tool),
-            McpTool("media_snapshot", "Save the frame at a time as a full-resolution PNG beside the video.", SNAPSHOT_SCHEMA, media_snapshot_tool),
+            McpTool("media_info", "Read the container, streams, chapters and playability of a video or audio file with ffprobe.", INFO_SCHEMA, media_info_tool, effect=READS),
+            McpTool("media_copy", "Start a stream-copy job (remux, trim or extract-audio) that writes a new file beside the source without re-encoding. Returns the job; poll it with job_status.", COPY_SCHEMA, media_copy_tool, effect=ADDS),
+            McpTool("media_snapshot", "Save the frame at a time as a full-resolution PNG beside the video.", SNAPSHOT_SCHEMA, media_snapshot_tool, effect=ADDS),
         ),
         startup=fetch.start,
         shutdown=exe.kill_all,

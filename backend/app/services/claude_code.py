@@ -10,6 +10,7 @@ import time
 from pathlib import Path
 
 from app.core import config
+from app.routers.mcp import pre_approved_names, refused_inside
 from app.services import agents, terminal
 
 KEEP_ENV = {"CLAUDE_CODE_OAUTH_TOKEN", "CLAUDE_CODE_USE_BEDROCK", "CLAUDE_CODE_USE_VERTEX", "CLAUDE_CONFIG_DIR"}
@@ -25,7 +26,6 @@ TERMINAL_NOTE = ("You are Claude Code running in the terminal dock inside formto
                  "Work on files with the formtools MCP server's tools: fs_list and image_info to look, batch_plan and rename_plan before batch_run and rename_apply, "
                  "and list_commands then run_command for what the window shows. Every change the tools make is on the person's own files, so plan first and say what will change. "
                  "Use the formtools-driving skill when it is available.")
-INAPP_VAR = "FORMTOOLS_INAPP_TOKEN"
 PERMISSION_WAIT = 600
 LOG_KEEP = 3000
 _cache: dict = {"at": 0.0, "value": None}
@@ -110,6 +110,7 @@ class Agent:
         self.streamed: set[str] = set()
         self.message_id = ""
         self.stderr_tail: list[str] = []
+        self.token: str | None = None
 
     def describe(self) -> dict:
         return {"running": self.proc is not None and self.proc.poll() is None, "state": self.state, "mode": self.mode, "session": self.session}
@@ -175,7 +176,10 @@ def _decide(request_id: str, req: dict, gen: int) -> None:
         return _respond(request_id, {"behavior": "deny", "message": "Plan mode is on in formtools: describe the plan and the person will switch modes to carry it out."})
     if name == "AskUserQuestion":
         return _respond(request_id, {"behavior": "deny", "message": "Questions cannot be shown here: ask in your reply instead."})
-    gate = {"event": threading.Event(), "allow": False}
+    blocked = refused_inside(name)
+    if blocked:
+        return _respond(request_id, {"behavior": "deny", "message": blocked})
+    gate ={"event": threading.Event(), "allow": False}
     AGENT.waiting[request_id] = gate
     publish({"type": "permission", "id": request_id, "tool": name, "summary": summary(name, inp)})
     gate["event"].wait(PERMISSION_WAIT)
@@ -254,7 +258,7 @@ def _on_results(message: dict) -> None:
             terminal.agent_write(f"{color}{text.rstrip()}\x1b[0m\n")
 
 
-def _read(proc: subprocess.Popen, gen: int) -> None:
+def _read(proc: subprocess.Popen, gen: int, token: str) -> None:
     for line in proc.stdout:
         if AGENT.gen != gen:
             return
@@ -286,6 +290,7 @@ def _read(proc: subprocess.Popen, gen: int) -> None:
                 text += " Open a terminal, run claude and sign in with /login, then send again."
             publish({"type": "result", "ok": not bad, "text": text if bad else "", "costUsd": ev.get("total_cost_usd")})
             set_state("ready")
+    agents.revoke(token)
     if AGENT.gen != gen:
         return
     tail = " ".join(AGENT.stderr_tail[-3:]).strip()
@@ -302,8 +307,8 @@ def _drain(proc: subprocess.Popen, gen: int) -> None:
         del AGENT.stderr_tail[:-20]
 
 
-def inapp_mcp_config(port: int) -> str:
-    return json.dumps({"mcpServers": {"formtools": {"type": "http", "url": f"http://127.0.0.1:{port}/mcp", "headers": {agents.INAPP_HEADER: "${" + INAPP_VAR + "}"}}}})
+def allowed_tools() -> str:
+    return ",".join(pre_approved_names())
 
 
 def start(mode: str = "ask", fresh: bool = False, port: int = config.BACKEND_PORT) -> dict:
@@ -322,9 +327,11 @@ def start(mode: str = "ask", fresh: bool = False, port: int = config.BACKEND_POR
         with AGENT.lock:
             AGENT.log.clear()
     AGENT.mode = mode
+    token, mcp_file = agents.issue(port)
+    AGENT.token = token
     args = [found["path"], "-p", "--input-format", "stream-json", "--output-format", "stream-json", "--verbose", "--include-partial-messages",
             "--permission-prompt-tool", "stdio", "--permission-mode", MODES[mode], "--append-system-prompt", NOTE,
-            "--mcp-config", inapp_mcp_config(port), "--strict-mcp-config"]
+            "--mcp-config", mcp_file, "--strict-mcp-config"]
     if AGENT.session:
         args += ["--resume", AGENT.session]
     AGENT.gen += 1
@@ -334,12 +341,14 @@ def start(mode: str = "ask", fresh: bool = False, port: int = config.BACKEND_POR
     AGENT.names.clear()
     set_state("starting")
     try:
-        proc = subprocess.Popen(args, cwd=workdir(), env=child_env() | {INAPP_VAR: agents.INAPP_TOKEN}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1)
+        proc = subprocess.Popen(args, cwd=workdir(), env=child_env(), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1)
     except OSError as exc:
+        agents.revoke(token)
+        AGENT.token = None
         set_state("exited")
         raise RuntimeError(f"Claude Code could not start: {exc}")
     AGENT.proc = proc
-    threading.Thread(target=_read, args=(proc, gen), name="claude-read", daemon=True).start()
+    threading.Thread(target=_read, args=(proc, gen, token), name="claude-read", daemon=True).start()
     threading.Thread(target=_drain, args=(proc, gen), name="claude-err", daemon=True).start()
     _write({"type": "control_request", "request_id": "formtools-init", "request": {"subtype": "initialize", "hooks": None}})
     set_state("ready")
@@ -359,6 +368,9 @@ def stop(quiet: bool = False) -> dict:
     proc = AGENT.proc
     AGENT.gen += 1
     AGENT.proc = None
+    if AGENT.token is not None:
+        agents.revoke(AGENT.token)
+        AGENT.token = None
     for gate in list(AGENT.waiting.values()):
         gate["allow"] = False
         gate["event"].set()
@@ -381,12 +393,8 @@ def program() -> str | None:
     return path if path and os.path.isfile(path) and os.access(path, os.X_OK) else None
 
 
-def terminal_env() -> dict:
-    return child_env() | {INAPP_VAR: agents.INAPP_TOKEN}
-
-
-def terminal_argv(path: str, port: int, prompt: str | None, resume: str | None) -> list[str]:
-    cmd = [path, "--mcp-config", inapp_mcp_config(port), "--allowedTools", "mcp__formtools", "--append-system-prompt", TERMINAL_NOTE]
+def terminal_argv(path: str, mcp_file: str, prompt: str | None, resume: str | None) -> list[str]:
+    cmd = [path, "--mcp-config", mcp_file, "--allowedTools", allowed_tools(), "--append-system-prompt", TERMINAL_NOTE]
     if resume:
         cmd += ["--strict-mcp-config", "--resume", resume]
     if prompt:
@@ -407,4 +415,11 @@ def open_terminal(port: int, prompt: str | None = None, resume: str | None = Non
         if path is None:
             raise LookupError(MISSING)
         title = "Claude Code (from Chat)" if resume else "Claude Code"
-        return terminal.open_session(workdir(), cols, rows, title, terminal_argv(path, port, prompt, resume), terminal_env(), "claude").describe()
+        token, mcp_file = agents.issue(port)
+        try:
+            session = terminal.open_session(workdir(), cols, rows, title, terminal_argv(path, mcp_file, prompt, resume), child_env(), "claude")
+        except BaseException:
+            agents.revoke(token)
+            raise
+        session.on_close.append(lambda: agents.revoke(token))
+        return session.describe()

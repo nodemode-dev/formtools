@@ -1,4 +1,5 @@
 import { ApiError, type Job } from './api';
+import { keyed } from './window-key';
 
 export interface DupeFile { path: string; size: number; mtime: number; width?: number; height?: number }
 export interface DupeGroup { key: string; size: number; files: DupeFile[] }
@@ -33,7 +34,7 @@ export const HASH_ALGOS: Array<[string, string]> = [
 ];
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(path, init);
+  const res = await fetch(path, keyed(init));
   const body = await res.json().catch(() => null) as (T & { ok?: boolean; error?: string }) | null;
   if (!res.ok || body === null || body.ok === false) throw new ApiError(body?.error ?? `The engine answered ${res.status}.`, res.status);
   return body;

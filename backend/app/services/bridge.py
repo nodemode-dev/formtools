@@ -28,6 +28,14 @@ def connected() -> bool:
     return bool(_windows)
 
 
+async def notify(message: dict) -> None:
+    for key, ws in list(_windows.items()):
+        try:
+            await ws.send_json(message)
+        except Exception:
+            detach(key)
+
+
 def resolve(message: dict) -> None:
     fut = _pending.get(str(message.get("id", "")))
     if fut and not fut.done():

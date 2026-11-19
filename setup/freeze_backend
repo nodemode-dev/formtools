@@ -72,6 +72,7 @@ PYTHONPATH="$src/backend${PYTHONPATH:+:$PYTHONPATH}" pyinstaller --noconfirm --c
   --collect-submodules fontTools --collect-submodules trimesh --collect-submodules send2trash \
   --hidden-import libarchive --hidden-import zstandard --hidden-import blake3 --hidden-import xxhash --hidden-import psutil --hidden-import brotli \
   --hidden-import ptyprocess \
+  --collect-submodules keyring --copy-metadata keyring \
   ${extra[@]+"${extra[@]}"} \
   "$src/backend/formtools_engine.py"
 out="$FORMTOOLS_ROOT/src-tauri/engine"

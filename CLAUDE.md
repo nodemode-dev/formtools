@@ -1,16 +1,17 @@
 # formtools
 
-The form* family's media and file utility belt: viewers, batch image tools, 3D viewing and conversion, file utilities and desktop utilities, for macOS, Windows and Linux. Planned stack: vanilla TypeScript and Vite frontend, Python and FastAPI engine (frozen one-folder sidecar), Tauri 2 shell, with the UI, theme and boot sequence shared with formvis.
+The form* family's media and file utility belt: viewers, batch image tools, 3D viewing and conversion, file utilities and desktop utilities, for macOS, Windows and Linux. Stack: vanilla TypeScript and Vite frontend, Python and FastAPI engine (frozen one-folder sidecar), Tauri 2 shell, with the UI, theme and boot sequence shared with formvis.
 
 ## Stage
 
-Alpha (v0.8.1): Phases 1 to 9 of the approved plan, with Phase 2b for formvis and the repository side of Phase 10. Run `./formtools agents sync` after changing a skill and `./formtools agents check` before committing. The plan of record (`DEV_PLAN.md`), `BUILD_NOTES.md` and the root `HASHOUT_LOG.md` ship in the planning sidecar zip; read them, then the in-tree logs (`frontend/`, `backend/`, `src-tauri/`, `setup/` `HASHOUT_LOG.md`), before changing anything. For changing the code route through `.claude/skills/formtools-harness`; for using the app through MCP, `.claude/skills/formtools-driving`.
+Alpha (v0.9.0): Phases 1 to 9 of the approved plan, with Phase 2b for formvis and the repository side of Phase 10. Run `./formtools agents sync` after changing a skill and `./formtools agents check` before committing. The plan of record (`DEV_PLAN.md`), `BUILD_NOTES.md` and the root `HASHOUT_LOG.md` ship in the planning sidecar zip; read them, then the in-tree logs (`frontend/`, `backend/`, `src-tauri/`, `setup/` `HASHOUT_LOG.md`), before changing anything. For changing the code route through `.claude/skills/formtools-harness`; for using the app through MCP, `.claude/skills/formtools-driving`.
 
 ## Layout notes
 
 - `docs/encyclopedia/` is research: how other products' features work, paraphrased, with sources on every page. Start at `INDEX.md`; open gaps are in `GAPS.md`. Never paste vendor text, icons or presets into the product; describe outcomes and build them from published methods.
 - `docs/encyclopedia/engines/engine-licensing-matrix.md` is checked before any dependency is added. GPL stays out of the distributed app, AGPL is used nowhere, LGPL is dynamically linked or a separate process and replaceable, MPL files stay unedited. Every dependency gets a `NOTICE.md` row in the same commit that adds it.
 - formtools does not duplicate a sibling app's job: transcoding (formencoder), libraries (formdam, formlit), layered editing (formvis), PDF editing (formpdf), video editing (formcut), audio editing (formwav), sculpting (formsculpt), boards (formref), launching the family (formtray), installing apps (FormPortal). It hands off with "Open in ...".
+- Outside agents ask first. Every MCP tool declares its effect (`reads`, `adds` or `alters`), and a call from a program outside the app to a tool that is not read-only is asked about in the formtools window (Deny, Allow once, Always allow; refused when nobody answers within two minutes). Settings, Integration, Outside agents holds the choice: Ask each time (the default), Allowed or Blocked. Only the window can change it, and it is sealed with a key in the system keychain. `./formtools cli` and `./formtools mcp` are outside agents; the Claude Code, Codex, Cursor and Chat tabs in the dock are not asked, and Blocked stops every agent, those tabs included (reading still works). When you try a tool from a shell, keep a formtools window open and answer there, or choose Allowed in the window first: under Ask each time with no window open, a tool that is not read-only is refused at once. `agents/manifest.json` lists the tools and which of them ask; `./formtools agents sync` writes it.
 
 ## Rules
 

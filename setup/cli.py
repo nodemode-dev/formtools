@@ -36,9 +36,9 @@ def read_version():
         pass
     try:
         with open(os.path.join(ROOT, "frontend", "package.json"), encoding="utf-8") as f:
-            return json.load(f).get("version") or "0.8.1"
+            return json.load(f).get("version") or "0.9.0"
     except (OSError, ValueError):
-        return "0.8.1"
+        return "0.9.0"
 
 
 def get(route, **query):
@@ -66,6 +66,19 @@ def call(method, route, body, **query):
         sys.exit(1)
 
 
+def tool(name, arguments):
+    reply = call("POST", "/mcp", {"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {"name": name, "arguments": arguments, "_meta": {"io.modelcontextprotocol/clientInfo": {"name": "the formtools command line"}}}})
+    if reply.get("error"):
+        print(f"formtools: {reply['error'].get('message')}", file=sys.stderr)
+        sys.exit(1)
+    result = reply.get("result") or {}
+    text = "".join(part.get("text", "") for part in result.get("content", []))
+    if result.get("isError"):
+        print(f"formtools: {text}", file=sys.stderr)
+        sys.exit(1)
+    return json.loads(text)
+
+
 def parser_for(name, text):
     return argparse.ArgumentParser(prog="formtools cli " + name, description=text)
 
@@ -85,8 +98,7 @@ def wait_for(job):
                 seen = mark
                 print(f"{job['done']}/{job['total']} {job['current']}", flush=True)
     except KeyboardInterrupt:
-        call("POST", "/api/jobs/" + job["id"] + "/cancel", {})
-        print("cancelling", file=sys.stderr)
+        print(f"stopped waiting; job {job['id']} keeps running in the engine", file=sys.stderr)
         sys.exit(130)
     result = job.get("result") or {}
     print(f"{job['state']}: {result.get('written', 0)} written, {result.get('skipped', 0)} skipped, {result.get('failed', 0)} failed")
@@ -101,7 +113,7 @@ def wait_for(job):
 
 
 def start_batch(body):
-    job = call("POST", "/api/batch/run", body)
+    job = tool("batch_run", body)
     print(f"job {job['id']}: {job['title']}", flush=True)
     wait_for(job)
 
@@ -185,7 +197,7 @@ def run_rename(rest):
         print("formtools: give --find and or --counter", file=sys.stderr)
         sys.exit(2)
     body = {"paths": absolute_paths(a.paths), "rules": rules}
-    plan = call("POST", "/api/rename/plan", body)["items"]
+    plan = tool("rename_plan", body)["items"]
     for item in plan:
         if not item["changed"]:
             print(f"{item['src']}  (unchanged)")
@@ -195,7 +207,7 @@ def run_rename(rest):
     changed = [item for item in plan if item["changed"]]
     print(f"{len(changed)} of {len(plan)} names change")
     if a.apply:
-        done = call("POST", "/api/rename/apply", body)
+        done = tool("rename_apply", body)
         print(f"renamed {done['renamed']}")
         if done.get("undo"):
             print("undo: " + done["undo"])
@@ -217,9 +229,9 @@ def main():
         except (urllib.error.URLError, OSError, ValueError):
             print("engine not running")
     elif command == "info" and len(rest) == 1:
-        print(json.dumps(get("/api/image/info", path=os.path.abspath(os.path.expanduser(rest[0]))), indent=2, ensure_ascii=False))
+        print(json.dumps(tool("image_info", {"path": os.path.abspath(os.path.expanduser(rest[0]))}), indent=2, ensure_ascii=False))
     elif command == "list" and len(rest) == 1:
-        print(json.dumps(get("/api/fs/list", path=os.path.abspath(os.path.expanduser(rest[0])), hidden="0"), indent=2, ensure_ascii=False))
+        print(json.dumps(tool("fs_list", {"path": os.path.abspath(os.path.expanduser(rest[0])), "hidden": False}), indent=2, ensure_ascii=False))
     elif command == "convert":
         run_convert(rest)
     elif command == "resize":

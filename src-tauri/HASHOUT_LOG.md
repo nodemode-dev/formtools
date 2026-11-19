@@ -1,5 +1,13 @@
 # src-tauri HASHOUT_LOG
 
+## 2026-11-19 · Unreleased · a window is never opened without the key line
+
+`src/main.rs` :: `read_port`, `KEY_WAIT` · The loop was already bounded by the 60 second `PORT_WAIT`, which covers the engine's start. It returned the port as soon as the address line came, with or without the key, so an engine that never printed the key line (an older engine next to a newer shell) opened a window that could not write. Now the port and the key are both kept; if the address line comes first, a second 10 second timer replaces the first, and when it runs out the loop returns None, which is the existing `engine_failed` path. When both are known the result is returned at once, in whichever order the two lines arrived. Not compiled in the app (no WebKit libraries); `rustfmt` parses the file, and the same function over tokio channels in a scratch program in /tmp gave: key then address, ready at once; address then key, ready when the key came; address only, None after 10.0 s.
+
+## 2026-11-19 · Unreleased · the shell hands the window its key
+
+`src/main.rs` :: `start_engine`, `read_port`, `open_main` · the engine is started with `FORMTOOLS_WINDOW_KEY_STDOUT=1` and prints `formtools-window-key: <key>` on its own line, flushed, before the address line. `read_port` looks for that pattern in the same lines it already reads for the address and returns the port with the key; the engine writes both to standard output, so the key line is always read before the address line, and the existing 60 second timer still ends the wait. `open_main` adds one `initialization_script` that sets `window.__FORMTOOLS_WINDOW_KEY` only when `window.location.origin` equals the engine's own `http://127.0.0.1:<port>`. The method signature was read in tauri 2.12.5, the version in `Cargo.lock` (`pub fn initialization_script(mut self, script: impl Into<String>) -> Self`, main frame only). Development mode (`FORMTOOLS_DEV_URL`) passes no key, and the page uses the bootstrap route. Not compiled here (no WebKit libraries); `rustfmt` parses the file, and the engine side and the page side were run on their own.
+
 ## 2026-11-13 · v0.6.4 · the wait for the engine's port line ends after a minute
 
 `src/main.rs` :: `read_port`, `PORT_WAIT` · a 60 s timer thread sends on an async channel and `std::future::poll_fn` polls the timer and the engine's output lines together; a timeout returns None, which leads to `engine_failed`. Before, an engine that stayed alive without printing its port left the splash up for ever, because no window existed yet to arm the other fallback. No new crate: the tokio that tauri brings has no time feature. Checked with `cargo check` on a scratch copy and a scratch program with the same code; not run in the app.

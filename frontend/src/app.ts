@@ -28,7 +28,8 @@ import { addRecent, loadPrefs } from './ui/prefs';
 import { applyTheme, readChoice, setTheme, THEMES } from './ui/themes';
 import { toast } from './ui/toast';
 import { connectBridge } from './automation/bridge';
-import { TerminalDock } from './ui/terminal-dock';
+import { Dock } from './dock/dock';
+import { formtoolsDock, outsideAgents } from './dock-adapter';
 import { DEMOS, demoCommand, registerDemos } from './demos';
 
 type Page = 'home' | 'browse' | 'view' | 'tool' | 'util' | 'desk';
@@ -61,8 +62,7 @@ export function startApp(): void {
   const area = q(shell, '.ft-stage-area');
   const status = new StatusBar();
   shell.appendChild(status.root);
-  const termDock = new TerminalDock();
-  shell.insertBefore(termDock.root, status.root);
+  const termDock = new Dock(formtoolsDock(() => settings.open('Integration')));
   const dockButtons: Array<[HTMLElement, () => boolean]> = [
     [q(header, '[data-cmd="claude-code"]'), () => termDock.isShowing('claude')],
     [q(header, '[data-cmd="terminal-toggle"]'), () => termDock.isOpen()],
@@ -76,6 +76,7 @@ export function startApp(): void {
   };
   syncDockButtons();
   termDock.onTab = () => { syncDockButtons(); menus?.refresh(); };
+  termDock.mount(shell, status.root);
 
   const commands = new Commands();
   const settings = new SettingsDialog(commands);
@@ -304,7 +305,7 @@ export function startApp(): void {
     const cmd = (e.target instanceof Element ? e.target.closest<HTMLElement>('[data-cmd]') : null)?.dataset.cmd;
     if (cmd) commands.run(cmd);
   });
-  connectBridge(commands);
+  connectBridge(commands, (msg) => outsideAgents.message(msg));
 
   const dropTarget = (paths: string[]): void => { if (paths.length) void openPath(paths[0]); };
   if (inDesktop()) {

@@ -1,12 +1,13 @@
 import asyncio
 import json
+from typing import Literal
 from urllib.parse import urlparse
 
 from fastapi import APIRouter, HTTPException, Request, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel, Field
 
-from app.core import config
-from app.services import claude_code, terminal
+from app.core import config, window_key
+from app.services import agent_programs, claude_code, terminal
 
 router = APIRouter(prefix="/api/terminal", tags=["terminal"])
 
@@ -31,6 +32,7 @@ def origin_ok(origin: str | None, host: str | None) -> bool:
 def require_local(request: Request) -> None:
     if not origin_ok(request.headers.get("origin"), request.headers.get("host")):
         raise HTTPException(status_code=403, detail="Only the formtools window may use the terminals.")
+    window_key.require(request)
 
 
 def take_socket() -> bool:
@@ -50,6 +52,12 @@ class OpenBody(BaseModel):
     cols: int = Field(100, ge=10, le=500)
     rows: int = Field(30, ge=4, le=200)
     title: str | None = Field(None, max_length=60)
+
+
+class AgentBody(BaseModel):
+    kind: Literal["codex", "cursor"]
+    cols: int = Field(100, ge=10, le=500)
+    rows: int = Field(30, ge=4, le=200)
 
 
 class SizeBody(BaseModel):
@@ -103,6 +111,17 @@ def open_claude(body: ClaudeBody, request: Request) -> dict:
         raise HTTPException(status_code=500, detail=f"Claude Code could not start: {exc}")
 
 
+@router.post("/agent")
+def open_agent(body: AgentBody, request: Request) -> dict:
+    require_local(request)
+    try:
+        return agent_programs.open_terminal(body.kind, server_port(request), body.cols, body.rows)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    except OSError as exc:
+        raise HTTPException(status_code=500, detail=f"The program could not start: {exc}")
+
+
 @router.post("/{sid}/resize")
 def resize_terminal(sid: str, body: SizeBody, request: Request) -> dict:
     require_local(request)
@@ -135,10 +154,13 @@ async def attach(ws: WebSocket, sid: str) -> None:
     if not origin_ok(ws.headers.get("origin"), ws.headers.get("host")):
         await ws.close(code=4403)
         return
+    await ws.accept()
+    if not await window_key.socket_is_window(ws, "type", "key"):
+        await ws.close(code=4403)
+        return
     if not take_socket():
         await ws.close(code=4429)
         return
-    await ws.accept()
     try:
         session = terminal.get(sid)
     except KeyError:

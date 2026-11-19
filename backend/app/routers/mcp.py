@@ -9,7 +9,7 @@ from fastapi.responses import JSONResponse
 from app.core import config, registry
 from app.core.errors import ApiError
 from app.routers import fs
-from app.services import agents, bridge
+from app.services import agents, bridge, consent
 
 router = APIRouter()
 
@@ -68,24 +68,27 @@ def do_fs_list(args: dict) -> Any:
 
 def core_tools() -> list[registry.McpTool]:
     return [
-        registry.McpTool("list_commands", "List the commands the formtools window can run.", {"type": "object", "properties": {}}, do_list_commands),
+        registry.McpTool("list_commands", "List the commands the formtools window can run.", {"type": "object", "properties": {}}, do_list_commands, effect=registry.READS),
         registry.McpTool(
             "describe_command",
             "Describe one command and its parameters.",
             {"type": "object", "properties": {"id": {"type": "string"}}, "required": ["id"]},
             do_describe_command,
+            effect=registry.READS,
         ),
         registry.McpTool(
             "run_command",
             "Run a command in the open formtools window.",
             {"type": "object", "properties": {"id": {"type": "string"}, "params": {"type": "object"}}, "required": ["id"]},
             do_run_command,
+            effect=registry.ALTERS,
         ),
         registry.McpTool(
             "fs_list",
             "List a folder: entries with name, path, kind, ext, size, mtime and type.",
             {"type": "object", "properties": {"path": {"type": "string"}, "hidden": {"type": "boolean"}}, "required": ["path"]},
             do_fs_list,
+            effect=registry.READS,
         ),
     ]
 
@@ -94,11 +97,34 @@ def all_tools() -> list[registry.McpTool]:
     return core_tools() + registry.mcp_tools()
 
 
+def pre_approved_names() -> list[str]:
+    return [f"mcp__{agents.SERVER}__{item.name}" for item in all_tools() if item.pre_approved]
+
+
 def rpc_error(request_id: Any, code: int, message: str) -> dict:
     return {"jsonrpc": "2.0", "id": request_id, "error": {"code": code, "message": message}}
 
 
-def dispatch(message: Any, token: str | None = None) -> dict | None:
+def asker(token: str | None, session: str | None, params: Any) -> str:
+    meta = params.get("_meta") if isinstance(params, dict) else None
+    info = meta.get("io.modelcontextprotocol/clientInfo") if isinstance(meta, dict) else None
+    named = agents.caller(token, info)
+    return named if named != agents.UNNAMED else agents.session_name(session) or named
+
+
+def session_headers(body: Any, reply: Any, token: str | None) -> dict:
+    if not isinstance(body, dict) or body.get("method") != "initialize" or not isinstance(reply, dict) or "result" not in reply:
+        return {}
+    params = body.get("params")
+    return {"Mcp-Session-Id": agents.open_session(agents.caller(token, params.get("clientInfo") if isinstance(params, dict) else None))}
+
+
+def refused_inside(name: str) -> str | None:
+    match = next((item for item in all_tools() if f"mcp__{agents.SERVER}__{item.name}" == name), None)
+    return consent.BLOCKED_INSIDE if match is not None and consent.gated(match) and consent.access() == "blocked" else None
+
+
+def dispatch(message: Any, token: str | None = None, session: str | None = None) -> dict | None:
     if not isinstance(message, dict) or message.get("jsonrpc") != "2.0":
         return rpc_error(None, -32600, "invalid request")
     method = message.get("method")
@@ -121,7 +147,7 @@ def dispatch(message: Any, token: str | None = None) -> dict | None:
     if method == "ping":
         return {"jsonrpc": "2.0", "id": request_id, "result": {}}
     if method == "tools/list":
-        listing = [{"name": item.name, "description": item.description, "inputSchema": item.schema} for item in all_tools()]
+        listing = [{"name": item.name, "description": item.description, "inputSchema": item.schema, "annotations": item.annotations()} for item in all_tools()]
         return {"jsonrpc": "2.0", "id": request_id, "result": {"tools": listing}}
     if method == "tools/call":
         name = params.get("name") if isinstance(params, dict) else None
@@ -129,6 +155,9 @@ def dispatch(message: Any, token: str | None = None) -> dict | None:
         match = next((item for item in all_tools() if item.name == name), None)
         if match is None:
             return rpc_error(request_id, -32602, f"unknown tool {name}")
+        refusal = consent.check(match, agents.is_inapp(token), asker(token, session, params), arguments if isinstance(arguments, dict) else None)
+        if refusal:
+            return {"jsonrpc": "2.0", "id": request_id, "result": text_result(refusal, True)}
         try:
             outcome = text_result(match.handler(arguments if isinstance(arguments, dict) else {}))
         except ApiError as exc:
@@ -153,11 +182,12 @@ async def rpc(request: Request) -> Response:
     except ValueError:
         return JSONResponse(rpc_error(None, -32700, "parse error"))
     token = request.headers.get(agents.INAPP_HEADER)
+    session = request.headers.get("mcp-session-id")
     if isinstance(body, list):
-        replies = [reply for reply in await run_in_threadpool(lambda: [dispatch(item, token) for item in body]) if reply is not None]
+        replies = [reply for reply in await run_in_threadpool(lambda: [dispatch(item, token, session) for item in body]) if reply is not None]
         return JSONResponse(replies) if replies else Response(status_code=202)
-    reply = await run_in_threadpool(dispatch, body, token)
-    return JSONResponse(reply) if reply is not None else Response(status_code=202)
+    reply = await run_in_threadpool(dispatch, body, token, session)
+    return JSONResponse(reply, headers=session_headers(body, reply, token)) if reply is not None else Response(status_code=202)
 
 
 @router.get("/api/mcp/status")

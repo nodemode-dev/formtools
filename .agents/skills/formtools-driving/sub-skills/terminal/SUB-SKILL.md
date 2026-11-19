@@ -9,7 +9,7 @@ The formtools window has a terminal dock above the status bar for the person: sh
 
 ## When you are the Claude Code in the dock
 
-A Claude Code tab or the Chat tab started by formtools runs the person's own `claude` with formtools' MCP server already attached (`mcp__formtools`) and works in formtools' `Agent` folder in its data folder. The window's own tab is recognised by a per-run token, so `/api/mcp/status` lists it as "Claude Code in formtools". Use the tools as in the main skill: absolute paths, `fs_list` first, plan before writing.
+A Claude Code tab or the Chat tab started by formtools runs the person's own `claude` with formtools' MCP server already attached under the name `formtools_tab` (its tools are `mcp__formtools_tab__...`; the entry an outside agent sets up is `formtools`) and works in formtools' `Agent` folder in its data folder. The window's own tab is recognised by a per-run token, so `/api/mcp/status` lists it as "Claude Code in formtools". Use the tools as in the main skill: absolute paths, `fs_list` first, plan before writing.
 
 ## What the person may need to run
 
@@ -28,7 +28,7 @@ Inside the formtools repository `.mcp.json`, `.cursor/mcp.json` and `.codex/conf
 ## Reconnect checklist
 
 1. Call `fs_list` on the home folder. If it answers, the connection is fine.
-2. `run_command` says no formtools window is open: ask the person to open formtools; the file tools still work without it.
+2. `run_command` says no formtools window is open: ask the person to open formtools. The tools that only read still work without it; the others need the window open so the person can answer, unless they chose Allowed in Settings, Integration, Outside agents.
 3. No formtools tools at all: the server is not registered in this client. Ask the person to run `./formtools agents install`, then restart the client.
 4. The window did not answer in time: it is busy; wait and retry once.
 

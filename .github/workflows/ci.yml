@@ -49,6 +49,8 @@ jobs:
         working-directory: frontend
       - name: Byte-compile the engine and the setup scripts
         run: python -m compileall -q backend setup
+      - name: Engine dependencies, for the agent manifest
+        run: pip install -r backend/requirements.txt
       - name: Agents kit
         run: ./formtools agents check
       - name: Claude Desktop extension manifest
@@ -79,6 +81,10 @@ jobs:
           for i in $(seq 1 30); do curl -sf "http://127.0.0.1:$FORMTOOLS_PORT/api/health" && break; sleep 1; done
           curl -sf "http://127.0.0.1:$FORMTOOLS_PORT/api/health"
           curl -sf "http://127.0.0.1:$FORMTOOLS_PORT/api/capabilities"
+      - name: Tests
+        run: |
+          pip install pytest httpx
+          python -m pytest -q tests
 
   scripts:
     runs-on: ubuntu-latest

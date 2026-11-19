@@ -6,6 +6,7 @@ import { readChoice, setAccent, setIntensity, setTheme, themeSwatchesHtml, THEME
 import { MENUS_IN_WINDOW_KEY, menusInWindow } from './native-menu';
 import { VERSION } from '../version';
 import { EnginePanels, ShortcutsPanel } from './settings/panels';
+import { OutsideAgentsRow, refreshAgentState } from './agent-access';
 import { buttonRow, colorRow, cols, grp, note, segmentedRow, selectRow, sliderRow, toggleRow, valueRow, type Row } from './settings/rows';
 
 const RAIL_KEY = 'formtools.prefsRailCollapsed';
@@ -52,6 +53,7 @@ export class SettingsDialog {
   private readonly menusRow: Row<boolean>;
   private readonly shortcuts: ShortcutsPanel;
   private readonly engine = new EnginePanels();
+  private readonly agents = new OutsideAgentsRow();
   private readonly resetBtn: HTMLButtonElement;
   private resetTimer = 0;
   private prefs: Prefs = loadPrefs();
@@ -143,6 +145,7 @@ export class SettingsDialog {
 
     this.add('Integration',
       grp('Menus', this.menusRow.el),
+      grp('Outside agents', this.agents.el),
       grp('Open in its app', note('Open in its app hands a file to the Form app that makes it through FormPortal when FormPortal is installed, and to the system\'s default app otherwise.')),
       grp('File manager menu', slot('osmenu')));
 
@@ -451,6 +454,7 @@ export class SettingsDialog {
     for (const fn of this.openers) fn();
     this.shortcuts.refresh();
     void this.engine.refresh();
+    void refreshAgentState();
     this.sync();
     this.lastFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const name = this.resolve(section);

@@ -1,5 +1,43 @@
 # setup HASHOUT_LOG
 
+## 2026-11-19 · Unreleased · the shared dock is module 2.1.0
+
+- `setup/agents.py` :: `DOCK_VERSION` · `2.1.0`, was `2.0.1`. The check is unchanged and passes against the new `MANIFEST.json` (fifteen files, the same names). `agents sync` has nothing to write: the adapter offers the same five tabs and two positions.
+
+## 2026-11-19 · Unreleased · the shared dock is module 2.0.1
+
+- `setup/agents.py` :: `DOCK_VERSION` · `2.0.1`, was `1.0.0-stage1`. The check itself is unchanged: it reads the file names and hashes from `frontend/src/dock/MANIFEST.json`, hashes every file in the folder and names any that differs, is missing or is extra; the folder now holds fifteen files, `CONTRACT.md` among them, and the manifest lists that one too. `DOCK` (the manifest's dock block) is unchanged, because the adapter offers the same five tabs and the same two positions, so `agents sync` left `agents/manifest.json` as it was.
+- `backend/tests/test_dock_manifest.py` · the version in the first test; the isolation test now also reads `import('...')` calls (the module loads its terminal file that way) and still allows only `./` and `@xterm/`; the tab list is read from the adapter's `builtin: [...]`.
+- Ran: `agents sync` (wrote the mirror of one sub-skill, manifest current), `agents check` rc 0, the five tests in `test_dock_manifest.py`.
+
+## 2026-11-19 · Unreleased · the command line says who it is
+
+- `setup/cli.py` :: `tool` · Each `tools/call` the command line makes now carries its name ("the formtools command line") in `_meta` under `io.modelcontextprotocol/clientInfo`, so the question in the window names it instead of "an outside agent". It is still an outside agent and is asked or refused like one. Ran `./formtools cli resize` against an engine on 33901 with a stand-in window: the request's `agent` was that name; with no window it was refused at once as before, and `list` still read.
+
+## 2026-11-19 · Unreleased · the shared dock is checked against its manifest
+
+- `setup/agents.py` :: `dock_problems`, `DOCK_DIR`, `DOCK_VERSION`, `check` · `agents check` (and `agents sync --check`) now also fails when a file in `frontend/src/dock/` does not match the SHA-256 in that folder's `MANIFEST.json`, when a file is added or missing there, or when the manifest is not the dock module `1.0.0-stage1`, naming each file. The folder is FormVis's, copied whole; sync never writes into it (FormVis's own sync writes that manifest because FormVis is the source; here it is only checked). A new module version is a new copy plus a new `DOCK_VERSION`.
+- `DOCK` · now `bottom` and `right`, tabs `chat`, `shell`, `claude`, `codex`, `cursor`: the truth lives in `frontend/src/dock-adapter.ts` (`tabs`) and the module's side switch; `backend/tests/test_dock_manifest.py` compares `DOCK`'s tabs with the adapter's list. The read-only `agent` tab (Claude's commands from Chat) still exists and is still left out, as before this change.
+- Ran: `agents sync` wrote the new dock block; formadaptor's `scripts/manifest.py check agents/manifest.json --app formtools` accepted it; `agents check` rc 0; in a copy outside the tree one byte added to `dock.ts` made `check` rc 1 naming that file.
+
+## 2026-11-18 · Unreleased · agents/manifest.json
+
+- `setup/agents.py` :: `ENGINE_FACTS`, `engine_facts`, `skill_entries`, `manifest_text`, `write_manifest`, `check_manifest`, `DOCK` · `agents sync` now also writes `agents/manifest.json` (format `form-agent-manifest`, version 1, app `formtools`, the file name of the entry in formcompiler `apps/`), and `agents check` (also `agents sync --check`, which changes nothing) fails with `agents/manifest.json is not what ./formtools agents sync writes` when the committed file differs. Every field is read, not typed: a child process imports `app.main` from the backend venv (`backend/venv` when present, else the running Python) with a scratch data folder and lists the tools from `routers/mcp.py :: all_tools`, the read-only ones from the same `readOnlyHint` `tools/list` sends, and the approval-gated ones from `consent.gated`, the gate's own rule (every tool that is not read-only); it refuses to write if a tool package failed to load. Transports: `stdio` because `setup/mcp_stdio.py` exists, `http` because the engine has `POST /mcp`. Skills: the folders of `.claude/skills` with their `sub-skills` that hold a `SUB-SKILL.md`. Extensions: `null`, formtools hosts no form.ext extensions.
+- The dock is the one declared value, `DOCK`: present, position `bottom` only, tabs `chat`, `claude`, `shell`. The truth lives in `frontend/src/ui/terminal-dock.ts` (`DockKind`, the Chat tab, the shell and Claude Code tabs) and `frontend/src/styles/terminal.css` (`.ft-dock`, one dock under the page, resized by its grip). It will change in a later session; update `DOCK` with it.
+- `.github/workflows/ci.yml` · the lint job installs `backend/requirements.txt` before `./formtools agents check`, because the manifest is read from the engine code. The agents script itself still needs nothing but the standard library; it asks the backend venv to read the registry.
+- Counts today: 35 tools, 22 read-only, 13 approval-gated, 2 skills (1 sub-skill each).
+
+## 2026-11-18 · Unreleased · the engine bundle carries keyring
+
+- `setup/freeze_backend`, `setup/freeze_backend.bat` · `--collect-submodules keyring --copy-metadata keyring` so the frozen engine can find a system keychain backend (the seal on the outside agents choice). keyring is imported lazily by the engine; if the frozen build cannot load a backend the engine still starts and reports the seal as unavailable. Not frozen here: no PyInstaller run on this machine for this change.
+- `setup/cli.py`, `setup/mcp_stdio.py` unchanged: both already end at `/mcp`, so they follow the stored outside agents choice and cannot change it. With no window open under Ask a write command prints `formtools: <the refusal sentence>` and exits 1.
+
+## 2026-11-19 · Unreleased · the command line and the recorder after the window key
+
+- `setup/cli.py` :: `tool` · `info`, `list`, `convert`, `resize` and `rename` now call the MCP tools (`image_info`, `fs_list`, `batch_run`, `rename_plan`, `rename_apply`) through `/mcp`, as an outside agent does, because the engine's write routes now answer only the window. It holds no key and cannot ask for one. Reads that stay GET (preset list, job polling) are unchanged. Ctrl+C while waiting for a job no longer cancels it (there is no MCP tool to cancel a job); it stops waiting and prints the job id.
+- `scripts/demo-record.py` :: `Engine.claim` · The recorder replays the window's own requests, so it claims the window key from `POST /api/window/key` and sends it. That route answers once per launch and only for an engine started from source, so run the recorder against a fresh `./formtools backend`; otherwise it stops with a one-line message.
+- `.github/workflows/ci.yml` · the backend job also runs `pytest` over `backend/tests`.
+
 ## 2026-11-03 · v0.2.0 · launcher, setup scripts, CI, agent kit
 
 - The launcher and `setup/` follow formvis's shape (bash dispatcher, `.bat` twins, `lib.sh`) with the prefix `ft_` and the root variable `FORMTOOLS_ROOT`. formvis delegates installs and boots to `oc_install` and `boot_*` files inside `backend/` and `frontend/`; formtools does the work in `setup/` itself because the contract lists no such files there.

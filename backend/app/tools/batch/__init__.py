@@ -1,6 +1,6 @@
 from app.core import jobs, registry
 from app.core.errors import ApiError
-from app.core.registry import McpTool, Tool
+from app.core.registry import ALTERS, READS, McpTool, Tool
 from app.tools.batch import actions, rename, service
 from app.tools.batch.pool import runner
 from app.tools.batch.router import router
@@ -75,13 +75,13 @@ registry.register(
         title="Batch",
         routers=(router,),
         mcp=(
-            McpTool("batch_actions", "List the batch actions (resize, crop, adjust, watermark and more) with their parameters.", {"type": "object", "properties": {}}, batch_actions_tool),
-            McpTool("batch_plan", "Show which files a batch run would write and where, without writing anything.", BATCH_SCHEMA, batch_plan_tool),
-            McpTool("batch_run", "Start a batch conversion job and return it; poll it with job_status.", BATCH_SCHEMA, batch_run_tool),
-            McpTool("job_status", "Read a job's state, progress, errors and result.", {"type": "object", "properties": {"id": {"type": "string"}}, "required": ["id"]}, job_status_tool),
-            McpTool("rename_plan", "Preview a bulk rename: each file's new name and any conflict.", RENAME_SCHEMA, rename_plan_tool),
-            McpTool("rename_apply", "Apply a bulk rename (refused when any name conflicts) and return an undo id.", RENAME_SCHEMA, rename_apply_tool),
-            McpTool("rename_undo", "Undo a bulk rename by its undo id.", {"type": "object", "properties": {"undo": {"type": "string"}}, "required": ["undo"]}, rename_undo_tool),
+            McpTool("batch_actions", "List the batch actions (resize, crop, adjust, watermark and more) with their parameters.", {"type": "object", "properties": {}}, batch_actions_tool, effect=READS),
+            McpTool("batch_plan", "Show which files a batch run would write and where, without writing anything.", BATCH_SCHEMA, batch_plan_tool, effect=READS),
+            McpTool("batch_run", "Start a batch conversion job and return it; poll it with job_status.", BATCH_SCHEMA, batch_run_tool, effect=ALTERS),
+            McpTool("job_status", "Read a job's state, progress, errors and result.", {"type": "object", "properties": {"id": {"type": "string"}}, "required": ["id"]}, job_status_tool, effect=READS),
+            McpTool("rename_plan", "Preview a bulk rename: each file's new name and any conflict.", RENAME_SCHEMA, rename_plan_tool, effect=READS),
+            McpTool("rename_apply", "Apply a bulk rename (refused when any name conflicts) and return an undo id.", RENAME_SCHEMA, rename_apply_tool, effect=ALTERS),
+            McpTool("rename_undo", "Undo a bulk rename by its undo id.", {"type": "object", "properties": {"undo": {"type": "string"}}, "required": ["undo"]}, rename_undo_tool, effect=ALTERS),
         ),
         shutdown=runner.close,
     )

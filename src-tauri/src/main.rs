@@ -28,6 +28,7 @@ const MIN_SIZE: (f64, f64) = (980.0, 640.0);
 const SCREEN_FRACTION: f64 = 0.9;
 const DEV_ENGINE: &str = "http://127.0.0.1:8240";
 const PORT_WAIT: Duration = Duration::from_secs(60);
+const KEY_WAIT: Duration = Duration::from_secs(10);
 const OPEN_EVENT: &str = "open-paths";
 const TOOL_EVENT: &str = "open-tool";
 
@@ -211,6 +212,7 @@ fn start_engine(program: &std::path::Path) -> std::io::Result<(Child, tauri::asy
     let mut command = Command::new(program);
     command
         .env("FORMTOOLS_PORT", "0")
+        .env("FORMTOOLS_WINDOW_KEY_STDOUT", "1")
         .env("PYTHONUNBUFFERED", "1")
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
@@ -231,8 +233,11 @@ fn start_engine(program: &std::path::Path) -> std::io::Result<(Child, tauri::asy
     Ok((child, rx))
 }
 
-async fn read_port(mut rx: tauri::async_runtime::Receiver<String>) -> Option<u16> {
+async fn read_port(mut rx: tauri::async_runtime::Receiver<String>) -> Option<(u16, Option<String>)> {
     let pattern = regex::Regex::new(r"http://127\.0\.0\.1:(\d+)").unwrap();
+    let key_pattern = regex::Regex::new(r"formtools-window-key: ([A-Za-z0-9_-]{32,})").unwrap();
+    let mut key: Option<String> = None;
+    let mut port: Option<u16> = None;
     let (tick, mut timer) = tauri::async_runtime::channel::<()>(1);
     std::thread::spawn(move || {
         std::thread::sleep(PORT_WAIT);
@@ -244,15 +249,29 @@ async fn read_port(mut rx: tauri::async_runtime::Receiver<String>) -> Option<u16
     })
     .await
     {
-        if let Some(port) = pattern.captures(&text).and_then(|found| found[1].parse::<u16>().ok()) {
+        if key.is_none() {
+            key = key_pattern.captures(&text).map(|found| found[1].to_string());
+        }
+        if port.is_none() {
+            port = pattern.captures(&text).and_then(|found| found[1].parse::<u16>().ok());
+            if port.is_some() && key.is_none() {
+                let (key_tick, key_timer) = tauri::async_runtime::channel::<()>(1);
+                std::thread::spawn(move || {
+                    std::thread::sleep(KEY_WAIT);
+                    let _ = key_tick.blocking_send(());
+                });
+                timer = key_timer;
+            }
+        }
+        if let (Some(found), true) = (port, key.is_some()) {
             tauri::async_runtime::spawn(async move { while rx.recv().await.is_some() {} });
-            return Some(port);
+            return Some((found, key));
         }
     }
     None
 }
 
-fn open_main(handle: &tauri::AppHandle, url: &str) -> bool {
+fn open_main(handle: &tauri::AppHandle, url: &str, key: Option<&str>) -> bool {
     let Ok(parsed) = url.parse() else { return false };
     let place = window_state::load(handle);
     let (width, height) = if place.width > 0.0 {
@@ -278,6 +297,12 @@ fn open_main(handle: &tauri::AppHandle, url: &str) -> bool {
         builder.position(place.x, place.y)
     } else {
         builder.center()
+    };
+    let builder = match key {
+        Some(value) => builder.initialization_script(format!(
+            "if (window.location.origin === {url:?}) {{ window.__FORMTOOLS_WINDOW_KEY = {value:?}; }}"
+        )),
+        None => builder,
     };
     #[cfg(target_os = "macos")]
     let builder = builder.title_bar_style(tauri::TitleBarStyle::Overlay).hidden_title(true);
@@ -372,7 +397,7 @@ fn main() {
 
             if let Some(url) = dev_engine_url() {
                 tauri::async_runtime::spawn(async move {
-                    if !open_main(&handle, &url) {
+                    if !open_main(&handle, &url, None) {
                         engine_failed(&handle);
                     }
                 });
@@ -393,7 +418,7 @@ fn main() {
                     Err(_) => None,
                 };
                 let opened = match port {
-                    Some(port) => open_main(&handle, &format!("http://127.0.0.1:{port}")),
+                    Some((port, key)) => open_main(&handle, &format!("http://127.0.0.1:{port}"), key.as_deref()),
                     None => false,
                 };
                 if !opened {

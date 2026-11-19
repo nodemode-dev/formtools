@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.9.0 · 2026-11-19
+
+FormTools takes the Form family's shared terminal panel and its rules for agents: only the app's own window changes things, and a program outside it asks first.
+
+- Only the formtools window can change things. Changes that come from outside the app's window are refused; agents keep working through the MCP tools, and the command line goes through the MCP tools too. Ctrl+C while the command line waits for a job now stops the waiting instead of cancelling the job.
+- Agents: a program outside formtools (an AI agent, the command line, a stdio bridge) asks in the formtools window before it runs any tool that is not read-only. Settings, Integration, Outside agents is Ask each time (the default), Allowed or Blocked. Under Ask the window shows Deny, Allow once and Always allow all outside agents; a request nobody answers within two minutes is refused, and with no window open it is refused at once. Only the window can change the choice, the saved choice is sealed with a key in the system keychain, a choice changed outside the app turns back into Ask (the app says so once), and with no keychain Allowed is not kept.
+- Agents: the question names the program that asks and what it asked for, it stays in front of Preferences, and a second formtools window closes its question when the first one answers. The command line names itself.
+- Agents: Blocked stops every agent from changing anything, the Chat, Claude Code, Codex and Cursor tabs inside formtools included, and they say where to change the choice.
+- The Claude Code tab runs the tools that only look at files or add new ones on its own and asks before the ones that can delete, move or overwrite files. The MCP server marks each tool as read-only or destructive. Each Claude Code tab and each Chat run gets its own access, removed when the tab closes.
+- Terminal panel: it is now the panel the Form family shares. It can sit at the bottom or in a column on the right, the button in its top bar moves it, and a running program keeps running through the move. It shows a Codex tab and a Cursor tab when those programs are found, and More agents gives the install line for a missing one. Keys typed in the panel stay in the panel.
+- Terminal panel: the first time you open it, a short guide shows what it is. If you already used the panel in an earlier version, its height is kept and the guide stays away.
+- New theme, AMOLED Black: a true-black window for OLED screens, with panels told apart by their borders.
+- The desktop app does not open a window when the engine does not finish starting.
+- The ffmpeg download tries the formai-binaries address first and falls back to formcut-binaries; every file is still checked against its recorded SHA-256.
+- Agents: `agents/manifest.json` lists what formtools offers agents (35 tools, 22 read-only, 13 that ask, 2 skills, the terminal panel), and `./formtools agents check` keeps it true and fails when the shared panel's files differ from their record.
+- The README, SECURITY.md, CLAUDE.md, AGENTS.md and the skills describe all of this, including what the command line and an outside agent meet when no window is open.
+
 ## 0.8.1 · 2026-11-14
 
 - macOS: the app starts again. In 0.8.0 the desktop app stopped at "The formtools engine failed to start" because macOS refused the code signature of the engine's Python library; the build now signs that library so the signature stays valid inside the app, and stops if it would not. If you have 0.8.0, update to this version.

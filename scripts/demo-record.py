@@ -54,11 +54,19 @@ def key(method: str, path: str, params: dict | None = None, body=None) -> str:
 class Engine:
     def __init__(self, base: str) -> None:
         self.base = base.rstrip("/")
+        self.window_key = self.claim()
+
+    def claim(self) -> str:
+        try:
+            with urllib.request.urlopen(urllib.request.Request(self.base + "/api/window/key", data=b"", method="POST"), timeout=30) as res:
+                return json.loads(res.read())["key"]
+        except urllib.error.HTTPError:
+            sys.exit("the engine did not give out its window key: it does so once per launch and only when started from source, so start a fresh engine with ./formtools backend and run this again")
 
     def call(self, method: str, path: str, params: dict | None = None, body=None) -> tuple[int, str, bytes]:
         url = self.base + path + ("?" + urllib.parse.urlencode(params, quote_via=urllib.parse.quote) if params else "")
         data = json.dumps(body).encode() if body is not None else None
-        req = urllib.request.Request(url, data=data, method=method, headers={"Content-Type": "application/json"} if data else {})
+        req = urllib.request.Request(url, data=data, method=method, headers={"X-Formtools-Window-Key": self.window_key} | ({"Content-Type": "application/json"} if data else {}))
         try:
             with urllib.request.urlopen(req, timeout=300) as res:
                 return res.status, res.headers.get_content_type(), res.read()

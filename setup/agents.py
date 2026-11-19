@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 import argparse
+import hashlib
 import json
 import os
 import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -16,6 +18,29 @@ SKIP_FILES = {".DS_Store"}
 RESERVED = ("anthropic", "claude")
 TAG = re.compile(r"</?[A-Za-z][^>]*>")
 LAUNCHER = "formtools"
+MANIFEST = os.path.join(ROOT, "agents", "manifest.json")
+MANIFEST_REL = "agents/manifest.json"
+APP = "formtools"
+DOCK = {"present": True, "positions": ["bottom", "right"], "tabs": ["chat", "shell", "claude", "codex", "cursor"]}
+DOCK_DIR = os.path.join(ROOT, "frontend", "src", "dock")
+DOCK_REL = "frontend/src/dock"
+DOCK_VERSION = "2.1.0"
+ENGINE_FACTS = """
+import json
+from app.main import app
+from app.routers import mcp
+from app.core import registry
+from app.services import consent
+if registry.failed():
+    raise SystemExit("tool packages failed to load: " + ", ".join(sorted(registry.failed())))
+tools = mcp.all_tools()
+print(json.dumps({
+    "tools": [t.name for t in tools],
+    "read_only": [t.name for t in tools if t.annotations().get("readOnlyHint")],
+    "approval_gated": [t.name for t in tools if consent.gated(t)],
+    "http": "post" in app.openapi().get("paths", {}).get("/mcp", {}),
+}))
+"""
 
 
 def files_under(base):
@@ -58,7 +83,96 @@ def frontmatter(text):
     return None
 
 
+def engine_python():
+    for rel in (("backend", "venv", "bin", "python"), ("backend", "venv", "Scripts", "python.exe")):
+        candidate = os.path.join(ROOT, *rel)
+        if os.path.isfile(candidate):
+            return candidate
+    return sys.executable
+
+
+def engine_facts():
+    with tempfile.TemporaryDirectory(prefix="formtools-manifest-") as scratch:
+        env = {**os.environ, "FORMTOOLS_DATA_DIR": scratch, "PYTHONDONTWRITEBYTECODE": "1"}
+        done = subprocess.run([engine_python(), "-c", ENGINE_FACTS], cwd=os.path.join(ROOT, "backend"), env=env, capture_output=True, text=True)
+    if done.returncode != 0:
+        tail = (done.stderr.strip().splitlines() or ["no output"])[-1]
+        raise RuntimeError("cannot read the MCP registry from the engine code (run ./formtools install, then again): " + tail)
+    return json.loads(done.stdout.strip().splitlines()[-1])
+
+
+def skill_entries():
+    entries = []
+    if not os.path.isdir(SOURCE):
+        return entries
+    for name in sorted(os.listdir(SOURCE)):
+        folder = os.path.join(SOURCE, name)
+        if not os.path.isfile(os.path.join(folder, "SKILL.md")):
+            continue
+        subs = os.path.join(folder, "sub-skills")
+        found = sorted(d for d in os.listdir(subs) if os.path.isfile(os.path.join(subs, d, "SUB-SKILL.md"))) if os.path.isdir(subs) else []
+        entries.append({"name": name, "sub_skills": found})
+    return entries
+
+
+def manifest_text():
+    facts = engine_facts()
+    transports = (["stdio"] if os.path.isfile(os.path.join(ROOT, "setup", "mcp_stdio.py")) else []) + (["http"] if facts["http"] else [])
+    body = {
+        "format": "form-agent-manifest",
+        "version": 1,
+        "app": APP,
+        "mcp": {"tools": facts["tools"], "read_only": facts["read_only"], "approval_gated": facts["approval_gated"], "transports": transports},
+        "skills": skill_entries(),
+        "dock": DOCK,
+        "extensions": None,
+    }
+    return json.dumps(body, indent=2) + "\n"
+
+
+def manifest_current():
+    try:
+        return read_bytes(MANIFEST).decode("utf-8") == manifest_text()
+    except OSError:
+        return False
+
+
+def write_manifest():
+    wanted = manifest_text()
+    try:
+        if read_bytes(MANIFEST).decode("utf-8") == wanted:
+            print(f"[agents] {MANIFEST_REL} is current")
+            return
+    except OSError:
+        pass
+    os.makedirs(os.path.dirname(MANIFEST), exist_ok=True)
+    with open(MANIFEST, "w", encoding="utf-8") as f:
+        f.write(wanted)
+    print(f"[agents] wrote {MANIFEST_REL}")
+
+
+def check_manifest(problems):
+    try:
+        if not manifest_current():
+            problems.append(f"{MANIFEST_REL} is not what ./formtools agents sync writes; run ./formtools agents sync")
+    except RuntimeError as exc:
+        problems.append(f"{MANIFEST_REL} could not be checked: {exc}")
+
+
+def dock_problems():
+    try:
+        kept = json.loads(read_bytes(os.path.join(DOCK_DIR, "MANIFEST.json")).decode("utf-8"))
+    except (OSError, ValueError):
+        return [f"{DOCK_REL}/MANIFEST.json is missing or not JSON"]
+    if kept.get("module") != "dock" or kept.get("version") != DOCK_VERSION:
+        return [f"{DOCK_REL}/MANIFEST.json is not the dock module {DOCK_VERSION}"]
+    files = kept.get("files") or {}
+    now = {name: hashlib.sha256(read_bytes(os.path.join(DOCK_DIR, name))).hexdigest() for name in sorted(os.listdir(DOCK_DIR)) if name != "MANIFEST.json" and os.path.isfile(os.path.join(DOCK_DIR, name))}
+    return [f"{DOCK_REL}/{name} does not match MANIFEST.json; the shared dock module is copied whole from FormVis, never edited here" for name in sorted(set(files) | set(now)) if files.get(name) != now.get(name)]
+
+
 def sync():
+    write_manifest()
     if not os.path.isdir(SOURCE):
         print("[agents] .claude/skills is missing", file=sys.stderr)
         return 1
@@ -213,12 +327,14 @@ def check():
     check_drift(problems)
     check_skill_format(problems)
     check_agent_files(problems)
+    check_manifest(problems)
+    problems.extend(dock_problems())
     if problems:
         for line in problems:
             print(f"[agents] {line}", file=sys.stderr)
         print(f"[agents] {len(problems)} problem(s)", file=sys.stderr)
         return 1
-    print("[agents] clean: mirror matches, skills pass the format gate, MCP configs name the launcher")
+    print("[agents] clean: manifest is current, mirror matches, skills pass the format gate, MCP configs name the launcher")
     return 0
 
 
@@ -348,12 +464,15 @@ def main():
     parser.add_argument("clients", nargs="*", help="install only: claude, codex or cursor (all by default)")
     parser.add_argument("--dry-run", action="store_true", help="install only: say what would change and change nothing")
     parser.add_argument("--user", action="store_true", help="install only: for this user account (the default)")
+    parser.add_argument("--check", action="store_true", help="sync only: change nothing and fail when anything sync would write is out of date (the same as check)")
     args = parser.parse_args()
+    if args.check and args.action != "sync":
+        parser.error("--check goes with sync")
     if args.action == "install":
         return install(args.clients, args.dry_run)
     if args.clients:
         parser.error(f"{args.action} takes no client names")
-    return sync() if args.action == "sync" else check()
+    return sync() if args.action == "sync" and not args.check else check()
 
 
 if __name__ == "__main__":

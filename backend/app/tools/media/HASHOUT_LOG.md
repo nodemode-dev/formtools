@@ -2,6 +2,11 @@
 
 Decisions, reasons and anything left out, newest first. Code carries no comments; the context lives here.
 
+## Unreleased (2026-11-19): the ffmpeg download tries two addresses
+
+- `fetch.py` :: `SOURCES`, `sources`, `fetch` · The binaries repository is being renamed from `nodemode-dev/formcut-binaries` to `nodemode-dev/formai-binaries`. `SOURCES` is now the ordered pair, the new address first and the old one second, as in formcut and formdam. `sources()` returns one archive address per entry; `FORMCUT_FFMPEG_RELEASE`, when set, is still the only source. `fetch()` loops: an address that does not answer, or whose bytes do not match the recorded SHA-256 (`_install` raises and places nothing), moves on to the next; when every address fails it raises one error naming each. The release tag, the asset names, the shared per-person install folder `formcut-binaries/ffmpeg-<release>` (`folder()`) and the variable names did not change, and `record.py` (a copy of formvis's pins) is untouched. The SHA-256 record is the same for both addresses.
+- Checked by running: a real fetch with the new address (which does not exist yet) answered 404, fell back to the old address and installed with every hash checked; against a local server, wrong bytes at the first address then the right ones at the second installed from the second, and wrong bytes at both installed nothing and raised. Builds made before the rename use the older name, which keeps working. The history entries below keep their wording.
+
 ## v0.3.0 (2026-11-03): media tool
 
 ### Provenance of the ported files

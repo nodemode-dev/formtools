@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <img alt="version 0.8.1" src="https://img.shields.io/badge/version-0.8.1-eef0f4?style=flat-square">
+  <img alt="version 0.9.0" src="https://img.shields.io/badge/version-0.9.0-eef0f4?style=flat-square">
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-Vite-3178c6?style=flat-square&logo=typescript&logoColor=white">
   <img alt="Python FastAPI engine" src="https://img.shields.io/badge/Python-FastAPI-009688?style=flat-square">
   <img alt="macOS, Windows, Linux" src="https://img.shields.io/badge/macOS%20%C2%B7%20Windows%20%C2%B7%20Linux-native-2f7bf5?style=flat-square">
@@ -90,6 +90,8 @@ Desktop utilities: colour picker · screen ruler · text extractor · zoom and d
 
 35 MCP tools, one engine; the window, the CLI and the MCP server call the same code.
 
+**Outside agents ask first.** A program outside formtools, whether an AI agent, the command line or a stdio bridge, is asked about in the formtools window before any tool that is not read-only runs. Settings, Integration, Outside agents is Ask each time (the default), Allowed or Blocked. Under Ask the window shows Deny, Allow once and Always allow, and a call nobody answers within two minutes is refused. With no formtools window open there is nobody to ask, so under Ask each time such a call is refused at once with a sentence that says why: open formtools, or choose Allowed there. Reading always works. Only the window can change the choice; it is sealed with a key in the system keychain, and a choice changed outside the app turns back into Ask, which the app says once. With no system keychain Allowed is not kept and formtools asks each time. The Claude Code, Codex, Cursor and Chat tabs inside formtools are not asked. Blocked stops every agent, those tabs included: under Blocked no tool that is not read-only runs for anyone.
+
 ```sh
 ./formtools cli convert --format webp --out ~/Pictures/web ~/Pictures/trip   # batch convert
 ./formtools cli resize --longest 2048 ~/Pictures/trip                        # resize
@@ -98,16 +100,18 @@ Desktop utilities: colour picker · screen ruler · text extractor · zoom and d
 ./formtools agents install                                                   # connect Claude Code, Codex and Cursor for your user account
 ```
 
+The `cli` commands talk to a running engine, so start formtools first (`./formtools`, then open http://127.0.0.1:5240) and keep that window open. `convert`, `resize` and `rename --apply` change files, so each one waits for your answer in the window unless Outside agents is Allowed; `info`, `list` and a rename plan only read and run without asking.
+
 `.mcp.json`, `.codex/config.toml` and `.cursor/mcp.json` are already wired in this repo. See [`AGENTS.md`](AGENTS.md).
 
 **Terminal.** A dock above the status bar holds real terminals run by the engine: your login shell in as many tabs as you like, kept running while the dock is hidden. Open it with the Terminal button in the title bar or View > Terminal (Mod+J).
 
-**Claude Code.** If Claude Code is installed, a Claude Code tab (Mod+Shift+J) starts your own `claude` with formtools' MCP tools already attached, and the Chat tab (Mod+Alt+J) talks to it in a chat with Allow and Deny cards for each step, then hands the conversation to a Claude Code tab when you want the full terminal. formtools does not bundle Claude Code and never reads or stores its sign-in; if it is missing, the dock shows the one-line install. Agents cannot open terminals or Claude Code through MCP: those stay yours.
+**Claude Code.** If Claude Code is installed, a Claude Code tab (Mod+Shift+J) starts your own `claude` with formtools' MCP tools attached (the ones that only look at files or add new ones run on their own; the ones that can delete, move or overwrite files ask in Claude Code's own prompt), and the Chat tab (Mod+Alt+J) talks to it in a chat with Allow and Deny cards for each step, then hands the conversation to a Claude Code tab when you want the full terminal. formtools does not bundle Claude Code and never reads or stores its sign-in; if it is missing, the dock shows the one-line install. Agents cannot open terminals or Claude Code through MCP: those stay yours.
 
 ## Under the hood
 
 - **Window:** vanilla TypeScript and Vite, on port 5240 in development.
-- **Engine:** Python and FastAPI on 127.0.0.1:8240, with 8 tool modules registered at start.
+- **Engine:** Python and FastAPI on 127.0.0.1:8240, with 9 tool modules registered at start.
 - **Desktop:** a Tauri 2 shell that starts its own engine on a free port.
 - **Local:** every file is read on this computer and nothing is uploaded.
 - **Media:** FFmpeg (LGPL build) for playback, inspection and lossless clips; transcoding stays in FormEncoder.

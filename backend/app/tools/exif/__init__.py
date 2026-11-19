@@ -1,6 +1,6 @@
 from app.core import registry
 from app.core.errors import ApiError
-from app.core.registry import McpTool, Tool
+from app.core.registry import READS, McpTool, Tool
 from app.tools.exif import read, runner
 from app.tools.exif.router import router
 
@@ -37,6 +37,7 @@ registry.register(
                 "Read all metadata of a file with ExifTool (EXIF, GPS, XMP, IPTC, QuickTime, ID3 and more), grouped, with readable labels. Needs ExifTool to be installed or fetched; the answer says so when it is not.",
                 READ_SCHEMA,
                 exif_read_tool,
+                effect=READS,
             ),
         ),
         shutdown=runner.stop,

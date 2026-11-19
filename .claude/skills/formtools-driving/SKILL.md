@@ -21,6 +21,7 @@ formtools runs on this computer as an engine with a window. Its MCP server, name
 | Utilities | `dupes_scan`, `disk_usage`, `empty_folders`, `templates_list`, `template_create`, `trash_files` | duplicates, folder sizes, empty folders, new files from templates, moving files to the system trash |
 | Metadata | `exif_read` | every tag ExifTool reads from any file (pictures, video, audio, documents, fonts, archives), grouped by source; optionally keep only named groups |
 | System | `hosts_read`, `env_read` | read the hosts file entries and the environment variables per scope; changes to either are made in the window, where the person confirms them |
+| Demos | `demo_open` | make one of the three demo folders (photos, family, bench) from generated files, if it is not made yet, and return its path to browse or run tools on |
 | Jobs | `job_status` | follow any tool that returned a job id until its state is `done`, `failed` or `cancelled` |
 
 ## The loop
@@ -35,7 +36,9 @@ formtools runs on this computer as an engine with a window. Its MCP server, name
 ## Limits
 
 - Nothing deletes permanently. `trash_files` moves to the system trash and refuses drive roots and the home folder. Show the person the list and get a yes before calling it.
-- New files never replace old ones: extraction, conversion, templates and edits add " (2)" and so on.
+- `tools/list` marks each tool: `readOnlyHint` for tools that only read, and `destructiveHint` for tools that can delete, move or overwrite files. In a Claude Code tab opened by formtools the destructive ones ask in Claude Code's own prompt; the Chat tab asks for every call.
+- You are an outside agent. Every tool that is not read-only waits for the person in the formtools window (Deny, Allow once, Always allow, up to two minutes) unless they chose Allowed in Settings, Integration, Outside agents. A refusal says why and where to change it; tell the person and stop, do not retry. With no window open under Ask, those tools are refused at once. Under Blocked they are refused for every agent, and that includes the Claude Code, Codex, Cursor and Chat tabs inside formtools, which are otherwise not asked; reading still works. You cannot change the choice.
+- New files do not replace old ones unless the call says so: extraction, conversion, templates and edits add " (2)" and so on. The two exceptions are `batch_run` with output `overwrite` set to `replace` and `image_edit` with `overwrite` true; use them only when the person asked to replace the files.
 - Extraction refuses parent and absolute paths, skips links and stops on archives that expand too far; say so when it reports skipped members.
 - Formats the window cannot show (RAW, PSD, EXR, HDR, TIFF, OFF) are handled by the engine. Unsupported formats come back as a 415 error with a plain sentence.
 - Layered editing, transcoding, PDF editing, video and audio editing belong to sibling apps (formvis, formencoder, formpdf, formcut, formwav). Offer "Open in ..." instead of doing a worse version here.
@@ -50,4 +53,6 @@ Each sub-skill is `sub-skills/[name]/SUB-SKILL.md` next to this file.
 
 - The tools do not appear: run `./formtools doctor`, then `./formtools boot`, and reconnect.
 - A call is refused with 403: the request did not come from 127.0.0.1 or localhost; use the bridge, not a remote address.
+- A request is refused with "Only the formtools window can do this": you called one of the engine's own routes. Anything that changes something goes through the MCP tools (`tools/call` on the bridge or on `/mcp`); the other routes answer the window only.
+- A tool is refused with a sentence about outside agents or the formtools window: see Limits. Under Ask with no window open, ask the person to open formtools; under Blocked, tell them where the choice is and stop.
 - The first call is slow: the bridge may be starting the engine; its log is `formtools-engine.log` in the temporary folder.

@@ -1,4 +1,5 @@
 import { ApiError } from './api';
+import { keyed } from './window-key';
 
 export interface HostEntry { line?: number; enabled: boolean; address: string; names: string[]; comment: string }
 export interface HostsInfo { path: string; writable: boolean; entries: HostEntry[]; raw: string; version?: string }
@@ -9,7 +10,7 @@ export interface EnvVar { name: string; value: string }
 export interface EnvScope { id: EnvScopeId; editable: boolean; where: string; vars: EnvVar[] }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(path, init);
+  const res = await fetch(path, keyed(init));
   const body = await res.json().catch(() => null) as (T & { ok?: boolean; error?: string }) | null;
   if (res.status === 404 && body === null) throw new ApiError('This build of the engine does not include the desktop tool.', 404);
   if (!res.ok || body === null || body.ok === false) throw new ApiError(body?.error ?? `The engine answered ${res.status}.`, res.status);

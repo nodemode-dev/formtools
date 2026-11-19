@@ -19,12 +19,36 @@ class Command:
     params: dict[str, Any] = field(default_factory=dict)
 
 
+READS = "reads"
+ADDS = "adds"
+ALTERS = "alters"
+EFFECTS = (READS, ADDS, ALTERS)
+
+
 @dataclass(frozen=True)
 class McpTool:
     name: str
     description: str
     schema: dict[str, Any]
     handler: Callable[[dict[str, Any]], Any]
+    effect: str = field(kw_only=True)
+
+    def __post_init__(self) -> None:
+        if self.effect not in EFFECTS:
+            raise ValueError(f"tool {self.name} must declare its effect as one of {', '.join(EFFECTS)}")
+
+    @property
+    def read_only(self) -> bool:
+        return self.effect == READS
+
+    @property
+    def pre_approved(self) -> bool:
+        return self.effect != ALTERS
+
+    def annotations(self) -> dict[str, bool]:
+        if self.effect == READS:
+            return {"readOnlyHint": True}
+        return {"readOnlyHint": False, "destructiveHint": self.effect == ALTERS}
 
 
 @dataclass

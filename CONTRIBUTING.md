@@ -60,7 +60,7 @@ emoji in any tracked text.
 - Keep each pull request to one change.
 - Write commit subjects the way the history does: `type(scope): plain sentence (X.Y.Z)`,
   for example `feat(titlebar): ...`, `fix(checks): ...`, `docs(readme): ...`.
-- After changing a skill in `.claude/skills`, run `./formtools agents sync`.
+- After changing a skill in `.claude/skills`, or adding, renaming or re-annotating an MCP tool, run `./formtools agents sync`; it also writes `agents/manifest.json`, which lists what the app offers agents and which `./formtools agents check` keeps true.
 - No emoji anywhere, no em dash in Markdown, and keep code comments to a minimum: the
   context goes in the folder's `HASHOUT_LOG.md`.
 - The three-star sparkle icon is not used anywhere in the app; `./formtools sparkle`

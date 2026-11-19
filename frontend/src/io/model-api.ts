@@ -1,4 +1,5 @@
 import { ApiError, type Job } from './api';
+import { keyed } from './window-key';
 
 export interface ModelInfo {
   format: string;
@@ -17,7 +18,7 @@ export interface ModelInfo {
 export type ConvertFormat = 'glb' | 'obj' | 'stl' | 'ply' | 'off';
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(path, init);
+  const res = await fetch(path, keyed(init));
   const body = await res.json().catch(() => null) as (T & { ok?: boolean; error?: string }) | null;
   if (!res.ok || body === null || body.ok === false) throw new ApiError(body?.error ?? `The engine answered ${res.status}.`, res.status);
   return body;

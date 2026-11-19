@@ -1,4 +1,5 @@
 import { ApiError, api, type Job } from './api';
+import { keyed } from './window-key';
 
 export interface TextDoc {
   encoding: string;
@@ -68,7 +69,7 @@ export interface HashResult { items: Array<{ path: string; size: number; hashes:
 export interface ExtractResult { dest: string; written: number; skipped: number }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(path, init);
+  const res = await fetch(path, keyed(init));
   const body = await res.json().catch(() => null) as (T & { ok?: boolean; error?: string }) | null;
   if (!res.ok || body === null || body.ok === false) throw new ApiError(body?.error ?? `The engine answered ${res.status}.`, res.status);
   return body;
@@ -84,7 +85,7 @@ const qs = (params: Record<string, string | number>): string =>
   Object.entries(params).map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`).join('&');
 
 async function bytes(url: string, init?: RequestInit): Promise<Response> {
-  const res = await fetch(url, init);
+  const res = await fetch(url, keyed(init));
   if (!res.ok) {
     const b = await res.json().catch(() => null) as { error?: string } | null;
     throw new ApiError(b?.error ?? `The engine answered ${res.status}.`, res.status);

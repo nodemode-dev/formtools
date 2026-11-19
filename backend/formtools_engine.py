@@ -88,7 +88,7 @@ def announce_port(server, data) -> None:
 
 
 def serve() -> int:
-    from app.core import config, runtime
+    from app.core import config, runtime, window_key
 
     data = config.data_dir()
     try:
@@ -97,6 +97,8 @@ def serve() -> int:
         print(err, file=sys.stderr)
         return 2
     watch_parent()
+    if window_key.stdout_mode():
+        print(window_key.LINE + window_key.KEY, flush=True)
     import signal
 
     import uvicorn
