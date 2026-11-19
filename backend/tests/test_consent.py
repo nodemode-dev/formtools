@@ -204,7 +204,7 @@ def test_the_chat_shows_no_card_for_a_tool_that_blocked_refuses(keychain, monkey
     monkeypatch.setattr(claude_code, "publish", lambda msg, keep=True: shown.append(msg))
     monkeypatch.setattr(claude_code.AGENT, "mode", "ask")
     consent.set_access("blocked")
-    claude_code._decide("r1", {"tool_name": "mcp__formtools__trash_files", "input": {}}, claude_code.AGENT.gen)
+    claude_code._decide("r1", {"tool_name": "mcp__formtools_tab__trash_files", "input": {}}, claude_code.AGENT.gen)
     assert sent[0]["response"]["response"] == {"behavior": "deny", "message": consent.BLOCKED_INSIDE}
     assert shown == []
 

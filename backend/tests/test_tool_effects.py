@@ -40,8 +40,8 @@ def test_the_tools_that_can_delete_move_or_overwrite_are_not_pre_approved(tools)
     assert asking == {"run_command", "batch_run", "rename_apply", "rename_undo", "trash_files", "image_edit", "image_meta_write", "demo_open"}
     approved = mcp.pre_approved_names()
     assert len(approved) == 27
-    assert "mcp__formtools__trash_files" not in approved
-    assert "mcp__formtools__fs_list" in approved
+    assert "mcp__formtools_tab__trash_files" not in approved
+    assert "mcp__formtools_tab__fs_list" in approved
 
 
 def test_the_claude_code_tab_is_started_with_exactly_the_derived_list(tools):
@@ -50,8 +50,9 @@ def test_the_claude_code_tab_is_started_with_exactly_the_derived_list(tools):
     argv = claude_code.terminal_argv("/x/claude", "/x/mcp.json", None, None)
     text = " ".join(argv)
     assert f"--allowedTools {claude_code.allowed_tools()} " in text
-    assert "mcp__formtools__trash_files" not in text
-    assert "--allowedTools mcp__formtools " not in text
+    assert "mcp__formtools_tab__trash_files" not in text
+    assert "mcp__formtools_tab__fs_list" in text
+    assert "--allowedTools mcp__formtools_tab " not in text
 
 
 def test_tools_list_carries_the_annotations(client):

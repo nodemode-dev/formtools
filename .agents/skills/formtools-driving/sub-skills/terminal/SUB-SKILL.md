@@ -9,7 +9,7 @@ The formtools window has a terminal dock above the status bar for the person: sh
 
 ## When you are the Claude Code in the dock
 
-A Claude Code tab or the Chat tab started by formtools runs the person's own `claude` with formtools' MCP server already attached (`mcp__formtools`) and works in formtools' `Agent` folder in its data folder. The window's own tab is recognised by a per-run token, so `/api/mcp/status` lists it as "Claude Code in formtools". Use the tools as in the main skill: absolute paths, `fs_list` first, plan before writing.
+A Claude Code tab or the Chat tab started by formtools runs the person's own `claude` with formtools' MCP server already attached under the name `formtools_tab` (its tools are `mcp__formtools_tab__...`; the entry an outside agent sets up is `formtools`) and works in formtools' `Agent` folder in its data folder. The window's own tab is recognised by a per-run token, so `/api/mcp/status` lists it as "Claude Code in formtools". Use the tools as in the main skill: absolute paths, `fs_list` first, plan before writing.
 
 ## What the person may need to run
 

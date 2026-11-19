@@ -90,6 +90,29 @@ def test_the_port_reaches_the_tab(client, stand_ins):
         client.delete(f"/api/terminal/{tab['id']}")
 
 
+def test_a_tab_entry_is_named_formtools_tab_and_a_closed_tab_token_is_an_outside_caller(client, stand_ins, monkeypatch):
+    import json
+
+    from app.services import agent_programs, agents, consent, terminal
+
+    monkeypatch.setattr(consent, "access", lambda: "ask")
+    call = {"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {"name": "run_command", "arguments": {"id": "go-home"}}}
+
+    def said(token):
+        return client.post("/mcp", json=call, headers={agents.INAPP_HEADER: token}).json()["result"]["content"][0]["text"]
+
+    tab = client.post("/api/terminal/agent", json={"kind": "codex", "cols": 80, "rows": 24}).json()
+    try:
+        session = terminal.get(tab["id"])
+        token = session.env[agent_programs.TOKEN_VAR]
+        with open(session.env[agent_programs.CONFIG_VAR], encoding="utf-8") as handle:
+            assert list(json.load(handle)["mcpServers"]) == ["formtools_tab"]
+        assert said(token) != consent.NO_WINDOW
+    finally:
+        client.delete(f"/api/terminal/{tab['id']}")
+    assert said(token) == consent.NO_WINDOW
+
+
 ANSWERS = {
     "claude": 'case "$*" in "--version") echo "9.8.7 (Claude Code)";; "auth status") echo \'{"loggedIn": true}\';; esac',
     "codex": 'case "$*" in "--version") echo "codex-cli 0.55.1";; "login status") echo "Not logged in"; exit 1;; esac',

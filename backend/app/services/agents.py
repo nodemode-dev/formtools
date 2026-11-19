@@ -8,7 +8,7 @@ from pathlib import Path
 
 from app.core import config
 
-SERVER = "formtools"
+SERVER = "formtools_tab"
 INAPP_CLIENT = "Claude Code in formtools"
 INAPP_HEADER = "x-formtools-inapp"
 TOKEN_FOLDER = "AgentTokens"
