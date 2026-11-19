@@ -80,6 +80,7 @@ src="$(ft_native_path "$FORMTOOLS_ROOT")"
 extra=()
 [ -z "${FORMTOOLS_PYI_ARCH:-}" ] || extra+=(--target-arch "$FORMTOOLS_PYI_ARCH")
 for m in ${FT_EXTRA_HIDDEN_IMPORTS[@]+"${FT_EXTRA_HIDDEN_IMPORTS[@]}"}; do extra+=(--hidden-import "$m"); done
+if [ "$(ft_os)" = windows ] && [ "${FORMTOOLS_ENGINE_WINDOWED:-0}" = 1 ]; then extra+=(--noconsole); fi
 if [ "$(ft_os)" = macos ]; then
   if [ -n "${APPLE_SIGNING_IDENTITY:-}" ]; then
     extra+=(--codesign-identity "$APPLE_SIGNING_IDENTITY")

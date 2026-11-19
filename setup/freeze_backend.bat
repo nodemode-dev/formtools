@@ -9,6 +9,7 @@ if not exist frontend\dist\index.html call setup\build_frontend.bat
 cd backend
 set "FT_EXTRA_HIDDEN_IMPORT_ARGS="
 for %%m in (%FORMTOOLS_HIDDEN_IMPORTS%) do set "FT_EXTRA_HIDDEN_IMPORT_ARGS=!FT_EXTRA_HIDDEN_IMPORT_ARGS! --hidden-import %%m"
+if "%FORMTOOLS_ENGINE_WINDOWED%"=="1" set "FT_EXTRA_HIDDEN_IMPORT_ARGS=!FT_EXTRA_HIDDEN_IMPORT_ARGS! --noconsole"
 if exist build\pyinstaller rmdir /s /q build\pyinstaller
 if exist dist-engine rmdir /s /q dist-engine
 set "PYTHONPATH=%ROOT%\backend;%PYTHONPATH%"
