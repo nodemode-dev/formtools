@@ -31,4 +31,12 @@
   --dock-term-cursor: var(--accent-color);
   --dock-term-selection: var(--accent-color-dim);
   --dock-term-font-size: var(--fs-13);
+  --dock-edge: var(--line-1);
+  --dock-divider: var(--line-0);
+  --dock-tab-text: var(--text-muted);
+  --dock-chat-bar-h: 30px;
+  --dock-ctl-h: 24px;
+  --dock-fs-md: var(--fs-14);
+  --dock-scrim: var(--bg-scrim);
+  --dock-outline: var(--line-3);
 }

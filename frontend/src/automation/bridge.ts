@@ -1,4 +1,5 @@
 import type { Commands } from '../ui/commands';
+import type { AgentRequest } from '../io/api';
 import { windowKey } from '../io/window-key';
 import { asAgent } from './actor';
 import { mirrorCatalogue } from './catalogue';
@@ -21,7 +22,7 @@ async function runOne(commands: Commands, id: string, params: Record<string, unk
   return await out.result;
 }
 
-export function connectBridge(commands: Commands, onConsent: () => void = () => undefined): void {
+export function connectBridge(commands: Commands, onConsent: (msg?: { t?: string; id?: string; request?: AgentRequest }) => void = () => undefined): void {
   let delay = 500;
   const open = (): void => {
     const proto = location.protocol === 'https:' ? 'wss' : 'ws';
@@ -33,9 +34,9 @@ export function connectBridge(commands: Commands, onConsent: () => void = () => 
       onConsent();
     };
     ws.onmessage = async (ev) => {
-      let msg: { t?: string; id?: string; command?: string; params?: Record<string, unknown> };
+      let msg: { t?: string; id?: string; command?: string; params?: Record<string, unknown>; request?: AgentRequest };
       try { msg = JSON.parse(String(ev.data)); } catch { return; }
-      if (msg.t === 'ask' || msg.t === 'answered') { onConsent(); return; }
+      if (msg.t === 'ask' || msg.t === 'answered') { onConsent(msg); return; }
       if (msg.t !== 'run' || !msg.id || !msg.command) return;
       try {
         const result = await asAgent(() => runOne(commands, msg.command!, msg.params ?? {}));

@@ -17,7 +17,6 @@ import { SettingsDialog } from './ui/settings';
 import { Palette } from './ui/palette';
 import { Jobs } from './ui/jobs';
 import { SaveDialog } from './ui/save-dialog';
-import { ConsentDialog, refreshAgentState } from './ui/agent-access';
 import { ToolsPage, type ToolId } from './ui/tools/page';
 import { UtilitiesPage, type UtilId } from './ui/utilities/page';
 import './ui/desk/icons';
@@ -30,7 +29,7 @@ import { applyTheme, readChoice, setTheme, THEMES } from './ui/themes';
 import { toast } from './ui/toast';
 import { connectBridge } from './automation/bridge';
 import { Dock } from './dock/dock';
-import { formtoolsDock } from './dock-adapter';
+import { formtoolsDock, outsideAgents } from './dock-adapter';
 import { DEMOS, demoCommand, registerDemos } from './demos';
 
 type Page = 'home' | 'browse' | 'view' | 'tool' | 'util' | 'desk';
@@ -63,7 +62,7 @@ export function startApp(): void {
   const area = q(shell, '.ft-stage-area');
   const status = new StatusBar();
   shell.appendChild(status.root);
-  const termDock = new Dock(formtoolsDock(shell, status.root));
+  const termDock = new Dock(formtoolsDock(() => settings.open('Integration')));
   const dockButtons: Array<[HTMLElement, () => boolean]> = [
     [q(header, '[data-cmd="claude-code"]'), () => termDock.isShowing('claude')],
     [q(header, '[data-cmd="terminal-toggle"]'), () => termDock.isOpen()],
@@ -77,14 +76,14 @@ export function startApp(): void {
   };
   syncDockButtons();
   termDock.onTab = () => { syncDockButtons(); menus?.refresh(); };
+  termDock.mount(shell, status.root);
 
   const commands = new Commands();
   const settings = new SettingsDialog(commands);
   const palette = new Palette(commands);
   const jobs = new Jobs();
   const saveDialog = new SaveDialog();
-  const consent = new ConsentDialog();
-  overlay.append(settings.root, palette.root, jobs.panel, saveDialog.root, consent.root);
+  overlay.append(settings.root, palette.root, jobs.panel, saveDialog.root);
   status.mount(jobs.button);
 
   let page: Page = 'home';
@@ -306,7 +305,7 @@ export function startApp(): void {
     const cmd = (e.target instanceof Element ? e.target.closest<HTMLElement>('[data-cmd]') : null)?.dataset.cmd;
     if (cmd) commands.run(cmd);
   });
-  connectBridge(commands, () => void refreshAgentState());
+  connectBridge(commands, (msg) => outsideAgents.message(msg));
 
   const dropTarget = (paths: string[]): void => { if (paths.length) void openPath(paths[0]); };
   if (inDesktop()) {

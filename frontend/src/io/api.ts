@@ -182,7 +182,7 @@ const qs = (params: Record<string, string | number>): string =>
   Object.entries(params).map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`).join('&');
 
 export type AgentAccess = 'ask' | 'allowed' | 'blocked';
-export interface AgentRequest { id: string; tool: string; title: string; effect: 'reads' | 'adds' | 'alters'; at: number }
+export interface AgentRequest { id: string; tool: string; title: string; effect: 'reads' | 'adds' | 'alters'; at: number; agent?: string; agentNamed?: boolean; what?: string; answers?: string[]; alwaysScope?: string; expires?: number }
 export interface AgentState { access: AgentAccess; seal: 'ok' | 'unsealed' | 'unavailable' | 'broken'; sealBroken: boolean; notice: string; requests: AgentRequest[] }
 
 export const api = {

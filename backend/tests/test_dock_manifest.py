@@ -27,7 +27,7 @@ def copied_agents(tmp_path):
 
 def test_the_shared_dock_files_match_their_manifest():
     kept = json.loads((DOCK / "MANIFEST.json").read_text(encoding="utf-8"))
-    assert kept["module"] == "dock" and kept["version"] == "1.0.0-stage1"
+    assert kept["module"] == "dock" and kept["version"] == "2.0.1"
     now = {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in DOCK.iterdir() if p.is_file() and p.name != "MANIFEST.json"}
     assert kept["files"] == now
 
@@ -47,13 +47,13 @@ def test_the_check_names_a_shared_file_edited_in_place(tmp_path):
 def test_the_shared_dock_imports_nothing_from_the_app():
     found = set()
     for path in DOCK.glob("*.ts"):
-        found |= set(re.findall(r"(?:from|import) '([^']+)'", path.read_text(encoding="utf-8")))
+        found |= set(re.findall(r"(?:from|import)\s*\(?\s*'([^']+)'", path.read_text(encoding="utf-8")))
     assert sorted(x for x in found if not x.startswith(("./", "@xterm/"))) == []
 
 
 def test_the_manifest_declares_the_dock_the_adapter_offers():
     dock = json.loads((REPO / "agents" / "manifest.json").read_text(encoding="utf-8"))["dock"]
-    tabs = re.search(r"tabs: \[([^\]]*)\]", ADAPTER.read_text(encoding="utf-8")).group(1)
+    tabs = re.search(r"builtin: \[([^\]]*)\]", ADAPTER.read_text(encoding="utf-8")).group(1)
     assert dock["positions"] == ["bottom", "right"]
     assert dock["tabs"] == re.findall(r"'(\w+)'", tabs)
 

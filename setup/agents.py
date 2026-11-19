@@ -24,7 +24,7 @@ APP = "formtools"
 DOCK = {"present": True, "positions": ["bottom", "right"], "tabs": ["chat", "shell", "claude", "codex", "cursor"]}
 DOCK_DIR = os.path.join(ROOT, "frontend", "src", "dock")
 DOCK_REL = "frontend/src/dock"
-DOCK_VERSION = "1.0.0-stage1"
+DOCK_VERSION = "2.0.1"
 ENGINE_FACTS = """
 import json
 from app.main import app

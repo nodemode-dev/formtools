@@ -1,5 +1,11 @@
 # setup HASHOUT_LOG
 
+## 2026-11-19 · Unreleased · the shared dock is module 2.0.1
+
+- `setup/agents.py` :: `DOCK_VERSION` · `2.0.1`, was `1.0.0-stage1`. The check itself is unchanged: it reads the file names and hashes from `frontend/src/dock/MANIFEST.json`, hashes every file in the folder and names any that differs, is missing or is extra; the folder now holds fifteen files, `CONTRACT.md` among them, and the manifest lists that one too. `DOCK` (the manifest's dock block) is unchanged, because the adapter offers the same five tabs and the same two positions, so `agents sync` left `agents/manifest.json` as it was.
+- `backend/tests/test_dock_manifest.py` · the version in the first test; the isolation test now also reads `import('...')` calls (the module loads its terminal file that way) and still allows only `./` and `@xterm/`; the tab list is read from the adapter's `builtin: [...]`.
+- Ran: `agents sync` (wrote the mirror of one sub-skill, manifest current), `agents check` rc 0, the five tests in `test_dock_manifest.py`.
+
 ## 2026-11-19 · Unreleased · the command line says who it is
 
 - `setup/cli.py` :: `tool` · Each `tools/call` the command line makes now carries its name ("the formtools command line") in `_meta` under `io.modelcontextprotocol/clientInfo`, so the question in the window names it instead of "an outside agent". It is still an outside agent and is asked or refused like one. Ran `./formtools cli resize` against an engine on 33901 with a stand-in window: the request's `agent` was that name; with no window it was refused at once as before, and `list` still read.

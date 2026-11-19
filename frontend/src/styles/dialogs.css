@@ -6,14 +6,7 @@
 .ft-dlg-head [data-close] { border-radius: 50%; }
 
 .ft-settings-scrim { z-index: var(--z-settings); }
-.ft-consent-scrim { z-index: var(--z-context); }
-.ft-consent { width: min(460px, calc(100vw - 48px)); }
-.ft-consent .ft-dlg-head { grid-template-columns: minmax(0, 1fr) auto; }
-.ft-consent-mark { display: inline-flex; color: var(--text-muted); }
-.ft-consent-body { display: grid; gap: var(--space-2); padding: var(--space-4) var(--space-5) var(--space-3); }
-.ft-consent-body p { margin: 0; }
-.ft-consent-what { color: var(--text-primary); font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
-.ft-agent-note { min-height: 36px; }
+.ft-agent-note { min-height: 72px; }
 .ft-agent-status { min-height: 18px; color: var(--text-secondary); }
 .ft-sec { padding-bottom: var(--space-4); border-bottom: 1px solid var(--line-0); }
 .ft-sec h3 { margin: var(--space-4) 0 var(--space-3); font-size: 14px; font-weight: 600; }
