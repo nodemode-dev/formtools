@@ -1,5 +1,6 @@
 import type { Command, Commands } from '../ui/commands';
 import { toast } from '../ui/toast';
+import { keyed } from '../io/window-key';
 
 export type DemoId = 'photos' | 'family' | 'bench';
 export interface DemoDef { id: DemoId; title: string; label: string; icon: string; line: string; what: string }
@@ -21,7 +22,7 @@ export function registerDemos(commands: Commands, openPath: (path: string) => un
     busy = true;
     toast(`Opening the demo: ${d.title}...`);
     try {
-      const res = await fetch(`/api/demos/${d.id}`, { method: 'POST' });
+      const res = await fetch(`/api/demos/${d.id}`, keyed({ method: 'POST' }));
       const body = await res.json().catch(() => null) as { path?: string; notes?: string[]; error?: string } | null;
       if (!res.ok || !body?.path) throw new Error(body?.error ?? `The engine answered ${res.status}.`);
       await openPath(body.path);

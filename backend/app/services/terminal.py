@@ -40,6 +40,7 @@ class Session:
         self.kind = kind
         self.argv = argv
         self.env = env
+        self.on_close: list = []
 
     def describe(self) -> dict:
         return {"id": self.id, "title": self.title, "cwd": self.cwd, "alive": self.alive, "kind": self.kind}
@@ -215,6 +216,8 @@ def close(sid: str) -> None:
             session.proc.terminate(force=True)
         except Exception:
             pass
+    for done in session.on_close:
+        done()
     _send(session, None)
 
 

@@ -7,8 +7,9 @@ from fastapi.staticfiles import StaticFiles
 
 from app.core import config, errors, registry, runtime
 from app.core.guard import HostGuard
+from app.core.window_key import WindowKeyGuard
 from app.routers import claude_code, fs, jobs, live, mcp, system, terminal
-from app.services import claude_code as claude_service, terminal as terminal_service
+from app.services import agents, claude_code as claude_service, terminal as terminal_service
 
 log = logging.getLogger("formtools")
 
@@ -19,6 +20,7 @@ async def lifespan(_: FastAPI):
     runtime.start_logging(data)
     for name, reason in registry.failed().items():
         log.error("tool %s is not available: %s", name, reason)
+    agents.clear()
     terminal_service.bind(asyncio.get_running_loop())
     asyncio.get_running_loop().run_in_executor(None, registry.startup)
     yield
@@ -45,6 +47,7 @@ def build() -> FastAPI:
     dist = config.dist_dir()
     if dist is not None:
         app.mount("/", StaticFiles(directory=str(dist), html=True), name="ui")
+    app.add_middleware(WindowKeyGuard)
     app.add_middleware(HostGuard)
     return app
 

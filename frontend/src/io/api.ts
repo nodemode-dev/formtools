@@ -1,3 +1,5 @@
+import { keyed, windowKey } from './window-key';
+
 export type FileType = 'image' | 'video' | 'audio' | 'model' | 'text' | 'archive' | 'font' | 'pdf' | 'family' | 'other';
 
 export interface Entry {
@@ -154,7 +156,9 @@ export type AgentEvent =
   | { type: 'notice'; text: string };
 
 export function socketTo(path: string): WebSocket {
-  return new WebSocket(`${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}/api${path}`);
+  const ws = new WebSocket(`${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}/api${path}`);
+  ws.addEventListener('open', () => ws.send(JSON.stringify({ type: 'key', key: windowKey() })));
+  return ws;
 }
 
 export class ApiError extends Error {
@@ -162,7 +166,7 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(path, init);
+  const res = await fetch(path, keyed(init));
   const body = await res.json().catch(() => null) as (T & { ok?: boolean; error?: string }) | null;
   if (!res.ok || body === null || body.ok === false) throw new ApiError(body?.error ?? `The engine answered ${res.status}.`, res.status);
   return body;
@@ -194,7 +198,7 @@ export const api = {
   edit: (path: string, ops: EditOp[], out: EditOut, overwrite = false) => post<{ ok: boolean; path: string }>('/api/image/edit', { path, ops, out, overwrite }),
   batchActions: () => request<{ actions: ActionDef[] }>('/api/batch/actions'),
   batchPreviewUrl: async (path: string, actions: ActionUse[], max: number): Promise<string> => {
-    const res = await fetch('/api/batch/preview', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path, actions, max }) });
+    const res = await fetch('/api/batch/preview', keyed({ method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path, actions, max }) }));
     if (!res.ok) {
       const b = await res.json().catch(() => null) as { error?: string } | null;
       throw new ApiError(b?.error ?? `The engine answered ${res.status}.`, res.status);

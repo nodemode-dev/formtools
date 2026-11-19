@@ -5,7 +5,7 @@ from urllib.parse import urlparse
 from fastapi import APIRouter, HTTPException, Request, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel, Field
 
-from app.core import config
+from app.core import config, window_key
 from app.services import claude_code, terminal
 
 router = APIRouter(prefix="/api/terminal", tags=["terminal"])
@@ -31,6 +31,7 @@ def origin_ok(origin: str | None, host: str | None) -> bool:
 def require_local(request: Request) -> None:
     if not origin_ok(request.headers.get("origin"), request.headers.get("host")):
         raise HTTPException(status_code=403, detail="Only the formtools window may use the terminals.")
+    window_key.require(request)
 
 
 def take_socket() -> bool:
@@ -135,10 +136,13 @@ async def attach(ws: WebSocket, sid: str) -> None:
     if not origin_ok(ws.headers.get("origin"), ws.headers.get("host")):
         await ws.close(code=4403)
         return
+    await ws.accept()
+    if not await window_key.socket_is_window(ws, "type", "key"):
+        await ws.close(code=4403)
+        return
     if not take_socket():
         await ws.close(code=4429)
         return
-    await ws.accept()
     try:
         session = terminal.get(sid)
     except KeyError:

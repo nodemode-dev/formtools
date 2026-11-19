@@ -1,5 +1,11 @@
 # setup HASHOUT_LOG
 
+## 2026-11-19 · Unreleased · the command line and the recorder after the window key
+
+- `setup/cli.py` :: `tool` · `info`, `list`, `convert`, `resize` and `rename` now call the MCP tools (`image_info`, `fs_list`, `batch_run`, `rename_plan`, `rename_apply`) through `/mcp`, as an outside agent does, because the engine's write routes now answer only the window. It holds no key and cannot ask for one. Reads that stay GET (preset list, job polling) are unchanged. Ctrl+C while waiting for a job no longer cancels it (there is no MCP tool to cancel a job); it stops waiting and prints the job id.
+- `scripts/demo-record.py` :: `Engine.claim` · The recorder replays the window's own requests, so it claims the window key from `POST /api/window/key` and sends it. That route answers once per launch and only for an engine started from source, so run the recorder against a fresh `./formtools backend`; otherwise it stops with a one-line message.
+- `.github/workflows/ci.yml` · the backend job also runs `pytest` over `backend/tests`.
+
 ## 2026-11-03 · v0.2.0 · launcher, setup scripts, CI, agent kit
 
 - The launcher and `setup/` follow formvis's shape (bash dispatcher, `.bat` twins, `lib.sh`) with the prefix `ft_` and the root variable `FORMTOOLS_ROOT`. formvis delegates installs and boots to `oc_install` and `boot_*` files inside `backend/` and `frontend/`; formtools does the work in `setup/` itself because the contract lists no such files there.

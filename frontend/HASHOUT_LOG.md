@@ -2,6 +2,13 @@
 
 Context for the frontend code, kept here instead of in comments.
 
+## Unreleased · 2026-11-19 · the page holds the window key
+
+- `src/io/window-key.ts` :: `loadWindowKey`, `keyed`, `windowKey` · The page takes the engine's key once at boot, before `startApp` (`src/main.ts`): the packaged shell's global `__FORMTOOLS_WINDOW_KEY` first (read once, then deleted), else one `POST /api/window/key` from source, kept in `sessionStorage` so a reload of the tab keeps working. Nothing is drawn before it, so there is no visible change and no re-render; `startApp` only waits one local round trip from source and nothing in the packaged app.
+- `src/io/api.ts`, `model-api.ts`, `doc-api.ts`, `util-api.ts`, `exif-api.ts`, `desktop-api.ts`, `src/demos/index.ts`, `src/automation/catalogue.ts` · Every `fetch` that can write goes through `keyed(init)`, which adds `X-Formtools-Window-Key`; the dock's GET calls in `api.ts` use the same helper. The raw GETs left (`overlay/stage.ts`, `model-api.ts` `fetchBytes`, image and media URLs) need no key. There is no XHR, `sendBeacon` or `EventSource` in the frontend.
+- `src/io/api.ts` :: `socketTo`, `src/automation/bridge.ts` :: `connectBridge` · A browser cannot set headers on a WebSocket, so each socket sends the key as its first frame on open (`{"type": "key"}` for the dock, `{"t": "hello"}` for `/api/live`). The listener is added before the caller's own, so no resize or input frame goes first.
+- The browser demo pages replay recorded answers; their shim ignores the added header and answers the key request like any unknown route, so they start as before (not run in this change).
+
 ## v0.8.1 · 2026-11-14 · the tree drops the twisty of a folder with no subfolders
 
 - `src/ui/tree.ts` :: `expand` · After the first load of a node's children, `setClass(node, 'has-children', r.dirs.length > 0)`. On macOS the engine no longer opens a folder to learn whether it has subfolders (backend log), so `has_children` can be true for a folder that holds only files; the twisty goes once that folder has been expanded and had none. It is one class on the node the person just clicked, and `.ft-tree-twisty` keeps its 14 px box through `visibility`, so nothing moves. Checked: `tsc --noEmit`. Not verified in a browser, throttled or not. The three browser demo pages were not rebuilt or re-recorded, so they still carry 0.8.0.

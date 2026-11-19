@@ -1,4 +1,5 @@
 import type { Commands } from '../ui/commands';
+import { windowKey } from '../io/window-key';
 import { asAgent } from './actor';
 import { mirrorCatalogue } from './catalogue';
 
@@ -25,7 +26,11 @@ export function connectBridge(commands: Commands): void {
   const open = (): void => {
     const proto = location.protocol === 'https:' ? 'wss' : 'ws';
     const ws = new WebSocket(`${proto}://${location.host}/api/live`);
-    ws.onopen = () => { delay = 500; void mirrorCatalogue(commands).catch(() => undefined); };
+    ws.onopen = () => {
+      ws.send(JSON.stringify({ t: 'hello', key: windowKey() }));
+      delay = 500;
+      void mirrorCatalogue(commands).catch(() => undefined);
+    };
     ws.onmessage = async (ev) => {
       let msg: { t?: string; id?: string; command?: string; params?: Record<string, unknown> };
       try { msg = JSON.parse(String(ev.data)); } catch { return; }

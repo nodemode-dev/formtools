@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Request, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel, Field
 
+from app.core import window_key
 from app.core.errors import ApiError
 from app.services import bridge
 
@@ -18,6 +19,9 @@ async def live(ws: WebSocket) -> None:
         await ws.close(code=4403)
         return
     await ws.accept()
+    if not await window_key.socket_is_window(ws, "t", "hello"):
+        await ws.close(code=4403)
+        return
     key = bridge.attach(ws)
     try:
         while True:

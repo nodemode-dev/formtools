@@ -27,7 +27,9 @@ something outside it could get in:
 
 - **The engine** binds to loopback (127.0.0.1) and answers only requests whose host
   and origin are this computer's own window and agents. Anything that makes it
-  reachable from another machine, or from a web page in your browser.
+  reachable from another machine, or from a web page in your browser. Requests that
+  change anything are accepted only from the formtools window, which holds a key the
+  engine makes fresh each time it starts; agents come in through the MCP endpoint.
 - **The terminal dock and Claude Code tabs**: anything that lets a web page, a file or
   an MCP client open or drive a terminal, which only you are meant to do.
 - **MCP tools**: anything that lets an agent reach further than the tools describe.
