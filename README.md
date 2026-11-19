@@ -102,12 +102,12 @@ Desktop utilities: colour picker · screen ruler · text extractor · zoom and d
 
 **Terminal.** A dock above the status bar holds real terminals run by the engine: your login shell in as many tabs as you like, kept running while the dock is hidden. Open it with the Terminal button in the title bar or View > Terminal (Mod+J).
 
-**Claude Code.** If Claude Code is installed, a Claude Code tab (Mod+Shift+J) starts your own `claude` with formtools' MCP tools already attached, and the Chat tab (Mod+Alt+J) talks to it in a chat with Allow and Deny cards for each step, then hands the conversation to a Claude Code tab when you want the full terminal. formtools does not bundle Claude Code and never reads or stores its sign-in; if it is missing, the dock shows the one-line install. Agents cannot open terminals or Claude Code through MCP: those stay yours.
+**Claude Code.** If Claude Code is installed, a Claude Code tab (Mod+Shift+J) starts your own `claude` with formtools' MCP tools attached (the ones that only look at files or add new ones run on their own; the ones that can delete, move or overwrite files ask in Claude Code's own prompt), and the Chat tab (Mod+Alt+J) talks to it in a chat with Allow and Deny cards for each step, then hands the conversation to a Claude Code tab when you want the full terminal. formtools does not bundle Claude Code and never reads or stores its sign-in; if it is missing, the dock shows the one-line install. Agents cannot open terminals or Claude Code through MCP: those stay yours.
 
 ## Under the hood
 
 - **Window:** vanilla TypeScript and Vite, on port 5240 in development.
-- **Engine:** Python and FastAPI on 127.0.0.1:8240, with 8 tool modules registered at start.
+- **Engine:** Python and FastAPI on 127.0.0.1:8240, with 9 tool modules registered at start.
 - **Desktop:** a Tauri 2 shell that starts its own engine on a free port.
 - **Local:** every file is read on this computer and nothing is uploaded.
 - **Media:** FFmpeg (LGPL build) for playback, inspection and lossless clips; transcoding stays in FormEncoder.

@@ -21,6 +21,7 @@ formtools runs on this computer as an engine with a window. Its MCP server, name
 | Utilities | `dupes_scan`, `disk_usage`, `empty_folders`, `templates_list`, `template_create`, `trash_files` | duplicates, folder sizes, empty folders, new files from templates, moving files to the system trash |
 | Metadata | `exif_read` | every tag ExifTool reads from any file (pictures, video, audio, documents, fonts, archives), grouped by source; optionally keep only named groups |
 | System | `hosts_read`, `env_read` | read the hosts file entries and the environment variables per scope; changes to either are made in the window, where the person confirms them |
+| Demos | `demo_open` | make one of the three demo folders (photos, family, bench) from generated files, if it is not made yet, and return its path to browse or run tools on |
 | Jobs | `job_status` | follow any tool that returned a job id until its state is `done`, `failed` or `cancelled` |
 
 ## The loop
@@ -35,6 +36,7 @@ formtools runs on this computer as an engine with a window. Its MCP server, name
 ## Limits
 
 - Nothing deletes permanently. `trash_files` moves to the system trash and refuses drive roots and the home folder. Show the person the list and get a yes before calling it.
+- `tools/list` marks each tool: `readOnlyHint` for tools that only read, and `destructiveHint` for tools that can delete, move or overwrite files. In a Claude Code tab opened by formtools the destructive ones ask in Claude Code's own prompt; the Chat tab asks for every call.
 - New files never replace old ones: extraction, conversion, templates and edits add " (2)" and so on.
 - Extraction refuses parent and absolute paths, skips links and stops on archives that expand too far; say so when it reports skipped members.
 - Formats the window cannot show (RAW, PSD, EXR, HDR, TIFF, OFF) are handled by the engine. Unsupported formats come back as a 415 error with a plain sentence.
