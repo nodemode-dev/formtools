@@ -2,6 +2,10 @@
 
 Context for the frontend code, kept here instead of in comments.
 
+## Unreleased · 2026-11-19 · a reload keeps the key it already has
+
+- `src/io/window-key.ts` :: `loadWindowKey`, `accepted` · From source the page now tries the key kept in `sessionStorage` first, by one `GET /api/terminal` (a read that needs the key and changes nothing), and asks `POST /api/window/key` only when the kept key is not accepted. Before, every reload asked the bootstrap route, was refused (409) after the first claim and the engine counted a second claim that was not one. Run in headless Chrome against an engine from source: load and two reloads made one bootstrap request, each reload's write from the page answered 200; with a stale key kept, the probe was refused, the bootstrap answered once and the write answered 200. The packaged global still comes first and no request is made then.
+
 ## Unreleased · 2026-11-19 · the page holds the window key
 
 - `src/io/window-key.ts` :: `loadWindowKey`, `keyed`, `windowKey` · The page takes the engine's key once at boot, before `startApp` (`src/main.ts`): the packaged shell's global `__FORMTOOLS_WINDOW_KEY` first (read once, then deleted), else one `POST /api/window/key` from source, kept in `sessionStorage` so a reload of the tab keeps working. Nothing is drawn before it, so there is no visible change and no re-render; `startApp` only waits one local round trip from source and nothing in the packaged app.
