@@ -2,6 +2,13 @@
 
 Context for the frontend code, kept here instead of in comments.
 
+## Unreleased · 2026-11-19 · the family dock, module 2.2.0, and Antigravity as the fourth agent tab
+
+- `src/dock/` is module 2.2.0, copied whole from FormVis (16 entries with `MANIFEST.json`; `agents.ts` is new), byte for byte, never edited here. In 2.2.0 the agent kinds are data the adapter gives, so a fourth program needs no change inside the folder.
+- `src/dock-adapter.ts` :: `formtoolsDock` is typed `DockAdapter<'antigravity'>`; `tabs().builtin` and `PROGRAMS` list `antigravity`; `agentStatus` passes the engine's sentence as the row's `note` when a program is not running (`finding` is not `runs`), so the row says where the engine looked. `errors.kind` reads the finder's sentences ("was not found", "does not start") as `notInstalled`, as it read "not installed" before.
+- `terminal.open('antigravity', ...)` goes to `POST /api/terminal/agent`, the route the Codex and Cursor tabs use.
+- Checked: `tsc --noEmit` clean; with `--noUnusedParameters --exactOptionalPropertyTypes --noUncheckedIndexedAccess` no error inside `src/dock/`. Not looked at in a browser, and not in the desktop window: the new button, row and tab were not seen on screen here. The engine side was run with stand-ins (`backend/HASHOUT_LOG.md`, the entry of this date).
+
 ## Unreleased · 2026-11-19 · the family dock, module 2.1.0
 
 - `src/dock/` · Module 2.1.0, copied whole from FormVis at 8bbdf61b (the same fifteen file names; eleven changed: `CONTRACT.md`, `MANIFEST.json`, `adapter.ts`, `chat.ts`, `consent.ts`, `dock.css`, `dock.ts`, `keys.ts`, `placement.ts`, `state.ts`, `tour.ts`), byte for byte, never edited here. The open problem of the 2.0.1 entry below is closed by the module: `placement.ts` no longer holds a field that is written and never read, so `tsc --noEmit` under this app's `noUnusedLocals` is clean and `npm run build` gets past its type check. Nothing here had been bent around that error (no flag dropped, no exclude), so there was nothing of ours to remove for it.

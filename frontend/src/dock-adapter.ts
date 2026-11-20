@@ -11,7 +11,8 @@ const EFFECTS: Record<AgentRequest['effect'], string> = {
   adds: 'It adds new files and never replaces one that exists.',
   alters: 'It can delete, move or overwrite files.',
 };
-const PROGRAMS = ['claude', 'codex', 'cursor'] as const;
+const PROGRAMS = ['claude', 'codex', 'cursor', 'antigravity'] as const;
+type Told = Partial<DockProgramStatus> & { finding?: string; said?: string };
 const adders: Array<(r: ConsentRequest) => void> = [];
 const withdrawers: Array<(id: string) => void> = [];
 const early = new Map<string, ConsentRequest>();
@@ -112,7 +113,7 @@ async function readJson<T>(res: Response): Promise<T> {
   return body;
 }
 
-export function formtoolsDock(openSettings: () => void): DockAdapter {
+export function formtoolsDock(openSettings: () => void): DockAdapter<'antigravity'> {
   return {
     words: {
       app: 'formtools', noun: 'files', start: './formtools', example: 'find the duplicates in this folder',
@@ -126,7 +127,7 @@ export function formtoolsDock(openSettings: () => void): DockAdapter {
     isDockChord: (e) => platformMod(e) && !e.shiftKey && !e.altKey,
     chordLabel: () => `${isMac ? 'Cmd' : 'Ctrl'}+J`,
     passKey: (e) => platformMod(e),
-    tabs: () => ({ builtin: ['chat', 'shell', 'claude', 'codex', 'cursor'] }),
+    tabs: () => ({ builtin: ['chat', 'shell', 'claude', 'codex', 'cursor', 'antigravity'] }),
     classes: { iconButton: 'cv-tt-btn', button: 'cv-btn', primaryButton: 'cv-btn-primary', input: 'cv-input', select: 'cv-hf-sort', note: 'cv-note' },
     t: (_key, english) => english,
     onTheme: (handler) => { document.addEventListener('nm:ui-settings-changed', handler); },
@@ -139,7 +140,7 @@ export function formtoolsDock(openSettings: () => void): DockAdapter {
       kind: (err) => {
         if (err instanceof TypeError) return 'unreachable';
         if (!(err instanceof ApiError)) return null;
-        if (/not installed/i.test(err.message)) return 'notInstalled';
+        if (/not installed|was not found|does not start/i.test(err.message)) return 'notInstalled';
         if (err.status === 403) return 'refused';
         if (err.status === 404 || err.status === 405) return 'oldEngine';
         return err.status >= 500 ? 'unreachable' : null;
@@ -157,12 +158,12 @@ export function formtoolsDock(openSettings: () => void): DockAdapter {
       channel: (id) => socketChannel(socketTo(`/terminal/${encodeURIComponent(id)}/stream`)),
     },
     agentStatus: async () => {
-      let now: Partial<Record<string, Partial<DockProgramStatus>>>;
-      try { now = await readJson<Partial<Record<string, Partial<DockProgramStatus>>>>(await fetch('/api/agents/status', keyed())); } catch { return null; }
-      const out: DockAgentStatus = {};
+      let now: Partial<Record<string, Told>>;
+      try { now = await readJson<Partial<Record<string, Told>>>(await fetch('/api/agents/status', keyed())); } catch { return null; }
+      const out: DockAgentStatus<'antigravity'> = {};
       for (const name of PROGRAMS) {
         const p = now[name];
-        if (p) out[name] = { installed: p.installed === true, version: p.version ?? null, install: p.install ?? '', signedIn: p.signedIn ?? null };
+        if (p) out[name] = { installed: p.installed === true, version: p.version ?? null, install: p.install ?? '', signedIn: p.signedIn ?? null, ...(p.finding !== undefined && p.finding !== 'runs' && typeof p.said === 'string' ? { note: p.said } : {}) };
       }
       return out;
     },

@@ -19,7 +19,7 @@ Commands for the person to run in the formtools folder, or for you to run in you
 | --- | --- |
 | Start formtools (engine and window) for development | `./formtools boot` |
 | Check the machine is ready | `./formtools doctor` |
-| Connect Claude Code, Codex and Cursor for this user account | `./formtools agents install` (add `--dry-run` first to see what it would change) |
+| Connect Claude Code, Codex, Cursor and Antigravity for this user account | `./formtools agents install` (add `--dry-run` first to see what it would change) |
 | Run the MCP server as a client does (stdio) | `./formtools mcp` (starts the engine if none is running) |
 | Windows | the same commands through `formtools.bat` |
 

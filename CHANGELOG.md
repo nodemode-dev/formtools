@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.11.0 · 2026-11-19
+
+Four agent programs, found however FormTools was started.
+
+- Antigravity (Google's `agy` program) is offered beside Claude Code, Codex and Cursor: a fourth agent tab in the terminal panel, a fourth line in the panel's list of programs, and `./formtools agents install antigravity` to connect it for your user account.
+- FormTools finds these programs however it was started. Opened from the Dock, the Start menu or a desktop launcher, an app gets a shorter list of folders than a terminal has, and programs installed by Homebrew, npm, a version manager or into your home folder could be reported as missing. FormTools now also looks in the usual install folders and asks your own shell where its programs are.
+- A program that is found but does not start is said to be so, with the system's own error line. Before, it was shown as installed and the tab failed.
+- When a program is not found, the message says where FormTools looked and how to install it.
+- An Antigravity tab reaches formtools's tools through a settings file in a folder of formtools's own, never in a folder of your files. The entry is removed when the tab closes.
+- Connecting Antigravity keeps everything else in its settings file, makes a dated backup first, and changes nothing when formtools is already there.
+- For the people who build it: the test suite can no longer start a real agent program; it runs only stand-ins and says how many it started.
+
+Not yet tried with the real Antigravity program, and not yet tried on Windows or macOS.
+
 ## 0.10.0 · 2026-11-19
 
 Starting and stopping, mostly for Windows. This is the first app in the family to carry these changes; the others follow once this build has been tried on Windows.

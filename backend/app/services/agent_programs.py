@@ -1,11 +1,12 @@
+import json
 import os
-import shlex
-import shutil
 import subprocess
 import time
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 
-from app.services import agents, claude_code, terminal
+from app.core import config
+from app.services import agent_lookup, agents, claude_code, terminal
 
 TOKEN_VAR = "FORMTOOLS_INAPP_TOKEN"
 CONFIG_VAR = "FORMTOOLS_MCP_CONFIG"
@@ -14,42 +15,73 @@ _cache: dict = {"at": 0.0, "value": None}
 PROGRAMS = {
     "codex": {"bin": "codex", "title": "Codex", "install": "npm install -g @openai/codex"},
     "cursor": {"bin": "cursor-agent", "title": "Cursor", "install": "curl https://cursor.com/install -fsS | bash"},
+    "antigravity": {"bin": "agy", "title": "Antigravity", "install": agent_lookup.install("antigravity")},
 }
+TAB_FOLDER = "AgentTabs"
 
 
 def find(kind: str) -> str | None:
-    binary = PROGRAMS[kind]["bin"]
-    found = shutil.which(binary, path=terminal.base_env().get("PATH"))
-    if found or os.name == "nt":
-        return found
+    return claude_code.located(kind).path
+
+
+def tab_folder(kind: str) -> Path:
+    folder = config.data_dir() / TAB_FOLDER / kind
+    folder.mkdir(mode=0o700, parents=True, exist_ok=True)
+    return folder
+
+
+def _tab_file(folder: Path) -> Path:
+    return folder / ".agents" / "mcp_config.json"
+
+
+def _servers(path: Path) -> dict:
+    data = json.loads(path.read_text(encoding="utf-8") or "{}") if path.exists() else {}
+    if not isinstance(data, dict) or not isinstance(data.get("mcpServers", {}), dict):
+        raise OSError(f"{path} is not an MCP servers file formtools can read, so it was left alone")
+    return data
+
+
+def _replace(path: Path, data: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    part = path.with_name(path.name + f".part-{os.getpid()}")
+    with os.fdopen(os.open(part, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600), "w", encoding="utf-8") as handle:
+        handle.write(json.dumps(data, indent=2) + "\n")
+    os.replace(part, path)
+
+
+def write_tab_entry(folder: Path, port: int, token: str) -> None:
+    path = _tab_file(folder)
+    data = _servers(path)
+    data.setdefault("mcpServers", {})[agents.SERVER] = {"serverUrl": f"http://127.0.0.1:{port}/mcp", "headers": {agents.INAPP_HEADER: token}}
+    _replace(path, data)
+
+
+def remove_tab_entry(folder: Path, token: str) -> None:
+    path = _tab_file(folder)
     try:
-        out = subprocess.run(terminal.login_shell() + ["-c", f"command -v {shlex.quote(binary)}"], capture_output=True, text=True, timeout=10,
-                             env=claude_code.child_env(), stdin=subprocess.DEVNULL)
-    except (OSError, subprocess.SubprocessError):
-        return None
-    lines = out.stdout.strip().splitlines()[-1:] if out.returncode == 0 else []
-    return lines[0] if lines and os.path.isabs(lines[0]) and os.access(lines[0], os.X_OK) else None
+        data = _servers(path)
+        entry = data.get("mcpServers", {}).get(agents.SERVER)
+        if not isinstance(entry, dict) or (entry.get("headers") or {}).get(agents.INAPP_HEADER) != token:
+            return
+        del data["mcpServers"][agents.SERVER]
+        _replace(path, data)
+    except (OSError, ValueError):
+        return
 
 
-def status() -> dict:
+def status(fresh: bool = False) -> dict:
     out = {}
     for kind, p in PROGRAMS.items():
-        path = find(kind)
-        out[kind] = {"installed": path is not None, "path": path, "version": None, "signedIn": None, "install": "" if path else p["install"], "title": p["title"]}
+        found = claude_code.located(kind, fresh)
+        out[kind] = agent_lookup.answer(found, p["install"], claude_code.OTHERWISE) | {"signedIn": None, "install": "" if found.state == "runs" else p["install"], "title": p["title"]}
     return out
 
 
 def _ask(path: str, args: list[str]) -> subprocess.CompletedProcess | None:
     try:
-        return subprocess.run([path, *args], capture_output=True, text=True, timeout=10, env=claude_code.child_env(), stdin=subprocess.DEVNULL)
+        return agent_lookup.run([path, *args], claude_code.child_env(path), 10)
     except (OSError, subprocess.SubprocessError):
         return None
-
-
-def _version(path: str) -> str | None:
-    out = _ask(path, ["--version"])
-    words = out.stdout.split() if out is not None and out.returncode == 0 else []
-    return next((word for word in words if word[:1].isdigit()), None)
 
 
 def _signed_in(path: str, kind: str) -> bool | None:
@@ -62,14 +94,13 @@ def _signed_in(path: str, kind: str) -> bool | None:
     return None
 
 
-def _describe(kind: str) -> dict:
+def _describe(kind: str, fresh: bool = False) -> dict:
     p = PROGRAMS[kind]
-    path = find(kind)
-    found = {"installed": path is not None, "path": path, "version": None, "signedIn": None, "install": p["install"], "title": p["title"]}
-    if path is not None:
-        found["version"] = _version(path)
-        found["signedIn"] = _signed_in(path, kind)
-    return found
+    found = claude_code.located(kind, fresh)
+    out = agent_lookup.answer(found, p["install"], claude_code.OTHERWISE) | {"signedIn": None, "install": p["install"], "title": p["title"]}
+    if found.state == "runs" and kind in SIGN_IN:
+        out["signedIn"] = _signed_in(found.path, kind)
+    return out
 
 
 def programs(fresh: bool = False) -> dict:
@@ -77,7 +108,7 @@ def programs(fresh: bool = False) -> dict:
         return _cache["value"]
     with ThreadPoolExecutor(max_workers=len(PROGRAMS) + 1) as pool:
         claude = pool.submit(claude_code.info, fresh)
-        others = {kind: pool.submit(_describe, kind) for kind in PROGRAMS}
+        others = {kind: pool.submit(_describe, kind, fresh) for kind in PROGRAMS}
         value = {"claude": claude.result() | {"title": "Claude Code"}} | {kind: job.result() for kind, job in others.items()}
     _cache["value"], _cache["at"] = value, time.time()
     return value
@@ -86,16 +117,24 @@ def programs(fresh: bool = False) -> dict:
 def open_terminal(kind: str, port: int, cols: int = 100, rows: int = 30) -> dict:
     if kind not in PROGRAMS:
         raise ValueError(f"There is no agent program called {kind}.")
-    path = find(kind)
-    if path is None:
-        raise LookupError(f"{PROGRAMS[kind]['title']} is not installed on this computer.")
-    argv = [path] if os.name == "nt" else terminal.login_shell() + ["-c", "exec " + shlex.quote(path)]
+    found = claude_code.usable(kind)
+    if found.state != "runs":
+        raise LookupError(claude_code.said(found))
+    path = found.path
+    argv = agent_lookup.start_argv([path])
     token, mcp_file = agents.issue(port)
-    env = terminal.base_env() | {TOKEN_VAR: token, CONFIG_VAR: mcp_file, "FORMTOOLS_MCP_URL": f"http://127.0.0.1:{port}/mcp"}
+    env = claude_code.child_env(path, {TOKEN_VAR: token, CONFIG_VAR: mcp_file, "FORMTOOLS_MCP_URL": f"http://127.0.0.1:{port}/mcp"})
+    own = tab_folder(kind) if kind == "antigravity" else None
     try:
-        session = terminal.open_session(claude_code.workdir(), cols, rows, PROGRAMS[kind]["title"], argv, env, kind)
+        if own:
+            write_tab_entry(own, port, token)
+        session = terminal.open_session(str(own) if own else claude_code.workdir(), cols, rows, PROGRAMS[kind]["title"], argv, env, kind)
     except BaseException:
         agents.revoke(token)
+        if own:
+            remove_tab_entry(own, token)
         raise
     session.on_close.append(lambda: agents.revoke(token))
+    if own:
+        session.on_close.append(lambda: remove_tab_entry(own, token))
     return session.describe()
