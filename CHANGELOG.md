@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.13.0 · 2026-11-20
+
+The family's colour and layer names, all of them.
+
+- Every colour, size and layer name the other Form apps use now also means the same thing in FormTools, so the shared terminal panel and anything else the family shares draws the same here as in FormVis. Nothing on screen changes: FormTools already used the same values.
+- The README says that FormTools is released, built for macOS, Windows and Linux and tested on all three.
+- The three browser demos are rebuilt from this version.
+
 ## 0.12.0 · 2026-11-20
 
 Loose ends of the four agent programs, and a calmer start.

@@ -11,12 +11,12 @@
 </p>
 
 <p align="center">
-  <img alt="version 0.12.0" src="https://img.shields.io/badge/version-0.12.0-eef0f4?style=flat-square">
+  <img alt="version 0.13.0" src="https://img.shields.io/badge/version-0.13.0-eef0f4?style=flat-square">
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-Vite-3178c6?style=flat-square&logo=typescript&logoColor=white">
   <img alt="Python FastAPI engine" src="https://img.shields.io/badge/Python-FastAPI-009688?style=flat-square">
   <img alt="macOS, Windows, Linux" src="https://img.shields.io/badge/macOS%20%C2%B7%20Windows%20%C2%B7%20Linux-native-2f7bf5?style=flat-square">
   <img alt="License: Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-3a3a3a?style=flat-square">
-  <img alt="Status: alpha" src="https://img.shields.io/badge/status-alpha-d69e2e?style=flat-square">
+  <img alt="Status: released" src="https://img.shields.io/badge/status-released-d69e2e?style=flat-square">
 </p>
 
 <p align="center">
@@ -152,7 +152,7 @@ cd formtools
 The engine listens on 127.0.0.1:8240 (`FORMTOOLS_PORT`). `./formtools desktop dev` opens the desktop window instead (run `./formtools install-desktop` first). On Windows use `formtools_oc_install.bat` and `formtools.bat`.
 
 > [!IMPORTANT]
-> **Status:** alpha. Features are broad and still being hardened; the 3D viewer needs WebGL. See [`CHANGELOG.md`](CHANGELOG.md).
+> **Status:** released. FormTools is built and bundled for macOS, Windows and Linux and has been tested on all three. The 3D viewer needs WebGL. See [`CHANGELOG.md`](CHANGELOG.md).
 
 **Contributing:** branch from `main`, keep changes to source here, and leave packaging and releases to FormCompiler. See [`AGENTS.md`](AGENTS.md).
 
