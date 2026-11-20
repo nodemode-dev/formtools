@@ -2,6 +2,11 @@
 
 Context for the frontend code, kept here instead of in comments.
 
+## 0.12.0 · 2026-11-20 · the Outside agents note names all four agent tabs
+
+- `src/ui/agent-access.ts` :: `OutsideAgentsRow` note · "the Chat, Claude Code, Codex and Cursor tabs" is now "the Chat, Claude Code, Codex, Cursor and Antigravity tabs". An Antigravity tab gets the same in-app token as the other three (`backend/app/services/agent_programs.py` :: `open_terminal`), so Blocked stops it too and the sentence left it out. It is the only sentence in the window outside `src/dock/` that lists the agent programs (a search for "Cursor" and "Codex" across `src`). formtools carries no language tables, so there is nothing to translate.
+- Program path: formtools has no Preferences field or stored value for where Claude Code is (the finder looks on PATH and in the login shell), so there is none to add for Codex, Cursor or Antigravity.
+
 ## Unreleased · 2026-11-19 · the family dock, module 2.2.0, and Antigravity as the fourth agent tab
 
 - `src/dock/` is module 2.2.0, copied whole from FormVis (16 entries with `MANIFEST.json`; `agents.ts` is new), byte for byte, never edited here. In 2.2.0 the agent kinds are data the adapter gives, so a fourth program needs no change inside the folder.
