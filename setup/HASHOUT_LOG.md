@@ -1,5 +1,12 @@
 # setup HASHOUT_LOG
 
+## 2026-11-20 · 0.12.0 · the Windows engine is built with no console window unless FORMTOOLS_ENGINE_WINDOWED is 0
+
+- `freeze_backend` :: the line after the hidden imports; `freeze_backend.bat` :: the line after the hidden imports · The default turns round, by the owner's decision for every app of the family: a Windows build gives PyInstaller `--noconsole` unless `FORMTOOLS_ENGINE_WINDOWED=0`. Unset, empty, `1` or anything else that is not `0`: no console. On macOS and Linux the variable still does nothing. One condition changed in each file; the long PyInstaller line is untouched.
+- Why it is safe to turn on: the engine's entry file replaces missing streams before anything else (`backend/formtools_engine.py`, the first lines after the imports), so `--selfcheck`, `--version` and the serve path do not fail when `sys.stdout` is None; they write to nothing. The shell reads the address and the window key from a pipe it gives the engine, which is how FormWeb's shell reads them from its engine, built with `--noconsole` always.
+- What a builder sees differently: `--selfcheck` at the end of the script still returns its exit code, and its `ok` is seen only when its output goes to a file or a pipe. To get the old console build for a look at the engine's words, set `FORMTOOLS_ENGINE_WINDOWED=0`.
+- Checked on Linux: `bash -n setup/freeze_backend`; the changed line run alone with a stand-in `ft_os`: Windows with the variable unset, empty, `1` or `yes` adds `--noconsole` once, Windows with `0` adds nothing, Linux and macOS add nothing in all five cases. The batch file was read, not run. No Windows build has shown the app starting with this default.
+
 ## 2026-11-19 · Unreleased · the shared dock is module 2.2.0, the shared finder is held to its hash, and Antigravity is a fourth client
 
 - `agents.py` :: `DOCK_VERSION`, `DOCK` · `2.2.0`, and the manifest's tab list gains `antigravity`. `agents sync` rewrote `agents/manifest.json` (the dock's tab list only).
