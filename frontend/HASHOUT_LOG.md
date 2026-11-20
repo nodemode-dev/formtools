@@ -2,6 +2,12 @@
 
 Context for the frontend code, kept here instead of in comments.
 
+## 0.13.0 · 2026-11-20 · every FormVis token name resolves
+
+- `src/styles/tokens.css` gains the four FormVis names it lacked, with FormVis's values and its lines as they stand at FormVis `origin/main` 94ee0022: `--z-under` -1, `--z-local-2` 2, `--z-local-4` 4, `--z-local-5` 5. Nothing in formtools uses them yet; they are there so the shared panel and any rule copied from FormVis resolve. The file now matches FormVis's line for line but one blank line before `:root[data-oled]`, left as it was.
+- Every other shared name already had FormVis's value, so no value changed. formtools has no own name in the token file; its own names elsewhere (`--ft-cat-*` category colours, `--ft-dock-*` and `--ft-nav-w` sizes, `--ft-thumb`, `--ft-label`, and local `--cat`, `--pct`, `--gut`, `--head`, `--depth`, `--dv-font`, `--cv-tb-*`, `--cv-traffic-w`) have no FormVis counterpart, so none became an alias.
+- Checked: resolved `:root` dump 223 to 227 names in Studio Dark, Light and AMOLED, exactly the four added, no value changed; six views at 1280x820 in each theme identical before and after, but for one channel off by one on four (dark) and eight (light) anti-aliased corner pixels of the home page's sample cards.
+
 ## 0.12.0 · 2026-11-20 · the family dock, module 2.2.1
 
 - `src/dock/` is module 2.2.1, every file of the folder copied unchanged from FormVis 23b01889 (16 entries with `MANIFEST.json`), never edited here. Three changed against 2.2.0: `strings.ts` (the first-run guide's `tourInstalledBody` and `tourReadyBody` each end with "Codex, Cursor and Antigravity each get a button of their own here when they are on this computer."), `CONTRACT.md` (version line and a section for 2.2.1) and `MANIFEST.json`. An adapter written for 2.2.0 needs no change, so `src/dock-adapter.ts` is untouched. formtools carries no translations of the panel's sentences.
