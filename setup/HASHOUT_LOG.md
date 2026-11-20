@@ -1,5 +1,9 @@
 # setup HASHOUT_LOG
 
+## 2026-11-20 · 0.12.0 · the shared dock is module 2.2.1
+
+- `agents.py` :: `DOCK_VERSION` · `2.2.1`, the version of the module copied from FormVis 23b01889 (`frontend/HASHOUT_LOG.md`, the entry of this date). `agents/manifest.json` carries no module version, so `agents check` is clean without a sync.
+
 ## 2026-11-20 · 0.12.0 · the Windows engine is built with no console window unless FORMTOOLS_ENGINE_WINDOWED is 0
 
 - `freeze_backend` :: the line after the hidden imports; `freeze_backend.bat` :: the line after the hidden imports · The default turns round, by the owner's decision for every app of the family: a Windows build gives PyInstaller `--noconsole` unless `FORMTOOLS_ENGINE_WINDOWED=0`. Unset, empty, `1` or anything else that is not `0`: no console. On macOS and Linux the variable still does nothing. One condition changed in each file; the long PyInstaller line is untouched.

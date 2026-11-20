@@ -2,6 +2,11 @@
 
 Context for the frontend code, kept here instead of in comments.
 
+## 0.12.0 · 2026-11-20 · the family dock, module 2.2.1
+
+- `src/dock/` is module 2.2.1, every file of the folder copied unchanged from FormVis 23b01889 (16 entries with `MANIFEST.json`), never edited here. Three changed against 2.2.0: `strings.ts` (the first-run guide's `tourInstalledBody` and `tourReadyBody` each end with "Codex, Cursor and Antigravity each get a button of their own here when they are on this computer."), `CONTRACT.md` (version line and a section for 2.2.1) and `MANIFEST.json`. An adapter written for 2.2.0 needs no change, so `src/dock-adapter.ts` is untouched. formtools carries no translations of the panel's sentences.
+- `backend/tests/test_dock_manifest.py` expects `2.2.1`; `setup/agents.py` :: `DOCK_VERSION` is `2.2.1`.
+
 ## 0.12.0 · 2026-11-20 · the Outside agents note names all four agent tabs
 
 - `src/ui/agent-access.ts` :: `OutsideAgentsRow` note · "the Chat, Claude Code, Codex and Cursor tabs" is now "the Chat, Claude Code, Codex, Cursor and Antigravity tabs". An Antigravity tab gets the same in-app token as the other three (`backend/app/services/agent_programs.py` :: `open_terminal`), so Blocked stops it too and the sentence left it out. It is the only sentence in the window outside `src/dock/` that lists the agent programs (a search for "Cursor" and "Codex" across `src`). formtools carries no language tables, so there is nothing to translate.
