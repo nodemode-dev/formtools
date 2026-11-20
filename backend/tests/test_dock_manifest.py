@@ -27,7 +27,8 @@ def copied_agents(tmp_path):
 
 def test_the_shared_dock_files_match_their_manifest():
     kept = json.loads((DOCK / "MANIFEST.json").read_text(encoding="utf-8"))
-    assert kept["module"] == "dock" and kept["version"] == "2.1.0"
+    assert kept["module"] == "dock" and kept["version"] == "2.2.0"
+    assert f"Module version {kept['version']}." in (DOCK / "CONTRACT.md").read_text(encoding="utf-8")
     now = {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in DOCK.iterdir() if p.is_file() and p.name != "MANIFEST.json"}
     assert kept["files"] == now
 
@@ -82,3 +83,52 @@ def test_the_old_dock_key_is_moved_once_into_the_new_one():
     assert out["seen"] is True and out["fresh"] is False
     assert json.loads(out["store"]["formtools.dock"]) == {"open": True, "side": "bottom", "h": 300, "w": 440, "tab": "", "seen": True}
     assert out["store"]["formtools.prefs"] == "{}"
+
+
+LOOKUP = "backend/app/services/agent_lookup.py"
+
+
+def lookup_version():
+    return re.search(r'^VERSION = "([^"]+)"$', (REPO / LOOKUP).read_text(encoding="utf-8"), re.M).group(1)
+
+
+def test_the_shared_finder_matches_the_hash_recorded_for_its_version(tmp_path):
+    copy, agents = copied_agents(tmp_path)
+    assert agents.LOOKUP_HASHES[lookup_version()] == hashlib.sha256((REPO / LOOKUP).read_bytes()).hexdigest()
+    (copy / LOOKUP).parent.mkdir(parents=True)
+    shutil.copy(REPO / LOOKUP, copy / LOOKUP)
+    assert agents.lookup_problems() == []
+
+
+def test_the_check_names_a_finder_edited_in_place_or_missing(tmp_path):
+    copy, agents = copied_agents(tmp_path)
+    (copy / LOOKUP).parent.mkdir(parents=True)
+    shutil.copy(REPO / LOOKUP, copy / LOOKUP)
+    with open(copy / LOOKUP, "a", encoding="utf-8") as f:
+        f.write("\n")
+    assert agents.lookup_problems() == [f"{LOOKUP}: does not match the hash recorded for version {lookup_version()} (the shared finder changes only as a whole new version)"]
+    (copy / LOOKUP).unlink()
+    assert agents.lookup_problems() == [f"{LOOKUP}: missing (the shared finder for the agent programs)"]
+
+
+def test_the_connect_command_adds_formtools_to_antigravity_and_keeps_the_rest(tmp_path):
+    copy, agents = copied_agents(tmp_path)
+    home = tmp_path / "home"
+    cfg = home / ".gemini" / "config" / "mcp_config.json"
+    seeded = {"mcpServers": {"other": {"command": "x"}}, "theme": "dark"}
+    cfg.parent.mkdir(parents=True)
+    cfg.write_text(json.dumps(seeded), encoding="utf-8")
+    agents.install_antigravity(str(home), True, [])
+    assert json.loads(cfg.read_text(encoding="utf-8")) == seeded
+    agents.install_antigravity(str(home), False, [])
+    command, args = agents.launch()
+    data = json.loads(cfg.read_text(encoding="utf-8"))
+    assert data == {"mcpServers": {"other": {"command": "x"}, "formtools": {"command": command, "args": args}}, "theme": "dark"}
+    said = []
+    agents.install_antigravity(str(home), False, said)
+    assert said == ["Antigravity:", f"  MCP server formtools already in {cfg}"]
+
+
+def test_the_shared_finder_imports_nothing_from_the_app():
+    imports = set(re.findall(r"^\s*(?:from|import)\s+([\w.]+)", (REPO / LOOKUP).read_text(encoding="utf-8"), re.M))
+    assert sorted(name for name in imports if name.split(".")[0] in ("app", "setup", "conftest")) == []

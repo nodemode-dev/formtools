@@ -2,6 +2,10 @@
 
 Decisions, reasons and anything left out, newest first. Code carries no comments; the context lives here.
 
+## Unreleased (2026-11-19): the dock tests expect module 2.2.0 and hold the finder to its hash
+
+- `tests/test_dock_manifest.py`: the manifest test expects `2.2.0` and that `CONTRACT.md` names the same version. Three tests for the finder's hash record, which read the version from the file and pin no version number: the file matches the hash recorded for its version; a copy edited in place, and a missing copy, are each named by `lookup_problems`; the file imports nothing from the app. One test for `install_antigravity`: a dry run changes nothing, a run adds `formtools` and keeps a seeded server and key, a second run says it is already there. Each was written after the behaviour was seen (`setup/HASHOUT_LOG.md`, the entry of this date).
+
 ## Unreleased (2026-11-19): four agent programs, found by the family's finder, and tests that start none of them
 
 - `app/services/agent_lookup.py` (new) is the family's finder, version 1.0.1, copied unchanged from FormVis and never edited here; `setup/agents.py` holds the hash for each version. It looks, in order, at the development override variable, the engine's PATH, the known install folders and the person's shell PATH, and answers three ways: runs, found but does not start, not found. The reason: an app started from the Dock, the Start menu or a desktop launcher gets the system's short PATH, and a bare PATH search called installed programs missing.
