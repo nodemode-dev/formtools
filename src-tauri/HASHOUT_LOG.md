@@ -1,5 +1,11 @@
 # src-tauri HASHOUT_LOG
 
+## 2026-11-20 · 0.12.0 · the shell waits 90 seconds for the engine's address
+
+`src/engine_start.rs` :: `ADDRESS_WAIT` · 60 seconds becomes 90, the owner's number for every app of the family, so the sentence a person reads after a start that ran out says "waited 90 seconds". The unit test `a_wait_that_runs_out_says_how_long_and_for_what` reads 90. Nothing else in the file changed; `KEY_WAIT`, `EXIT_WAIT` and the sentences are as they were. `src/main.rs` and `src/win_job.rs` are untouched: `read_port` takes the number from `Wait::limit`.
+
+Checked in the scratch crate that includes the two files by path: `cargo check --target x86_64-pc-windows-msvc` finished with no error and no warning; on Linux the four unit tests of the module pass, and `read_port`, cut from `main.rs` as it stands, gave up on a silent engine after 90 seconds (the loop test, which now expects 90 to 92). The shell itself was not compiled here.
+
 ## 2026-11-19 · Unreleased · a start that fails says why before the last window closes, and the engine's whole tree ends with the shell on Windows
 
 This is the shell half of the pattern the other apps of the family copy. Two new files carry what is not formtools's own: `src/engine_start.rs` (plain functions, `std` only) and `src/win_job.rs` (Windows only, `std` and `windows-sys`).

@@ -32,7 +32,7 @@ export class OutsideAgentsRow {
 
   constructor() {
     this.row = selectRow('Outside agents', [['ask', 'Ask each time'], ['allowed', 'Allowed'], ['blocked', 'Blocked']], (v) => void this.choose(v as AgentAccess), 'agentAccess');
-    setText(this.note, 'Programs outside formtools, such as an AI agent or the command line, ask in the window before they change anything. Always allow in that question sets this to Allowed, for every outside agent and not only the one that asked. Blocked also stops the Chat, Claude Code, Codex and Cursor tabs inside formtools from changing anything; under Ask each time and Allowed those tabs are not asked. Reading is always allowed.');
+    setText(this.note, 'Programs outside formtools, such as an AI agent or the command line, ask in the window before they change anything. Always allow in that question sets this to Allowed, for every outside agent and not only the one that asked. Blocked also stops the Chat, Claude Code, Codex, Cursor and Antigravity tabs inside formtools from changing anything; under Ask each time and Allowed those tabs are not asked. Reading is always allowed.');
     this.el.append(this.row.el, this.note, this.status);
     onAgentState((s) => this.apply(s));
   }

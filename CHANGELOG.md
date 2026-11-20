@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.12.0 · 2026-11-20
+
+Loose ends of the four agent programs, and a calmer start.
+
+- Two Antigravity tabs open at the same time each keep their own connection to formtools. Before, the second took over the first one's, and closing either tab cut the other off. Settings you add to a tab's own file are kept when it closes.
+- The terminal panel's first-run guide says that Codex, Cursor and Antigravity each get a button of their own when they are on this computer.
+- Under Outside agents, the note on Blocked names the Antigravity tab with the Chat, Claude Code, Codex and Cursor tabs.
+- macOS: an engine left behind that has already ended no longer keeps FormTools from opening. Before, the start could wait ten seconds and then say it could not stop an engine that was left running.
+- FormTools now waits up to 90 seconds for its engine's address (it was 60), the same in every app of the family, so a slow first start on a busy computer is not given up on too early.
+- Windows: the engine runs with no console window. For the people who build it: `FORMTOOLS_ENGINE_WINDOWED=0` gives the old console build.
+- The three browser demos are rebuilt from this version.
+
+Not yet tried on Windows or macOS, and not yet tried with the real Antigravity program.
+
 ## 0.11.0 · 2026-11-19
 
 Four agent programs, found however FormTools was started.
