@@ -2,6 +2,12 @@
 
 Decisions, reasons and anything left out, newest first. Code carries no comments; the context lives here.
 
+## 0.12.0 (2026-11-20): an engine that has ended but was not yet collected counts as gone where there is no /proc (`app/core/startup.py` :: `finished`, `gone_by`)
+
+- **What was seen.** FormCut's macOS job failed its start-up tests with "could not stop an engine that was left running": `end` had ended the holder, but `gone_by` kept seeing it, because `_alive_posix` asks `kill(pid, 0)`, which still answers for a process that has ended and whose parent has not collected it, and it tells such a process apart only by reading `/proc`, which macOS does not have. formtools has the same two functions. Here, with `PROC` pointed at a folder that does not exist, `claim` over a holder whose shell is gone answered "formtools could not stop an engine that was left running on ..." after ten seconds.
+- **The change**, carried from FormCut c2c2e221. `finished(pid)` asks `ps -o stat= -p <pid>` where there is no `/proc` (never on Windows, never on Linux) and answers true for a state that starts with `Z`. `gone_by` stops waiting when the process is not alive or is finished. `alive` is unchanged, so the two second watch on the shell starts no program.
+- **The test.** `tests/test_startup.py` :: `test_a_holder_that_ended_and_was_not_yet_collected_counts_as_gone_where_there_is_no_proc`: `PROC` at a folder that does not exist, a holder whose shell is gone is ended and replaced, `finished` is false for the running holder, true while it is ended and not collected, false once collected. Written after the same run failed before the change and passed after it. Not run on macOS.
+
 ## Unreleased (2026-11-19): the dock tests expect module 2.2.0 and hold the finder to its hash
 
 - `tests/test_dock_manifest.py`: the manifest test expects `2.2.0` and that `CONTRACT.md` names the same version. Three tests for the finder's hash record, which read the version from the file and pin no version number: the file matches the hash recorded for its version; a copy edited in place, and a missing copy, are each named by `lookup_problems`; the file imports nothing from the app. One test for `install_antigravity`: a dry run changes nothing, a run adds `formtools` and keeps a seeded server and key, a second run says it is already there. Each was written after the behaviour was seen (`setup/HASHOUT_LOG.md`, the entry of this date).
