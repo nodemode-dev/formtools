@@ -1,5 +1,12 @@
 # setup HASHOUT_LOG
 
+## 2026-11-19 · Unreleased · the Windows engine can be built as a window program, behind a variable that is off
+
+- `freeze_backend` :: the line after the hidden imports; `freeze_backend.bat` :: the line after the hidden imports · With `FORMTOOLS_ENGINE_WINDOWED=1` a Windows build gives PyInstaller `--noconsole`, so the engine is a window program and no console can appear whoever starts it. Unset, `0` or anything else: the build is what it was, a console program that the shell hides. On macOS and Linux the variable does nothing. The batch file adds the flag to the variable that already carries the extra hidden imports, so the long PyInstaller line is untouched.
+- It is off, and stays off until a build on Windows has shown the app starts with it. A window program gets standard output only when its parent gives it a pipe, and the shell reads the engine's address and the window key from that pipe; whether a window program built by PyInstaller still writes to it has not been seen on Windows. The engine side is ready for either answer (`backend/HASHOUT_LOG.md`, the entry of this date: the stream guard and the errors file).
+- With it on, `--selfcheck` at the end of this script still returns its exit code, but its words are seen only when its output is sent to a file or a pipe.
+- Checked on Linux: `bash -n`; a copy of the script and `lib.sh` in a scratch tree with stand-in `python`, `pyinstaller` and, for Windows, a stand-in `uname` that answers `MINGW64_NT-10.0`: Linux with the variable unset or 1, and Windows with it unset or 0, gave PyInstaller the same 50 arguments as before; Windows with 1 gave 51, `--noconsole` once. Not run: the batch file, PyInstaller, any Windows build.
+
 ## 2026-11-19 · v0.9.1 · the engine carries one Python library, as a plain file, so Apple's notary accepts the app
 
 - Fault (formtools 0.9.0 for macOS, the first build with notarization on): the app compiled and was signed, then Apple's notary answered `Invalid`, "The signature of the binary is invalid", for `FormTools.app/Contents/Resources/engine/_internal/Python.framework/Versions/3.14/Python`. No release was made.

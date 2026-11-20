@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.10.0 · 2026-11-19
+
+Starting and stopping, mostly for Windows. This is the first app in the family to carry these changes; the others follow once this build has been tried on Windows.
+
+- Windows: when FormTools closes, its engine closes with it, and anything the engine started closes too. Before, an engine could stay behind after the app was gone.
+- An engine left behind by a crash no longer keeps FormTools from opening. The new start ends it and takes over. A second FormTools that is really open is still refused, with the same sentence as before.
+- A start that fails says why before the window closes: the sentence, the engine's last lines, and where the log is. Before, the loading window could close first and nothing was shown.
+- Every wait at start has a limit and names what it was waiting for: 60 seconds for the engine's address, 10 for its key.
+- Starting FormTools a second time while it is still loading brings the loading window forward.
+- Started by itself, the engine opens FormTools and steps aside. Before, it served the page with no window (Windows showed a console).
+- The engine no longer needs a console: it runs when it has nowhere to write messages, and its errors then go to a file in the Logs folder.
+- For the people who build it: the Windows engine can be built as a window program with `FORMTOOLS_ENGINE_WINDOWED=1`. It is off, and goes on only after a Windows build has shown the app starts that way.
+
 ## 0.9.1 · 2026-11-19
 
 The Mac build of 0.9.0 was never released: Apple's notary refused it. This release is 0.9.0 with that fixed.

@@ -1320,7 +1320,7 @@ dependencies = [
 
 [[package]]
 name = "formtools"
-version = "0.9.1"
+version = "0.10.0"
 dependencies = [
  "image",
  "objc2",
@@ -1340,6 +1340,7 @@ dependencies = [
  "tauri-plugin-single-instance",
  "tauri-plugin-updater",
  "windows",
+ "windows-sys 0.61.2",
  "x11rb 0.14.0",
  "xcap",
 ]
