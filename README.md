@@ -96,8 +96,8 @@ Desktop utilities: colour picker · screen ruler · text extractor · zoom and d
 ./formtools cli convert --format webp --out ~/Pictures/web ~/Pictures/trip   # batch convert
 ./formtools cli resize --longest 2048 ~/Pictures/trip                        # resize
 ./formtools cli rename --find IMG --replace trip --counter ~/Pictures/trip/* # print the plan; add --apply
-./formtools mcp                                                              # MCP server on stdio for Claude Code, Codex and Cursor
-./formtools agents install                                                   # connect Claude Code, Codex and Cursor for your user account
+./formtools mcp                                                              # MCP server on stdio for Claude Code, Codex, Cursor and Antigravity
+./formtools agents install                                                   # connect Claude Code, Codex, Cursor and Antigravity for your user account
 ```
 
 The `cli` commands talk to a running engine, so start formtools first (`./formtools`, then open http://127.0.0.1:5240) and keep that window open. `convert`, `resize` and `rename --apply` change files, so each one waits for your answer in the window unless Outside agents is Allowed; `info`, `list` and a rename plan only read and run without asking.
