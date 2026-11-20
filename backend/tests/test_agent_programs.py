@@ -122,32 +122,70 @@ def test_a_tab_entry_is_named_formtools_tab_and_a_closed_tab_token_is_an_outside
 
 
 @pytest.mark.skipif(os.name == "nt", reason="the stand-in programs are shell scripts")
-def test_an_antigravity_tab_gets_formtools_tab_in_its_own_folder_until_it_closes(client, stand_ins):
+def test_each_antigravity_tab_gets_formtools_tab_in_a_folder_of_its_own_until_it_closes(client, stand_ins):
     import json
+    from pathlib import Path
 
     from app.services import agent_programs, agents, terminal
 
-    path = agent_programs.tab_folder("antigravity") / ".agents" / "mcp_config.json"
+    base = agent_programs.tab_folder("antigravity")
+    shared = base / ".agents" / "mcp_config.json"
     seeded = {"mcpServers": {"other": {"command": "/bin/true", "args": []}}, "keep": 1}
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(seeded), encoding="utf-8")
+    shared.parent.mkdir(parents=True, exist_ok=True)
+    shared.write_text(json.dumps(seeded), encoding="utf-8")
+
+    def entry(tab):
+        session = terminal.get(tab["id"])
+        path = Path(session.cwd) / ".agents" / "mcp_config.json"
+        return session, path, session.env[agent_programs.TOKEN_VAR]
+
+    first = client.post("/api/terminal/agent", json={"kind": "antigravity", "cols": 80, "rows": 24}).json()
+    second = client.post("/api/terminal/agent", json={"kind": "antigravity", "cols": 80, "rows": 24}).json()
+    try:
+        assert first["kind"] == "antigravity" and first["title"] == "Antigravity"
+        (one, one_path, one_token), (two, two_path, two_token) = entry(first), entry(second)
+        assert Path(one.cwd).parent == base and Path(two.cwd).parent == base and one.cwd != two.cwd and one_token != two_token
+        deadline = time.time() + 8
+        while time.time() < deadline and not ("STAND-IN agy" in one.scrollback() and "STAND-IN agy" in two.scrollback()):
+            time.sleep(0.1)
+        assert "STAND-IN agy" in one.scrollback() and "STAND-IN agy" in two.scrollback()
+        for path, token in ((one_path, one_token), (two_path, two_token)):
+            assert json.loads(path.read_text(encoding="utf-8")) == {"mcpServers": {"formtools_tab": {"serverUrl": f"http://127.0.0.1:{PORT}/mcp", "headers": {agents.INAPP_HEADER: token}}}}
+            assert stat.S_IMODE(path.stat().st_mode) == 0o600 and stat.S_IMODE(path.parent.parent.stat().st_mode) == 0o700 and agents.is_inapp(token)
+        client.delete(f"/api/terminal/{first['id']}")
+        assert not Path(one.cwd).exists() and not agents.is_inapp(one_token)
+        assert json.loads(two_path.read_text(encoding="utf-8"))["mcpServers"]["formtools_tab"]["headers"] == {agents.INAPP_HEADER: two_token}
+        assert agents.is_inapp(two_token)
+        two_path.write_text(json.dumps({"mcpServers": {"mine": {"command": "/bin/true"}} | json.loads(two_path.read_text(encoding="utf-8"))["mcpServers"]}), encoding="utf-8")
+    finally:
+        client.delete(f"/api/terminal/{first['id']}")
+        client.delete(f"/api/terminal/{second['id']}")
+    assert json.loads(two_path.read_text(encoding="utf-8")) == {"mcpServers": {"mine": {"command": "/bin/true"}}}
+    assert not agents.is_inapp(two_token)
+    assert json.loads(shared.read_text(encoding="utf-8")) == seeded
+
+
+@pytest.mark.skipif(os.name == "nt", reason="the stand-in programs are shell scripts")
+def test_a_tab_folder_left_by_an_engine_that_ended_is_cleared_when_the_next_antigravity_tab_opens(client, stand_ins):
+    import json
+    from pathlib import Path
+
+    from app.services import agent_programs, agents, terminal
+
+    base = agent_programs.tab_folder("antigravity")
+    left, kept = base / "tab-left", base / "tab-kept"
+    for folder, servers in ((left, {}), (kept, {"mine": {"command": "/bin/true"}})):
+        (folder / ".agents").mkdir(parents=True)
+        (folder / ".agents" / "mcp_config.json").write_text(json.dumps({"mcpServers": servers | {"formtools_tab": {"serverUrl": "http://127.0.0.1:1/mcp", "headers": {agents.INAPP_HEADER: "gone"}}}}), encoding="utf-8")
     tab = client.post("/api/terminal/agent", json={"kind": "antigravity", "cols": 80, "rows": 24}).json()
     try:
-        assert tab["kind"] == "antigravity" and tab["title"] == "Antigravity"
-        session = terminal.get(tab["id"])
-        token = session.env[agent_programs.TOKEN_VAR]
-        deadline = time.time() + 8
-        while time.time() < deadline and "STAND-IN agy" not in session.scrollback():
-            time.sleep(0.1)
-        assert "STAND-IN agy" in session.scrollback()
-        data = json.loads(path.read_text(encoding="utf-8"))
-        assert data["keep"] == 1 and data["mcpServers"]["other"] == seeded["mcpServers"]["other"]
-        assert data["mcpServers"]["formtools_tab"] == {"serverUrl": f"http://127.0.0.1:{PORT}/mcp", "headers": {agents.INAPP_HEADER: token}}
-        assert stat.S_IMODE(path.stat().st_mode) == 0o600 and agents.is_inapp(token)
+        assert not left.exists()
+        assert json.loads((kept / ".agents" / "mcp_config.json").read_text(encoding="utf-8")) == {"mcpServers": {"mine": {"command": "/bin/true"}}}
+        own = Path(terminal.get(tab["id"]).cwd)
+        assert own.is_dir() and own.parent == base
     finally:
         client.delete(f"/api/terminal/{tab['id']}")
-    assert json.loads(path.read_text(encoding="utf-8")) == seeded
-    assert not agents.is_inapp(token)
+    assert not own.exists() and kept.is_dir() and not left.exists()
 
 
 ANSWERS = {

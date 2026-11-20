@@ -1,6 +1,8 @@
 import json
 import os
 import subprocess
+import tempfile
+import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -18,6 +20,9 @@ PROGRAMS = {
     "antigravity": {"bin": "agy", "title": "Antigravity", "install": agent_lookup.install("antigravity")},
 }
 TAB_FOLDER = "AgentTabs"
+TAB_PREFIX = "tab-"
+_tab_lock = threading.Lock()
+_tab_folders: set[Path] = set()
 
 
 def find(kind: str) -> str | None:
@@ -32,6 +37,49 @@ def tab_folder(kind: str) -> Path:
 
 def _tab_file(folder: Path) -> Path:
     return folder / ".agents" / "mcp_config.json"
+
+
+def _left_token(folder: Path) -> str:
+    try:
+        entry = _servers(_tab_file(folder)).get("mcpServers", {}).get(agents.SERVER)
+    except (OSError, ValueError):
+        return ""
+    return str((entry.get("headers") or {}).get(agents.INAPP_HEADER) or "") if isinstance(entry, dict) else ""
+
+
+def _empty(folder: Path, token: str) -> None:
+    remove_tab_entry(folder, token)
+    path = _tab_file(folder)
+    try:
+        if path.exists() and _servers(path) == {"mcpServers": {}}:
+            path.unlink()
+        if path.parent.is_dir():
+            path.parent.rmdir()
+        folder.rmdir()
+    except (OSError, ValueError):
+        return
+
+
+def open_tab_folder(kind: str, port: int, token: str) -> Path:
+    base = tab_folder(kind)
+    with _tab_lock:
+        for left in base.glob(TAB_PREFIX + "*"):
+            if left.is_dir() and left not in _tab_folders:
+                _empty(left, _left_token(left))
+        folder = Path(tempfile.mkdtemp(prefix=TAB_PREFIX, dir=base))
+        _tab_folders.add(folder)
+    try:
+        write_tab_entry(folder, port, token)
+    except BaseException:
+        close_tab_folder(folder, token)
+        raise
+    return folder
+
+
+def close_tab_folder(folder: Path, token: str) -> None:
+    with _tab_lock:
+        _empty(folder, token)
+        _tab_folders.discard(folder)
 
 
 def _servers(path: Path) -> dict:
@@ -124,17 +172,17 @@ def open_terminal(kind: str, port: int, cols: int = 100, rows: int = 30) -> dict
     argv = agent_lookup.start_argv([path])
     token, mcp_file = agents.issue(port)
     env = claude_code.child_env(path, {TOKEN_VAR: token, CONFIG_VAR: mcp_file, "FORMTOOLS_MCP_URL": f"http://127.0.0.1:{port}/mcp"})
-    own = tab_folder(kind) if kind == "antigravity" else None
+    own = None
     try:
-        if own:
-            write_tab_entry(own, port, token)
+        if kind == "antigravity":
+            own = open_tab_folder(kind, port, token)
         session = terminal.open_session(str(own) if own else claude_code.workdir(), cols, rows, PROGRAMS[kind]["title"], argv, env, kind)
     except BaseException:
         agents.revoke(token)
         if own:
-            remove_tab_entry(own, token)
+            close_tab_folder(own, token)
         raise
     session.on_close.append(lambda: agents.revoke(token))
     if own:
-        session.on_close.append(lambda: remove_tab_entry(own, token))
+        session.on_close.append(lambda: close_tab_folder(own, token))
     return session.describe()
