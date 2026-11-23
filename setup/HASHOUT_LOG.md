@@ -109,3 +109,10 @@
 - Removed from the keep test: `&& codesign -d --entitlements - "$f" 2>/dev/null | grep -q 'com.apple.security.cs.disable-library-validation'` as a condition on every file. Removed: the single `codesign --force --timestamp --options runtime "${sign_args[@]}" --sign "$APPLE_SIGNING_IDENTITY" "$f"` for every file, now split by whether the file is in a framework.
 - The entry of 2026-11-03 calls this loop formvis's. Any app that copied the loop and ships a one-folder engine from a framework Python has the same fault.
 - Checked: `bash -n`, and `sign_engine` run against a stand-in engine folder with stub `codesign` and `file` (the framework library signed outside its folder, a PyInstaller-signed library kept, ad hoc and unsigned ones signed, the engine program signed with entitlements, the guard stopping on a framework-bound signature). Not run: a macOS build. Apple's notary service has not seen an engine signed this way, because notarization is off while formcompiler's `signing.macos` is `developer-id`.
+
+## 2026-11-23 · v0.14.0 · the test runner
+
+- `test` and `test.bat` · New: `./formtools test [layer] [rest]`. Layers: `unit` (vitest in `frontend`, tests in `frontend/tests/unit/`) and `engine` (pytest on `backend/tests` with the backend venv's Python, run from `backend`). Nothing or `all` runs both and exits 1 when either failed; an unknown layer exits 2 with a sentence. Whatever follows the layer goes to the runner unchanged.
+- The script installs nothing. It stops with the command to run when the backend venv or `frontend/node_modules` is missing, and when pytest or httpx is not in the venv (`./formtools install` does not add them; `backend/requirements.txt` holds only what the engine ships with).
+- pytest runs with `-q -p no:cacheprovider` so a run leaves no `.pytest_cache` folder in the tree.
+- CI: the job `test` runs the two layers one step each; the pytest step that was the last step of the `backend` job moved there. `docs/TESTING.md` holds the rules a test must meet.

@@ -7,4 +7,5 @@ Rules for any coding agent (Claude Code, Codex, Cursor, Antigravity) working in 
 - Research lives in `docs/encyclopedia/` (start at `INDEX.md`). Paraphrase only; every page keeps its Sources list.
 - Before adding a dependency, check `docs/encyclopedia/engines/engine-licensing-matrix.md` and add a `NOTICE.md` row in the same commit.
 - Edits are surgical and hand-made. No emoji. No em dash in Markdown. Versions are `v*.*.*`.
+- Tests are added when the owner asks; a change in behaviour updates its tests in the same pull request; every test follows the five rules in `docs/TESTING.md`. `./formtools test` runs them.
 - Commits: author and committer `nodemode-ai <mackin@nodemode.ai>`, no attribution trailers of any kind.

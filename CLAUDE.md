@@ -22,6 +22,7 @@ Released (v0.13.0), built and bundled for macOS, Windows and Linux: Phases 1 to 
 - No emoji anywhere; no U+2014 em dash in Markdown (use the interpunct); near-zero comments, with context in the `HASHOUT_LOG.md` files.
 - Versions are `v*.*.*` with dots.
 - Vite `server.host` stays `false` with a pinned port.
+- Tests are added when the owner asks; a change in behaviour updates its tests in the same pull request; every test follows the five rules in `docs/TESTING.md`. `./formtools test` runs them.
 
 ## Commits
 
