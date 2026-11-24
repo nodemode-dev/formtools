@@ -4,7 +4,7 @@ The form* family's media and file utility belt: viewers, batch image tools, 3D v
 
 ## Stage
 
-Released (v0.13.0), built and bundled for macOS, Windows and Linux: Phases 1 to 9 of the approved plan, with Phase 2b for formvis and the repository side of Phase 10. Run `./formtools agents sync` after changing a skill and `./formtools agents check` before committing. The plan of record (`DEV_PLAN.md`), `BUILD_NOTES.md` and the root `HASHOUT_LOG.md` ship in the planning sidecar zip; read them, then the in-tree logs (`frontend/`, `backend/`, `src-tauri/`, `setup/` `HASHOUT_LOG.md`), before changing anything. For changing the code route through `.claude/skills/formtools-harness`; for using the app through MCP, `.claude/skills/formtools-driving`.
+Released (v0.14.0), built and bundled for macOS, Windows and Linux: Phases 1 to 9 of the approved plan, with Phase 2b for formvis and the repository side of Phase 10. Run `./formtools agents sync` after changing a skill and `./formtools agents check` before committing. The plan of record (`DEV_PLAN.md`), `BUILD_NOTES.md` and the root `HASHOUT_LOG.md` ship in the planning sidecar zip; read them, then the in-tree logs (`frontend/`, `backend/`, `src-tauri/`, `setup/` `HASHOUT_LOG.md`), before changing anything. For changing the code route through `.claude/skills/formtools-harness`; for using the app through MCP, `.claude/skills/formtools-driving`.
 
 ## Layout notes
 
@@ -22,6 +22,7 @@ Released (v0.13.0), built and bundled for macOS, Windows and Linux: Phases 1 to 
 - No emoji anywhere; no U+2014 em dash in Markdown (use the interpunct); near-zero comments, with context in the `HASHOUT_LOG.md` files.
 - Versions are `v*.*.*` with dots.
 - Vite `server.host` stays `false` with a pinned port.
+- Tests are added when the owner asks; a change in behaviour updates its tests in the same pull request; every test follows the five rules in `docs/TESTING.md`. `./formtools test` runs them.
 
 ## Commits
 

@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+source "$(dirname "$0")/lib.sh"
+which="${1:-all}"
+[ $# -gt 0 ] && shift
+case "$which" in
+  all|unit|engine) ;;
+  *) ft_say "unknown test layer: $which (use unit, engine or nothing for all)"; exit 2 ;;
+esac
+fail=0
+run() { ft_say "$1"; shift; "$@" || fail=1; }
+wants() { [ "$which" = all ] || [ "$which" = "$1" ]; }
+if wants unit; then
+  [ -d "$FORMTOOLS_ROOT/frontend/node_modules" ] || ft_die "frontend not installed, run ./formtools install"
+  cd "$FORMTOOLS_ROOT/frontend"
+  run "interface logic (vitest)" npx vitest run "$@"
+fi
+if wants engine; then
+  py="$FORMTOOLS_ROOT/backend/venv/bin/python"
+  [ -x "$py" ] || py="$FORMTOOLS_ROOT/backend/venv/Scripts/python.exe"
+  [ -x "$py" ] || ft_die "backend venv missing, run ./formtools install"
+  "$py" -c "import pytest, httpx" >/dev/null 2>&1 || ft_die "the engine tests need pytest and httpx: $py -m pip install pytest httpx"
+  cd "$FORMTOOLS_ROOT/backend"
+  run "engine (pytest)" "$py" -m pytest tests -q -p no:cacheprovider "$@"
+fi
+exit "$fail"

@@ -30,6 +30,7 @@ usage: ./formtools [command] [options]
   agents sync | check  write agents/manifest.json and mirror .claude/skills into .agents/skills; check the manifest, the mirror, the skills and the MCP configs (needs the backend venv)
   mcpb check | build DIR  validate the Claude Desktop extension manifest; write formtools.mcpb into DIR
   sparkle             fail if the banned three-star sparkle icon is back in the app
+  test [unit|engine] [args]  run the tests (nothing or all runs every layer; the rest goes to the runner)
   doctor              check the toolchain, installs and ports
   clean [--all]       remove build output (--all also venv and node_modules)
   version             the version and build (also --version)
@@ -67,6 +68,7 @@ case "$cmd" in
       *) usage; exit 2 ;;
     esac ;;
   sparkle) exec python3 setup/sparkle.py --check ;;
+  test) exec setup/test "$@" ;;
   doctor) exec setup/doctor "$@" ;;
   clean) exec setup/clean "$@" ;;
   version|--version|-V)

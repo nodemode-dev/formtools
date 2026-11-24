@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.14.0 · 2026-11-23
+
+formtools has a full test suite.
+
+- `./formtools test` runs two layers: interface logic (vitest with happy-dom, `frontend/tests/unit`) and the engine (pytest against the real FastAPI app, `backend/tests`). `./formtools test unit` or `./formtools test engine` runs one. `docs/TESTING.md` says how to run them and what a test must do to be accepted.
+- 1,244 new cases run the app and check what a user or a calling program would notice: archives read back by independent readers and equal to their source byte for byte, hashes against published vectors, picture edits against geometry, renames with nothing lost, duplicates, disk usage, hosts files, glTF read by the format's rules, the MCP surface against JSON-RPC 2.0 and agreeing with the HTTP routes, the command-line tools, and viewers, tool forms and dialogs mounted in a document. With the 90 cases that were already here, 1,334 pass.
+- No app code changed. Where a test showed the app to be wrong, the test stays as a strict expected failure whose reason starts with `DEFECT:`. There are 2 such cases: the environment.d writer leaves `$` unescaped, so systemd expands it at login, where environment.d(5) says to write `$$`; and a copy job that fails because ffmpeg is missing leaves an empty reserved output file beside the source, where every other failed copy removes its output. `git grep -n "DEFECT:" backend/tests frontend/tests` lists them.
+- CI runs the tests on every pull request in one job, `test`, on Linux.
+- Not run for this version: the browser demo in `demo/` was not rebuilt, so its built script still says 0.13.0. Real ffmpeg, ffprobe and exiftool output was not run, only stand-in programs. The desktop shell has no tests. The tests did not run on macOS or Windows.
+
 ## 0.13.0 · 2026-11-20
 
 The family's colour and layer names, all of them.

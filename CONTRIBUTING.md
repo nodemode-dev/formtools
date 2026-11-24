@@ -55,7 +55,8 @@ python -m compileall -q backend setup
 
 CI also boots the engine and probes `/api/health` and `/api/capabilities`, runs
 `bash -n` over the shell scripts, and fails on an em dash in tracked Markdown or an
-emoji in any tracked text.
+emoji in any tracked text. `./formtools test` runs the tests; `docs/TESTING.md` says
+where they live and what a test must do to be accepted.
 
 - Keep each pull request to one change.
 - Write commit subjects the way the history does: `type(scope): plain sentence (X.Y.Z)`,

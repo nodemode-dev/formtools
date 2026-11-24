@@ -22,6 +22,7 @@ if /i "%CMD%"=="cli" ( call :cli %* & goto :eof )
 if /i "%CMD%"=="agents" ( call :agents %* & goto :eof )
 if /i "%CMD%"=="mcpb" ( call :mcpb %* & goto :eof )
 if /i "%CMD%"=="sparkle" ( python setup\sparkle.py --check & goto :eof )
+if /i "%CMD%"=="test" ( call setup\test.bat %2 %3 %4 %5 %6 %7 %8 %9 & goto :eof )
 if /i "%CMD%"=="doctor" ( call setup\doctor.bat & goto :eof )
 if /i "%CMD%"=="clean" ( call setup\clean.bat %ARG% & goto :eof )
 if /i "%CMD%"=="version" ( call :version & goto :eof )
@@ -67,5 +68,5 @@ exit /b 0
 :usage
 echo formtools.bat [command]
 echo   boot ^| install [--lite] ^| install-desktop ^| backend ^| frontend ^| build ^| serve ^| freeze
-echo   desktop dev ^| desktop build [--config F] [--target T] ^| mcp ^| cli ^| agents install^|sync^|check ^| mcpb check^|build DIR ^| sparkle ^| doctor ^| clean [--all] ^| version ^| help
+echo   desktop dev ^| desktop build [--config F] [--target T] ^| mcp ^| cli ^| agents install^|sync^|check ^| mcpb check^|build DIR ^| sparkle ^| test [unit^|engine] ^| doctor ^| clean [--all] ^| version ^| help
 exit /b 0
